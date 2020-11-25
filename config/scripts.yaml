@@ -1,0 +1,40 @@
+flash_hue_go:
+  alias: flash hue go
+  sequence:
+  - type: turn_on
+    device_id: f7a5d4960145cea0900dca57ddf63ece
+    entity_id: light.hue_go
+    domain: light
+  - delay: '1'
+  - type: turn_off
+    device_id: f7a5d4960145cea0900dca57ddf63ece
+    entity_id: light.hue_go
+    domain: light
+  - service: script.turn_on
+    data: {}
+    entity_id: script.call_hue_go_flash
+  mode: single
+
+call_hue_go_flash:
+  alias: call hue go flash
+  sequence:
+  - delay: '1'
+  - service: script.turn_on
+    data: {}
+    entity_id: script.flash_hue_go
+  mode: single
+
+stop_hue_go_loop:
+  alias: stop hue go loop
+  sequence:
+  - service: script.turn_off
+    data: {}
+    entity_id: script.flash_hue_go
+  - service: script.turn_off
+    data: {}
+    entity_id: script.call_hue_go_flash
+  - type: turn_off
+    device_id: f7a5d4960145cea0900dca57ddf63ece
+    entity_id: light.hue_go
+    domain: light
+  mode: single

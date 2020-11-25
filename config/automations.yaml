@@ -1,0 +1,121 @@
+- id: '1605753057727'
+  alias: beep when front door opens
+  description: beep when front door opens
+  trigger:
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.front_door
+    domain: binary_sensor
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 2a652c47c81412c0f920be851019019b
+    entity_id: switch.piezo
+    domain: switch
+  mode: single
+
+- id: '1605819713850'
+  alias: Turn on Hue Go when alarm is armed
+  description: Turn on Hue Go when alarm is armed
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    from: disarmed
+    to: armed_home
+  condition: []
+  action:
+  - type: turn_on
+    device_id: f7a5d4960145cea0900dca57ddf63ece
+    entity_id: light.hue_go
+    domain: light
+    brightness_pct: 100
+  mode: single
+
+- id: '1605838444782'
+  alias: Turn off Hue Go when alarm is disarmed
+  description: Turn off Hue Go when alarm is disarmed
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: disarmed
+  condition: []
+  action:
+  - service: script.turn_on
+    data: {}
+    entity_id: script.stop_hue_go_loop
+  mode: single
+
+- id: '1605884355005'
+  alias: Trigger alarm while armed away
+  description: Trigger alarm while armed away
+  trigger:
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.front_door
+    domain: binary_sensor
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.garage_door
+    domain: binary_sensor
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.basement_door
+    domain: binary_sensor
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.sliding_door
+    domain: binary_sensor
+  - type: motion
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.office_motion
+    domain: binary_sensor
+  - type: motion
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.family_room_motion
+    domain: binary_sensor
+  condition:
+  - condition: state
+    entity_id: alarm_control_panel.home_alarm
+    state: armed_away
+  action: []
+  mode: single
+
+- id: '1605753057799'
+  alias: Trigger alarm while armed home
+  trigger:
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.front_door
+    domain: binary_sensor
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.garage_door
+    domain: binary_sensor
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.basement_door
+    domain: binary_sensor
+  - type: opened
+    platform: device
+    device_id: 38bfe615ddaea006e02cfb786649eddd
+    entity_id: binary_sensor.sliding_door
+    domain: binary_sensor
+  condition:
+  - condition: state
+    state: armed_home
+    entity_id: alarm_control_panel.home_alarm
+  action:
+  - service: script.turn_on
+    data: {}
+    entity_id: script.flash_hue_go
+  mode: single
