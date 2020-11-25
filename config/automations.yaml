@@ -11,10 +11,9 @@
   action:
   - type: turn_on
     device_id: 2a652c47c81412c0f920be851019019b
-    entity_id: switch.piezo
+    entity_id: switch.piezo_2
     domain: switch
   mode: single
-
 - id: '1605819713850'
   alias: Turn on Hue Go when alarm is armed
   description: Turn on Hue Go when alarm is armed
@@ -31,7 +30,6 @@
     domain: light
     brightness_pct: 100
   mode: single
-
 - id: '1605838444782'
   alias: Turn off Hue Go when alarm is disarmed
   description: Turn off Hue Go when alarm is disarmed
@@ -45,7 +43,6 @@
     data: {}
     entity_id: script.stop_hue_go_loop
   mode: single
-
 - id: '1605884355005'
   alias: Trigger alarm while armed away
   description: Trigger alarm while armed away
@@ -86,7 +83,6 @@
     state: armed_away
   action: []
   mode: single
-
 - id: '1605753057799'
   alias: Trigger alarm while armed home
   trigger:

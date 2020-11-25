@@ -12,9 +12,9 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 
 # Cloud config
-# cloud:
+cloud:
 
-  # Alarm panel
+# Alarm panel
 alarm_control_panel:
   - platform: manual
     name: Home Alarm
