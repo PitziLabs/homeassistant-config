@@ -10,6 +10,7 @@
 .storage
 .cloud
 .google.token
+.vscode
 config_BAK
 
 # Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
