@@ -1,19 +1,3 @@
-- id: '1605753057727'
-  alias: beep when front door opens
-  description: beep when front door opens
-  trigger:
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.front_door
-    domain: binary_sensor
-  condition: []
-  action:
-  - type: turn_on
-    device_id: 2a652c47c81412c0f920be851019019b
-    entity_id: switch.piezo_2
-    domain: switch
-  mode: single
 - id: '1605819713850'
   alias: Turn on Hue Go when alarm is armed
   description: Turn on Hue Go when alarm is armed
