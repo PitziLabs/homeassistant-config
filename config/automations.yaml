@@ -105,20 +105,24 @@
     entity_id: script.flash_hue_go
   mode: single
 - id: '1611628049358'
-  alias: testing
-  description: ''
+  alias: Don't arm alarm if there are door or windows open
+  description: Don't arm alarm if there are door or windows open
   trigger:
   - platform: state
     entity_id: alarm_control_panel.home_alarm
     from: disarmed
-    to: pending
+    to: arming
   condition:
   - condition: state
-    entity_id: group.motion
     state: 'on'
+    entity_id: group.doors
   action:
+  - service: tts.google_translate_say
+    data:
+      entity_id: media_player.office
+      message: Please note, there are doors or windows left open. Disarming alarm...
   - service: alarm_control_panel.alarm_disarm
     data:
-      code: !secret alarm_code
-    entity_id: alarm_control_panel.home_alarm
+      code: 6655
+      entity_id: alarm_control_panel.home_alarm
   mode: single
