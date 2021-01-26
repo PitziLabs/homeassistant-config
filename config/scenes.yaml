@@ -89,3 +89,24 @@
       supported_features: 63
       state: 'on'
   icon: hass:red
+- id: '1610242692067'
+  name: Alarm Armed
+  entities:
+    light.hue_go_2:
+      min_mireds: 111
+      max_mireds: 500
+      brightness: 255
+      color_temp: 153
+      hs_color:
+      - 0
+      - 100
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      xy_color:
+      - 0.701
+      - 0.299
+      friendly_name: Hue go
+      supported_features: 51
+      state: 'on'

@@ -13,6 +13,7 @@
     entity_id: light.hue_go
     domain: light
     brightness_pct: 100
+  - scene: scene.alarm_armed
   mode: single
 - id: '1605838444782'
   alias: Turn off Hue Go when alarm is disarmed
@@ -26,6 +27,10 @@
   - service: script.turn_on
     data: {}
     entity_id: script.stop_hue_go_loop
+  - service: notify.mobile_app_sm_g960u
+    data:
+      title: ‘ALARM’
+      message: 'Disarmed at {{ now().strftime(''%X on %x'') }} '
   mode: single
 - id: '1605884355005'
   alias: Trigger alarm while armed away

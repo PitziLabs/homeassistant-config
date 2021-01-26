@@ -74,3 +74,18 @@ stop_siren_loop:
     entity_id: switch.konnected_56ac70_actuator_out
     domain: switch
   mode: single
+group_all_sonos_speakers:
+  alias: Group all sonos speakers
+  sequence:
+  - service: sonos.join
+    data:
+      master: media_player.kitchen
+      entity_id: all
+  mode: single
+'1610829099015':
+  alias: Ungroup all sonos speakers
+  sequence:
+  - service: sonos.unjoin
+    data:
+      entity_id: all
+  mode: single
