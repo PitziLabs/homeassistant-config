@@ -1,0 +1,5 @@
+motion:
+  name: Motion Sensors
+  entities:
+    - binary_sensor.family_room_motion
+    - binary_sensor.office_motion

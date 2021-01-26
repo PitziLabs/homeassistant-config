@@ -104,3 +104,21 @@
     data: {}
     entity_id: script.flash_hue_go
   mode: single
+- id: '1611628049358'
+  alias: testing
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    from: disarmed
+    to: pending
+  condition:
+  - condition: state
+    entity_id: group.motion
+    state: 'on'
+  action:
+  - service: alarm_control_panel.alarm_disarm
+    data:
+      code: !secret alarm_code
+    entity_id: alarm_control_panel.home_alarm
+  mode: single
