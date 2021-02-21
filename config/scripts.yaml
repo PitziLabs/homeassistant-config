@@ -89,11 +89,3 @@ group_all_sonos_speakers:
     data:
       entity_id: all
   mode: single
-test:
-  alias: test
-  sequence:
-  - service: tts.google_translate_say
-    data:
-      entity_id: media_player.office
-      message: Please note, there are doors or windows are left open. Disarming alarm...
-  mode: single

@@ -126,3 +126,33 @@
       code: 6655
       entity_id: alarm_control_panel.home_alarm
   mode: single
+- id: '1612798651890'
+  alias: Annouce when Jake's room opens
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.jake_s_room_contact
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: tts.google_translate_say
+    data:
+      entity_id: media_player.jake_s_room
+      message: Jake's room is open!
+  mode: single
+- id: '1612798891692'
+  alias: Annouce when Jake's room closes
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.jake_s_room_contact
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: tts.google_translate_say
+    data:
+      entity_id: media_player.jake_s_room
+      message: Jake's room is closed!
+  mode: single
