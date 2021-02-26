@@ -4,15 +4,10 @@
   trigger:
   - platform: state
     entity_id: alarm_control_panel.home_alarm
-    from: disarmed
+    from: arming
     to: armed_home
   condition: []
   action:
-  - type: turn_on
-    device_id: f7a5d4960145cea0900dca57ddf63ece
-    entity_id: light.hue_go
-    domain: light
-    brightness_pct: 100
   - scene: scene.alarm_armed
   mode: single
 - id: '1605838444782'
@@ -66,6 +61,14 @@
     device_id: 38bfe615ddaea006e02cfb786649eddd
     entity_id: binary_sensor.family_room_motion
     domain: binary_sensor
+  - platform: state
+    entity_id: group.doors
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id: group.motion
+    from: 'off'
+    to: 'on'
   condition:
   - condition: state
     entity_id: alarm_control_panel.home_alarm
@@ -75,26 +78,10 @@
 - id: '1605753057799'
   alias: Trigger alarm while armed home
   trigger:
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.front_door
-    domain: binary_sensor
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.garage_door
-    domain: binary_sensor
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.basement_door
-    domain: binary_sensor
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.sliding_door
-    domain: binary_sensor
+  - platform: state
+    entity_id: group.doors
+    from: 'off'
+    to: 'on'
   condition:
   - condition: state
     state: armed_home
