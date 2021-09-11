@@ -129,7 +129,7 @@
       message: Jake's room is open!
   mode: single
 - id: '1612798891692'
-  alias: Announce when Jake's room closes
+  alias: Announnce when Jake's room closes
   description: ''
   trigger:
   - platform: state
