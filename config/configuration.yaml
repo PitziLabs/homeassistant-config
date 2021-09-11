@@ -52,4 +52,4 @@ sensor:
 # Spotify
 spotify:
   client_id: e838cc1d95804c1dbdb6c2eb678ac3c6
-  client_secret: c3185ba447c741069d49ef5a8d04f20b
+  client_secret: !secret spotify_secret
