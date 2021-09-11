@@ -48,3 +48,8 @@ nest:
 # Google wifi
 sensor:
   - platform: google_wifi
+
+# Spotify
+spotify:
+  client_id: e838cc1d95804c1dbdb6c2eb678ac3c6
+  client_secret: c3185ba447c741069d49ef5a8d04f20b
