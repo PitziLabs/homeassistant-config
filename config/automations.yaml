@@ -114,7 +114,7 @@
       entity_id: alarm_control_panel.home_alarm
   mode: single
 - id: '1612798651890'
-  alias: Annouce when Jake's room opens
+  alias: Announce when Jake's room opens
   description: ''
   trigger:
   - platform: state
@@ -129,7 +129,7 @@
       message: Jake's room is open!
   mode: single
 - id: '1612798891692'
-  alias: Announnce when Jake's room closes
+  alias: Announce when Jake's room closes
   description: ''
   trigger:
   - platform: state
