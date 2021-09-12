@@ -31,10 +31,10 @@ alarm_control_panel:
       arming_time: 5
       delay_time: 5
 
-cover:
-  - platform: myq
-    username: cpitzi@gmail.com
-    password: !secret myq_password
+# cover:
+#   - platform: myq
+#     username: cpitzi@gmail.com
+#     password: !secret myq_password
 
 # Nest
 nest:
