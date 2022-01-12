@@ -1,145 +1,187 @@
-- id: '1605819713850'
+- id: "1605819713850"
   alias: Turn on Hue Go when alarm is armed
   description: Turn on Hue Go when alarm is armed
   trigger:
-  - platform: state
-    entity_id: alarm_control_panel.home_alarm
-    from: arming
-    to: armed_home
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+      from: arming
+      to: armed_home
   condition: []
   action:
-  - scene: scene.alarm_armed
+    - scene: scene.alarm_armed
+    - service: notify.notify
+      data:
+        title: ‘HA Armed!’
+        message: "Armed at {{ now().strftime('%X on %x') }} "
+    - service: notify.persistent_notification
+      data:
+        title: ‘HA Armed!’
+        message: "Armed at {{ now().strftime('%X on %x') }} "
   mode: single
-- id: '1605838444782'
+- id: "1605838444782"
   alias: Turn off Hue Go when alarm is disarmed
   description: Turn off Hue Go when alarm is disarmed
   trigger:
-  - platform: state
-    entity_id: alarm_control_panel.home_alarm
-    to: disarmed
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+      to: disarmed
   condition: []
   action:
-  - service: script.turn_on
-    data: {}
-    entity_id: script.stop_hue_go_loop
-  - service: notify.mobile_app_sm_g960u
-    data:
-      title: ‘ALARM’
-      message: 'Disarmed at {{ now().strftime(''%X on %x'') }} '
+    - service: script.turn_on
+      data: {}
+      entity_id: script.stop_hue_go_loop
+    - service: notify.notify
+      data:
+        title: ‘HA Disarmed’
+        message: "Disarmed at {{ now().strftime('%X on %x') }} "
+    - service: notify.persistent_notification
+      data:
+        title: ‘HA Disarmed’
+        message: "Disarmed at {{ now().strftime('%X on %x') }} "
   mode: single
-- id: '1605884355005'
+- id: "1605884355005"
   alias: Trigger alarm while armed away
   description: Trigger alarm while armed away
   trigger:
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.front_door
-    domain: binary_sensor
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.garage_door
-    domain: binary_sensor
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.basement_door
-    domain: binary_sensor
-  - type: opened
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.sliding_door
-    domain: binary_sensor
-  - type: motion
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.office_motion
-    domain: binary_sensor
-  - type: motion
-    platform: device
-    device_id: 38bfe615ddaea006e02cfb786649eddd
-    entity_id: binary_sensor.family_room_motion
-    domain: binary_sensor
-  - platform: state
-    entity_id: group.doors
-    from: 'off'
-    to: 'on'
-  - platform: state
-    entity_id: group.motion
-    from: 'off'
-    to: 'on'
+    - type: opened
+      platform: device
+      device_id: 38bfe615ddaea006e02cfb786649eddd
+      entity_id: binary_sensor.front_door
+      domain: binary_sensor
+    - type: opened
+      platform: device
+      device_id: 38bfe615ddaea006e02cfb786649eddd
+      entity_id: binary_sensor.garage_door
+      domain: binary_sensor
+    - type: opened
+      platform: device
+      device_id: 38bfe615ddaea006e02cfb786649eddd
+      entity_id: binary_sensor.basement_door
+      domain: binary_sensor
+    - type: opened
+      platform: device
+      device_id: 38bfe615ddaea006e02cfb786649eddd
+      entity_id: binary_sensor.sliding_door
+      domain: binary_sensor
+    - type: motion
+      platform: device
+      device_id: 38bfe615ddaea006e02cfb786649eddd
+      entity_id: binary_sensor.office_motion
+      domain: binary_sensor
+    - type: motion
+      platform: device
+      device_id: 38bfe615ddaea006e02cfb786649eddd
+      entity_id: binary_sensor.family_room_motion
+      domain: binary_sensor
+    - platform: state
+      entity_id: group.doors
+      from: "off"
+      to: "on"
+    - platform: state
+      entity_id: group.motion
+      from: "off"
+      to: "on"
   condition:
-  - condition: state
-    entity_id: alarm_control_panel.home_alarm
-    state: armed_away
-  action: []
+    - condition: state
+      entity_id: alarm_control_panel.home_alarm
+      state: armed_away
+  action:
+    - service: notify.mobile_app_sm_g998u1
   mode: single
-- id: '1605753057799'
+- id: "1605753057799"
   alias: Trigger alarm while armed home
   trigger:
-  - platform: state
-    entity_id: group.doors
-    from: 'off'
-    to: 'on'
+    - platform: state
+      entity_id: group.doors
+      from: "off"
+      to: "on"
   condition:
-  - condition: state
-    state: armed_home
-    entity_id: alarm_control_panel.home_alarm
-  action:
-  - service: script.turn_on
-    data: {}
-    entity_id: script.flash_hue_go
-  mode: single
-- id: '1611628049358'
-  alias: Don't arm alarm if there are door or windows open
-  description: Don't arm alarm if there are door or windows open
-  trigger:
-  - platform: state
-    entity_id: alarm_control_panel.home_alarm
-    from: disarmed
-    to: arming
-  condition:
-  - condition: state
-    state: 'on'
-    entity_id: group.doors
-  action:
-  - service: tts.google_translate_say
-    data:
-      entity_id: media_player.office
-      message: Please note, there are doors or windows left open. Disarming alarm...
-  - service: alarm_control_panel.alarm_disarm
-    data:
-      code: 6655
+    - condition: state
+      state: armed_home
       entity_id: alarm_control_panel.home_alarm
+  action:
+    - scene: scene.alarm_triggered_red
+    - service: script.turn_on
+      data: {}
+      entity_id: script.flash_hue_go
+    - service: notify.notify
+      data:
+        title: ‘ALARM! Home mode alarm tripped.’
+        message: "Tripped at {{ now().strftime('%X on %x') }} "
+    - service: notify.persistent_notification
+      data:
+        title: ‘ALARM! Home mode alarm tripped.’
+        message: "Tripped at {{ now().strftime('%X on %x') }} "
   mode: single
-- id: '1612798651890'
+- id: "1611628049358"
+  alias: Don't arm alarm if there are doors or windows open
+  description: Don't arm alarm if there are doors or windows open
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+      from: disarmed
+      to: arming
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 2
+        milliseconds: 0
+  condition:
+    - condition: state
+      state: "on"
+      entity_id: group.doors
+  action:
+    - service: tts.google_translate_say
+      data:
+        entity_id: media_player.office
+        message: There are doors or windows left open. Disarming alarm...
+    - service: alarm_control_panel.alarm_disarm
+      data: {}
+      target:
+        entity_id: alarm_control_panel.home_alarm
+    - service: notify.persistent_notification
+      data:
+        message: Door or window open! HA disarmed.
+        title: HA Disarmed
+    - service: notify.notify
+      data:
+        message: Door or window open! HA disarmed.
+        title: HA Disarmed
+  mode: single
+- id: "1612798651890"
   alias: Announce when Jake's room opens
-  description: ''
+  description: ""
   trigger:
-  - platform: state
-    entity_id: binary_sensor.jake_s_room_contact
-    from: 'off'
-    to: 'on'
+    - platform: state
+      entity_id: binary_sensor.jake_s_room_contact
+      from: "off"
+      to: "on"
   condition: []
   action:
-  - service: tts.google_translate_say
-    data:
-      entity_id: media_player.jake_s_room
-      message: Jake's room is open!
+    - service: tts.google_translate_say
+      data:
+        entity_id: media_player.master_bedroom
+        message: Jake's room is open!
   mode: single
-- id: '1612798891692'
-  alias: Announce when Jake's room closes
-  description: ''
+- id: "1612798891692"
+  alias: Announce when Hannah's room opens
+  description: ""
   trigger:
-  - platform: state
-    entity_id: binary_sensor.jake_s_room_contact
-    from: 'on'
-    to: 'off'
+    - platform: state
+      from: "off"
+      to: "on"
+      entity_id: binary_sensor.hannah_s_room_contact
   condition: []
   action:
-  - service: tts.google_translate_say
-    data:
-      entity_id: media_player.jake_s_room
-      message: Jake's room is closed!
+    - service: tts.google_translate_say
+      data:
+        message: Hannah's room is open
+        entity_id: media_player.master_bedroom
+    - service: notify.mobile_app_sm_g998u1
+      data:
+        message: "Hannah's room is open "
+    - service: tts.google_translate_say
+      data:
+        message: Hannah's room is open
+        entity_id: media_player.kitchen
   mode: single

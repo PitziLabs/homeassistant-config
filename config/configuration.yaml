@@ -21,7 +21,7 @@ cloud:
 alarm_control_panel:
   - platform: manual
     name: Home Alarm
-    code: !secret alarm_code
+    # code: !secret alarm_code
     arming_time: 30
     delay_time: 20
     trigger_time: 4
@@ -48,6 +48,7 @@ nest:
 # Google wifi
 sensor:
   - platform: google_wifi
+    host: 192.168.86.1
 
 # Spotify
 spotify:
