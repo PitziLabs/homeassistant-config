@@ -90,7 +90,7 @@
       state: 'on'
   icon: hass:red
 - id: '1610242692067'
-  name: Alarm Armed - green
+  name: 'Alarm Armed '
   entities:
     light.hue_go_2:
       min_mireds: 111
@@ -101,15 +101,15 @@
       color_mode: hs
       brightness: 125
       hs_color:
-      - 135
+      - 360
       - 100
       rgb_color:
-      - 0
       - 255
-      - 63
+      - 0
+      - 0
       xy_color:
-      - 0.17
-      - 0.703
+      - 0.701
+      - 0.299
       color_temp: 500
       friendly_name: Hue go
       supported_features: 51
