@@ -39,17 +39,14 @@ views:
             name: Family Rm
 
       # ============================================================
-      # NOW PLAYING — Sonos (conditional, only active speakers)
+      # NOW PLAYING — Sonos (group-aware, only coordinators shown)
       # ============================================================
 
       - type: conditional
         conditions:
           - condition: state
-            entity: media_player.office
-            state_not: idle
-          - condition: state
-            entity: media_player.office
-            state_not: unavailable
+            entity: binary_sensor.sonos_office_leader
+            state: "on"
         card:
           type: media-control
           entity: media_player.office
@@ -57,11 +54,8 @@ views:
       - type: conditional
         conditions:
           - condition: state
-            entity: media_player.kitchen
-            state_not: idle
-          - condition: state
-            entity: media_player.kitchen
-            state_not: unavailable
+            entity: binary_sensor.sonos_kitchen_leader
+            state: "on"
         card:
           type: media-control
           entity: media_player.kitchen
@@ -69,11 +63,8 @@ views:
       - type: conditional
         conditions:
           - condition: state
-            entity: media_player.dining_room
-            state_not: idle
-          - condition: state
-            entity: media_player.dining_room
-            state_not: unavailable
+            entity: binary_sensor.sonos_dining_room_leader
+            state: "on"
         card:
           type: media-control
           entity: media_player.dining_room
@@ -81,11 +72,8 @@ views:
       - type: conditional
         conditions:
           - condition: state
-            entity: media_player.master_bedroom
-            state_not: idle
-          - condition: state
-            entity: media_player.master_bedroom
-            state_not: unavailable
+            entity: binary_sensor.sonos_master_bedroom_leader
+            state: "on"
         card:
           type: media-control
           entity: media_player.master_bedroom
@@ -93,11 +81,8 @@ views:
       - type: conditional
         conditions:
           - condition: state
-            entity: media_player.basement
-            state_not: idle
-          - condition: state
-            entity: media_player.basement
-            state_not: unavailable
+            entity: binary_sensor.sonos_basement_leader
+            state: "on"
         card:
           type: media-control
           entity: media_player.basement
@@ -105,11 +90,8 @@ views:
       - type: conditional
         conditions:
           - condition: state
-            entity: media_player.roam_2
-            state_not: idle
-          - condition: state
-            entity: media_player.roam_2
-            state_not: unavailable
+            entity: binary_sensor.sonos_roam_leader
+            state: "on"
         card:
           type: media-control
           entity: media_player.roam_2
@@ -173,12 +155,15 @@ views:
       - type: entities
         title: Family Room
         icon: mdi:sofa
-        show_header_toggle: true
+        show_header_toggle: false
         entities:
           - entity: light.family_room
             name: Main
           - entity: light.family_room_2
             name: Light 2
+          - type: divider
+          - entity: switch.family_room_outlets
+            name: Outlets (powers floor lamp)
           - entity: light.floor_lamp
             name: Floor Lamp
 
@@ -219,8 +204,6 @@ views:
         icon: mdi:power-socket-us
         show_header_toggle: false
         entities:
-          - entity: switch.family_room_outlets
-            name: Family Room Outlets
           - entity: switch.play_room_outlet
             name: Play Room Outlet
           - entity: switch.bonus_room

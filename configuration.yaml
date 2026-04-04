@@ -49,3 +49,72 @@ lovelace:
 
 # Prometheus
 prometheus:
+
+# Template sensors for Sonos group-aware dashboard
+template:
+  - binary_sensor:
+      - name: "Sonos Office Leader"
+        unique_id: sonos_office_leader
+        state: >
+          {{ not is_state('media_player.office', 'idle')
+             and not is_state('media_player.office', 'unavailable')
+             and state_attr('media_player.office', 'group_members') is not none
+             and state_attr('media_player.office', 'group_members')[0] == 'media_player.office' }}
+        attributes:
+          group_count: >
+            {{ state_attr('media_player.office', 'group_members') | length if state_attr('media_player.office', 'group_members') is not none else 0 }}
+
+      - name: "Sonos Kitchen Leader"
+        unique_id: sonos_kitchen_leader
+        state: >
+          {{ not is_state('media_player.kitchen', 'idle')
+             and not is_state('media_player.kitchen', 'unavailable')
+             and state_attr('media_player.kitchen', 'group_members') is not none
+             and state_attr('media_player.kitchen', 'group_members')[0] == 'media_player.kitchen' }}
+        attributes:
+          group_count: >
+            {{ state_attr('media_player.kitchen', 'group_members') | length if state_attr('media_player.kitchen', 'group_members') is not none else 0 }}
+
+      - name: "Sonos Dining Room Leader"
+        unique_id: sonos_dining_room_leader
+        state: >
+          {{ not is_state('media_player.dining_room', 'idle')
+             and not is_state('media_player.dining_room', 'unavailable')
+             and state_attr('media_player.dining_room', 'group_members') is not none
+             and state_attr('media_player.dining_room', 'group_members')[0] == 'media_player.dining_room' }}
+        attributes:
+          group_count: >
+            {{ state_attr('media_player.dining_room', 'group_members') | length if state_attr('media_player.dining_room', 'group_members') is not none else 0 }}
+
+      - name: "Sonos Master Bedroom Leader"
+        unique_id: sonos_master_bedroom_leader
+        state: >
+          {{ not is_state('media_player.master_bedroom', 'idle')
+             and not is_state('media_player.master_bedroom', 'unavailable')
+             and state_attr('media_player.master_bedroom', 'group_members') is not none
+             and state_attr('media_player.master_bedroom', 'group_members')[0] == 'media_player.master_bedroom' }}
+        attributes:
+          group_count: >
+            {{ state_attr('media_player.master_bedroom', 'group_members') | length if state_attr('media_player.master_bedroom', 'group_members') is not none else 0 }}
+
+      - name: "Sonos Basement Leader"
+        unique_id: sonos_basement_leader
+        state: >
+          {{ not is_state('media_player.basement', 'idle')
+             and not is_state('media_player.basement', 'unavailable')
+             and state_attr('media_player.basement', 'group_members') is not none
+             and state_attr('media_player.basement', 'group_members')[0] == 'media_player.basement' }}
+        attributes:
+          group_count: >
+            {{ state_attr('media_player.basement', 'group_members') | length if state_attr('media_player.basement', 'group_members') is not none else 0 }}
+
+      - name: "Sonos Roam Leader"
+        unique_id: sonos_roam_leader
+        state: >
+          {{ not is_state('media_player.roam_2', 'idle')
+             and not is_state('media_player.roam_2', 'unavailable')
+             and state_attr('media_player.roam_2', 'group_members') is not none
+             and state_attr('media_player.roam_2', 'group_members')[0] == 'media_player.roam_2' }}
+        attributes:
+          group_count: >
+            {{ state_attr('media_player.roam_2', 'group_members') | length if state_attr('media_player.roam_2', 'group_members') is not none else 0 }}
