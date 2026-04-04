@@ -80,7 +80,7 @@
         sequence:
           - action: esphome.konnected_56a4fa_play_rtttl
             data:
-              song_str: "exit:d=16,o=5,b=100:c,p"
+              song_str: "exit:d=32,o=4,b=100:e,p"
           - delay:
               milliseconds: 1500
 
@@ -106,7 +106,7 @@
         sequence:
           - action: esphome.konnected_56a4fa_play_rtttl
             data:
-              song_str: "entry:d=16,o=6,b=100:c,p"
+              song_str: "entry:d=32,o=4,b=100:e,p"
           - delay:
               milliseconds: 700
 
@@ -147,7 +147,7 @@
         milliseconds: 300
     - action: esphome.konnected_56a4fa_play_rtttl
       data:
-        song_str: "disarm:d=8,o=5,b=200:e,c"
+        song_str: "disarm:d=32,o=4,b=100:e,p,e,p,e"
 
 # ============================================================
 # ARMED — confirmation tone
@@ -166,7 +166,7 @@
   action:
     - action: esphome.konnected_56a4fa_play_rtttl
       data:
-        song_str: "armed:d=8,o=5,b=200:c,e"
+        song_str: "armed:d=32,o=4,b=100:e,p,e"
 
 # ============================================================
 # DOOR CHIME — when disarmed
@@ -191,4 +191,4 @@
   action:
     - action: esphome.konnected_56a4fa_play_rtttl
       data:
-        song_str: "chime:d=8,o=6,b=160:e,g"
+        song_str: "chime:d=32,o=4,b=100:e,p,e"
