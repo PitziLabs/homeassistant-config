@@ -37,5 +37,15 @@ alarm_control_panel:
       arming_time: 10
       delay_time: 15
 
+# Dashboards — YAML-managed, git-tracked
+lovelace:
+  dashboards:
+    dashboard-home:
+      mode: yaml
+      filename: dashboards/home.yaml
+      title: Home
+      icon: mdi:home
+      show_in_sidebar: true
+
 # Prometheus
 prometheus:
