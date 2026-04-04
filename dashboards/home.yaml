@@ -306,3 +306,258 @@ views:
             name: Side Strip
           - entity: switch.rachio_drip_lines
             name: Drip Lines
+
+  # =================================================================
+  # KIOSK VIEW — 65" 1080p wall display, read-only at-a-glance
+  # URL: /dashboard-home/kiosk
+  # =================================================================
+  - title: Kiosk
+    path: kiosk
+    type: panel
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ---- TOP STRIP: Alarm state + sensor tiles ----
+          - type: horizontal-stack
+            cards:
+              - type: tile
+                entity: alarm_control_panel.home_alarm
+                name: Alarm
+              - type: tile
+                entity: binary_sensor.main_panel_front_door
+                name: Front
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_garage_door
+                name: Garage
+                icon: mdi:garage
+              - type: tile
+                entity: binary_sensor.main_panel_basement_door
+                name: Basement
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_sliding_door
+                name: Sliding
+                icon: mdi:door-sliding
+              - type: tile
+                entity: binary_sensor.main_panel_office_motion
+                name: Office
+                icon: mdi:motion-sensor
+              - type: tile
+                entity: binary_sensor.main_panel_family_room_motion
+                name: Family
+                icon: mdi:motion-sensor
+
+          # ---- MAIN CONTENT: 3 columns ----
+          - type: horizontal-stack
+            cards:
+
+              # ===== COLUMN 1: Kitchen + Play Room + Family Room =====
+              - type: vertical-stack
+                cards:
+                  - type: grid
+                    title: Kitchen
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
+                        entity: light.kitchen_main
+                        name: Main
+                      - type: tile
+                        entity: light.kitchen_island
+                        name: Island
+                      - type: tile
+                        entity: light.kitchen_table
+                        name: Table
+                      - type: tile
+                        entity: light.kitchen_sink
+                        name: Sink
+
+                  - type: grid
+                    title: Play Room
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
+                        entity: light.play_room
+                        name: Main
+                      - type: tile
+                        entity: light.play_room_1
+                        name: Light 1
+                      - type: tile
+                        entity: light.play_room_2
+                        name: Light 2
+                      - type: tile
+                        entity: light.play_room_3
+                        name: Light 3
+                      - type: tile
+                        entity: light.play_room_4
+                        name: Light 4
+
+                  - type: grid
+                    title: Family Room
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
+                        entity: light.family_room
+                        name: Main
+                      - type: tile
+                        entity: light.family_room_2
+                        name: Light 2
+                      - type: tile
+                        entity: switch.family_room_outlets
+                        name: Outlets
+                        icon: mdi:power-plug
+                      - type: tile
+                        entity: light.floor_lamp
+                        name: Floor Lamp
+
+              # ===== COLUMN 2: Office + Entry/Upstairs =====
+              - type: vertical-stack
+                cards:
+                  - type: grid
+                    title: Office
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
+                        entity: light.office
+                        name: Main
+                      - type: tile
+                        entity: light.office_lamp
+                        name: Lamp
+                      - type: tile
+                        entity: light.office_bookcase
+                        name: Bookcase
+                      - type: tile
+                        entity: light.office_corner
+                        name: Corner
+                      - type: tile
+                        entity: light.office_back_corner
+                        name: Back Corner
+                      - type: tile
+                        entity: light.office_door
+                        name: Door
+                      - type: tile
+                        entity: light.desk_lamp
+                        name: Desk Lamp
+                      - type: tile
+                        entity: light.desk_lamp_2
+                        name: Desk Lamp 2
+
+                  - type: grid
+                    title: Entry & Upstairs
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
+                        entity: light.entry_1
+                        name: Entry 1
+                      - type: tile
+                        entity: light.entry_2
+                        name: Entry 2
+                      - type: tile
+                        entity: light.upstairs_hallway_light
+                        name: Upstairs Hall
+
+              # ===== COLUMN 3: Outdoor + Switches + Sonos =====
+              - type: vertical-stack
+                cards:
+                  - type: grid
+                    title: Outdoor
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
+                        entity: light.garage_front
+                        name: Garage Front
+                        icon: mdi:garage
+                      - type: tile
+                        entity: light.garage_side
+                        name: Garage Side
+                        icon: mdi:garage
+                      - type: tile
+                        entity: light.shed
+                        name: Shed
+                        icon: mdi:shed
+                      - type: tile
+                        entity: switch.back_porch
+                        name: Back Porch
+                        icon: mdi:outdoor-lamp
+                      - type: tile
+                        entity: switch.garden
+                        name: Garden
+                        icon: mdi:flower
+
+                  - type: grid
+                    title: Switches
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
+                        entity: switch.play_room_outlet
+                        name: Play Room
+                        icon: mdi:power-plug
+                      - type: tile
+                        entity: switch.bonus_room
+                        name: Bonus Room
+                      - type: tile
+                        entity: switch.basement_1
+                        name: Basement
+
+                  # --- Sonos: conditional, only playing coordinators ---
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: binary_sensor.sonos_office_leader
+                        state: "on"
+                    card:
+                      type: media-control
+                      entity: media_player.office
+
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: binary_sensor.sonos_kitchen_leader
+                        state: "on"
+                    card:
+                      type: media-control
+                      entity: media_player.kitchen
+
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: binary_sensor.sonos_dining_room_leader
+                        state: "on"
+                    card:
+                      type: media-control
+                      entity: media_player.dining_room
+
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: binary_sensor.sonos_master_bedroom_leader
+                        state: "on"
+                    card:
+                      type: media-control
+                      entity: media_player.master_bedroom
+
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: binary_sensor.sonos_basement_leader
+                        state: "on"
+                    card:
+                      type: media-control
+                      entity: media_player.basement
+
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: binary_sensor.sonos_roam_leader
+                        state: "on"
+                    card:
+                      type: media-control
+                      entity: media_player.roam_2
