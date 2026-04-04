@@ -1,0 +1,158 @@
+# Konnected Alarm Panel — Main Panel
+# Board: ESP8266 (NodeMCU v2 compatible)
+# MAC: 2C:F4:32:56:AC:70
+# IP: 192.168.139.40
+#
+# Zone wiring:
+#   Zone 1 (GPIO5)  → Front door contact (NC)
+#   Zone 2 (GPIO4)  → Garage door contact (NC)
+#   Zone 3 (GPIO14) → Basement door contact (NC)
+#   Zone 4 (GPIO12) → Sliding door contact (NC)
+#   Zone 5 (GPIO13) → Office motion sensor
+#   Zone 6 (GPIO3)  → Family room motion sensor
+#   ALRM  (GPIO15)  → Bell/siren
+
+substitutions:
+  name: konnected-56ac70
+  friendly_name: Main Panel
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+
+esp8266:
+  board: nodemcuv2
+
+# --- Network ---
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  min_auth_mode: WPA2
+  # Fall back to captive portal if WiFi fails
+  ap:
+    ssid: "${friendly_name} Fallback"
+    password: !secret wifi_password
+
+captive_portal:
+
+# --- API and OTA ---
+
+api:
+  encryption:
+    key: !secret api_key_main_panel
+
+ota:
+  - platform: esphome
+
+# --- Logging ---
+# Suppress noisy components, keep useful debug output
+logger:
+  level: DEBUG
+  logs:
+    api: INFO
+    json: INFO
+    sensor: INFO
+
+# --- Web server for local diagnostics ---
+web_server:
+  port: 80
+
+# --- Status LED ---
+# Onboard LED blinks during WiFi connection, solid when connected
+status_led:
+  pin: GPIO2
+
+# --- Door sensors (normally closed contacts) ---
+# When the door is closed, the circuit is closed and the pin is pulled LOW.
+# When the door opens, the circuit breaks and the pull-up pulls the pin HIGH.
+
+binary_sensor:
+  - platform: gpio
+    id: front_door
+    name: Front Door
+    device_class: door
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+
+  - platform: gpio
+    id: garage_door
+    name: Garage Door
+    device_class: door
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+
+  - platform: gpio
+    id: basement_door
+    name: Basement Door
+    device_class: door
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+
+  - platform: gpio
+    id: sliding_door
+    name: Sliding Door
+    device_class: door
+    pin:
+      number: GPIO12
+      mode: INPUT_PULLUP
+
+  # --- Motion sensors ---
+
+  - platform: gpio
+    id: office_motion
+    name: Office Motion
+    device_class: motion
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+
+  - platform: gpio
+    id: family_room_motion
+    name: Family Room Motion
+    device_class: motion
+    pin:
+      number: GPIO3
+      mode: INPUT_PULLUP
+
+  # --- Connection status (exposes to HA) ---
+  - platform: status
+    name: Status
+
+# --- Siren output ---
+# The bell is on the ALRM terminal (GPIO15).
+# Exposed as a switch so HA automations can trigger it.
+# Restore mode ensures it's OFF on boot — siren should never
+# start ringing just because the board rebooted.
+
+switch:
+  - platform: gpio
+    id: siren
+    name: Siren
+    icon: "mdi:bullhorn"
+    pin: GPIO15
+    restore_mode: ALWAYS_OFF
+
+# --- Diagnostic sensors ---
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi Signal
+    update_interval: 60s
+
+  - platform: uptime
+    name: Uptime
+    update_interval: 60s
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+
+button:
+  - platform: restart
+    name: Restart

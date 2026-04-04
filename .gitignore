@@ -33,3 +33,5 @@ tts/
 
 # This script — not part of the HA config, just used for setup
 ha-git-init.sh
+esphome/.esphome/
+esphome/.esphome/
