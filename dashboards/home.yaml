@@ -39,8 +39,13 @@ views:
             name: Family Rm
 
       # ============================================================
-      # NOW PLAYING — Sonos (group-aware, only coordinators shown)
+      # NOW PLAYING — Sonos (group-aware)
+      # Playing speakers: full media-control card (coordinator only)
+      # Paused speakers: compact resume button (coordinator only)
+      # Idle/unavailable: hidden
       # ============================================================
+
+      # --- Playing: full media controls ---
 
       - type: conditional
         conditions:
@@ -95,6 +100,111 @@ views:
         card:
           type: media-control
           entity: media_player.roam_2
+
+      # --- Paused: compact resume buttons ---
+      # Tap to resume playback. Button disappears, full card appears.
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.sonos_office_paused
+            state: "on"
+        card:
+          type: button
+          entity: media_player.office
+          name: Office (Paused)
+          icon: mdi:play-circle-outline
+          show_state: false
+          tap_action:
+            action: call-service
+            service: media_player.media_play
+            target:
+              entity_id: media_player.office
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.sonos_kitchen_paused
+            state: "on"
+        card:
+          type: button
+          entity: media_player.kitchen
+          name: Kitchen (Paused)
+          icon: mdi:play-circle-outline
+          show_state: false
+          tap_action:
+            action: call-service
+            service: media_player.media_play
+            target:
+              entity_id: media_player.kitchen
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.sonos_dining_room_paused
+            state: "on"
+        card:
+          type: button
+          entity: media_player.dining_room
+          name: Dining Room (Paused)
+          icon: mdi:play-circle-outline
+          show_state: false
+          tap_action:
+            action: call-service
+            service: media_player.media_play
+            target:
+              entity_id: media_player.dining_room
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.sonos_master_bedroom_paused
+            state: "on"
+        card:
+          type: button
+          entity: media_player.master_bedroom
+          name: Master Bedroom (Paused)
+          icon: mdi:play-circle-outline
+          show_state: false
+          tap_action:
+            action: call-service
+            service: media_player.media_play
+            target:
+              entity_id: media_player.master_bedroom
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.sonos_basement_paused
+            state: "on"
+        card:
+          type: button
+          entity: media_player.basement
+          name: Basement (Paused)
+          icon: mdi:play-circle-outline
+          show_state: false
+          tap_action:
+            action: call-service
+            service: media_player.media_play
+            target:
+              entity_id: media_player.basement
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.sonos_roam_paused
+            state: "on"
+        card:
+          type: button
+          entity: media_player.roam_2
+          name: Roam (Paused)
+          icon: mdi:play-circle-outline
+          show_state: false
+          tap_action:
+            action: call-service
+            service: media_player.media_play
+            target:
+              entity_id: media_player.roam_2
 
       # ============================================================
       # LIGHTS — grouped by room
