@@ -17,19 +17,24 @@ scene: !include scenes.yaml
 # Cloud config
 cloud:
 
-# Alarm panel
+# Alarm panel — manual platform, all logic driven by automations
+# States: disarmed → arming (exit delay) → armed_away/armed_home
+#         armed → pending (entry delay) → triggered → (auto-disarm after trigger_time)
 alarm_control_panel:
   - platform: manual
     name: Home Alarm
     # code: !secret alarm_code
+    # Exit delay — time to leave after arming
     arming_time: 30
-    delay_time: 20
-    trigger_time: 4
+    # Entry delay — time to disarm after a sensor trips
+    delay_time: 30
+    # How long the siren sounds before auto-resetting (4 minutes)
+    trigger_time: 240
     disarmed:
       trigger_time: 0
     armed_home:
-      arming_time: 5
-      delay_time: 5
+      arming_time: 10
+      delay_time: 15
 
 # Prometheus
 prometheus:
