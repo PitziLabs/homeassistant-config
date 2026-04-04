@@ -23,6 +23,7 @@ cloud:
 alarm_control_panel:
   - platform: manual
     name: Home Alarm
+    code_arm_required: false
     # code: !secret alarm_code
     # Exit delay — time to leave after arming
     arming_time: 30
