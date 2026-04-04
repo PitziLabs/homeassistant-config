@@ -1,19 +1,31 @@
-# Example .gitignore file for your config dir.
-# An * ensures that everything will be ignored.
-*
-# You can whitelist files/folders with !, these will not be ignored.
-!*.yaml
-!.gitignore
-!*.md
+# Database — large binary, changes constantly
+home-assistant_v2.db
+home-assistant_v2.db-wal
+home-assistant_v2.db-shm
 
-# Ignore folders.
-.storage
-.cloud
-.google.token
-.vscode
-config_BAK
-
-# Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
-ip_bans.yaml
+# Secrets — API keys, passwords, tokens
 secrets.yaml
-known_devices.yaml
+
+# Internal HA state — auth, device/entity registries, UI-managed config
+.storage/
+
+# Nabu Casa cloud credentials
+.cloud/
+
+# Python dependency cache
+deps/
+
+# Runtime artifacts
+.cache/
+.ha_run.lock
+*.log
+*.log.*
+
+# Text-to-speech cache
+tts/
+
+# OS and editor artifacts
+.DS_Store
+*.swp
+*.swo
+*~
