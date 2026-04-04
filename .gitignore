@@ -1,0 +1,35 @@
+# Home Assistant database — large binary, changes on every state update
+home-assistant_v2.db
+home-assistant_v2.db-wal
+home-assistant_v2.db-shm
+
+# Secrets — API keys, passwords, tokens
+# Use secrets.yaml.example as documentation for required keys
+secrets.yaml
+
+# Internal HA state — auth tokens, device/entity registries, UI-managed config
+.storage/
+
+# Nabu Casa cloud credentials
+.cloud/
+
+# Python dependency cache — auto-managed by HA
+deps/
+
+# Runtime artifacts
+.cache/
+.ha_run.lock
+*.log
+*.log.*
+
+# Text-to-speech cache
+tts/
+
+# OS and editor artifacts
+.DS_Store
+*.swp
+*.swo
+*~
+
+# This script — not part of the HA config, just used for setup
+ha-git-init.sh

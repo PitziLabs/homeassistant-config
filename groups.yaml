@@ -1,0 +1,13 @@
+motion:
+  name: Motion Sensors
+  entities:
+    - binary_sensor.family_room_motion
+    - binary_sensor.office_motion
+doors:
+  name: doors
+  entities:
+    - binary_sensor.front_door
+    - binary_sensor.basement_door
+    - binary_sensor.garage_door
+    - binary_sensor.sliding_door
+    - binary_sensor.ecolink_open_closed_side_door_contact

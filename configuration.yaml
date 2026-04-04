@@ -1,0 +1,35 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+# Includes
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Cloud config
+cloud:
+
+# Alarm panel
+alarm_control_panel:
+  - platform: manual
+    name: Home Alarm
+    # code: !secret alarm_code
+    arming_time: 30
+    delay_time: 20
+    trigger_time: 4
+    disarmed:
+      trigger_time: 0
+    armed_home:
+      arming_time: 5
+      delay_time: 5
+
+# Prometheus
+prometheus:
