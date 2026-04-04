@@ -25,13 +25,10 @@ cloud:
 alarm_control_panel:
   - platform: manual
     name: Home Alarm
+    code: !secret alarm_code
     code_arm_required: false
-    # code: !secret alarm_code
-    # Exit delay — time to leave after arming
     arming_time: 30
-    # Entry delay — time to disarm after a sensor trips
     delay_time: 30
-    # How long the siren sounds before auto-resetting (4 minutes)
     trigger_time: 240
     disarmed:
       trigger_time: 0
