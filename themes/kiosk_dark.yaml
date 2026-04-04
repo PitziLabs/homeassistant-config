@@ -1,43 +1,23 @@
 kiosk_dark:
-  # Base
-  modes:
-    dark:
-      # Primary colors
-      primary-color: "#4fc3f7"
-      accent-color: "#4fc3f7"
-
-      # Background
-      primary-background-color: "#0d1117"
-      secondary-background-color: "#161b22"
-      card-background-color: "#1c2128"
-
-      # Text
-      primary-text-color: "#e6edf3"
-      secondary-text-color: "#8b949e"
-
-      # Header
-      app-header-background-color: "#0d1117"
-      app-header-text-color: "#e6edf3"
-
-      # Cards
-      ha-card-background: "#1c2128"
-      ha-card-border-color: "#30363d"
-      ha-card-border-width: "1px"
-      ha-card-border-radius: "8px"
-      ha-card-box-shadow: "none"
-
-      # States
-      state-icon-active-color: "#f0b429"
-      state-icon-color: "#8b949e"
-
-      # Tile card specific
-      state-light-active-color: "#f0b429"
-      state-binary_sensor-active-color: "#f85149"
-      state-switch-active-color: "#4fc3f7"
-
-      # Dividers
-      divider-color: "#30363d"
-
-      # Sidebar (hidden in kiosk, but just in case)
-      sidebar-background-color: "#0d1117"
-      sidebar-text-color: "#e6edf3"
+  primary-color: "#4fc3f7"
+  accent-color: "#4fc3f7"
+  primary-background-color: "#0d1117"
+  secondary-background-color: "#161b22"
+  card-background-color: "#1c2128"
+  primary-text-color: "#e6edf3"
+  secondary-text-color: "#8b949e"
+  app-header-background-color: "#0d1117"
+  app-header-text-color: "#e6edf3"
+  ha-card-background: "#1c2128"
+  ha-card-border-color: "#30363d"
+  ha-card-border-width: "1px"
+  ha-card-border-radius: "8px"
+  ha-card-box-shadow: "none"
+  state-icon-active-color: "#f0b429"
+  state-icon-color: "#8b949e"
+  state-light-active-color: "#f0b429"
+  state-binary_sensor-active-color: "#f85149"
+  state-switch-active-color: "#4fc3f7"
+  divider-color: "#30363d"
+  sidebar-background-color: "#0d1117"
+  sidebar-text-color: "#e6edf3"
