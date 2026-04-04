@@ -2,6 +2,15 @@
 # Tile-based layout optimized for mobile and wall tablet kiosk.
 # Lights show persistent on/off color. Sensors show security state.
 
+kiosk_mode:
+  non_admin_settings:
+    hide_header: true
+    hide_sidebar: true
+  user_settings:
+    - users:
+        - "Kiosk"
+      kiosk: true
+
 views:
   - title: Home
     path: home
@@ -308,52 +317,61 @@ views:
             name: Drip Lines
 
   # =================================================================
-  # KIOSK VIEW — 65" 1080p wall display, read-only at-a-glance
+  # KIOSK VIEW — 65" 1080p wall display
+  # Dark theme, no sidebar, no header, full-screen panel layout
   # URL: /dashboard-home/kiosk
   # =================================================================
   - title: Kiosk
     path: kiosk
+    theme: kiosk_dark
     type: panel
     cards:
       - type: vertical-stack
         cards:
 
-          # ---- TOP STRIP: Alarm state + sensor tiles ----
+          # ---- ROW 1: Alarm + Security Sensors ----
           - type: horizontal-stack
             cards:
               - type: tile
                 entity: alarm_control_panel.home_alarm
                 name: Alarm
+                vertical: true
               - type: tile
                 entity: binary_sensor.main_panel_front_door
                 name: Front
                 icon: mdi:door
+                vertical: true
               - type: tile
                 entity: binary_sensor.main_panel_garage_door
                 name: Garage
                 icon: mdi:garage
+                vertical: true
               - type: tile
                 entity: binary_sensor.main_panel_basement_door
                 name: Basement
                 icon: mdi:door
+                vertical: true
               - type: tile
                 entity: binary_sensor.main_panel_sliding_door
                 name: Sliding
                 icon: mdi:door-sliding
+                vertical: true
               - type: tile
                 entity: binary_sensor.main_panel_office_motion
                 name: Office
                 icon: mdi:motion-sensor
+                vertical: true
               - type: tile
                 entity: binary_sensor.main_panel_family_room_motion
                 name: Family
                 icon: mdi:motion-sensor
+                vertical: true
 
-          # ---- MAIN CONTENT: 3 columns ----
+          # ---- ROW 2+: Three-column layout ----
           - type: horizontal-stack
             cards:
 
-              # ===== COLUMN 1: Kitchen + Play Room + Family Room =====
+              # ===== COLUMN 1 =====
               - type: vertical-stack
                 cards:
                   - type: grid
@@ -414,7 +432,7 @@ views:
                         entity: light.floor_lamp
                         name: Floor Lamp
 
-              # ===== COLUMN 2: Office + Entry/Upstairs =====
+              # ===== COLUMN 2 =====
               - type: vertical-stack
                 cards:
                   - type: grid
@@ -462,7 +480,7 @@ views:
                         entity: light.upstairs_hallway_light
                         name: Upstairs Hall
 
-              # ===== COLUMN 3: Outdoor + Switches + Sonos =====
+              # ===== COLUMN 3 =====
               - type: vertical-stack
                 cards:
                   - type: grid
@@ -507,7 +525,7 @@ views:
                         entity: switch.basement_1
                         name: Basement
 
-                  # --- Sonos: conditional, only playing coordinators ---
+                  # Sonos: conditional, playing coordinators only
                   - type: conditional
                     conditions:
                       - condition: state
