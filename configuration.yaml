@@ -96,3 +96,25 @@ template:
              and state_attr('media_player.roam_2', 'group_members') is not none
              and state_attr('media_player.roam_2', 'group_members')[0] == 'media_player.roam_2' }}
 
+      # --- Lights activity ---
+      - name: "Any Light On"
+        unique_id: any_light_on
+        icon: mdi:lightbulb-group
+        state: >
+          {{ states.light
+             | selectattr('state', 'eq', 'on')
+             | rejectattr('entity_id', 'search', 'alarm_panel')
+             | list | count > 0 }}
+
+      # --- Switches activity ---
+      - name: "Any Switch On"
+        unique_id: any_switch_on
+        icon: mdi:power-plug
+        state: >
+          {{ is_state('switch.back_porch', 'on')
+             or is_state('switch.garden', 'on')
+             or is_state('switch.family_room_outlets', 'on')
+             or is_state('switch.play_room_outlet', 'on')
+             or is_state('switch.bonus_room', 'on')
+             or is_state('switch.basement_1', 'on') }}
+

@@ -114,7 +114,18 @@ views:
           type: media-control
           entity: media_player.roam_2
 
-      # --- Lights: show only when ON ---
+      # --- Lights section ---
+      - type: markdown
+        content: "## Lights"
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.any_light_on
+            state: "off"
+        card:
+          type: markdown
+          content: "All lights off"
 
       # Kitchen
       - type: conditional
@@ -417,7 +428,19 @@ views:
           name: Shed
           icon: mdi:shed
 
-      # Switches — show only when ON
+      # --- Switches section ---
+      - type: markdown
+        content: "## Switches"
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.any_switch_on
+            state: "off"
+        card:
+          type: markdown
+          content: "All switches off"
+
       - type: conditional
         conditions:
           - condition: state
@@ -590,7 +613,18 @@ views:
           type: media-control
           entity: media_player.roam_2
 
-      # --- Lights: show only when ON ---
+      # --- Lights section ---
+      - type: markdown
+        content: "## Lights"
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.any_light_on
+            state: "off"
+        card:
+          type: markdown
+          content: "All lights off"
 
       - type: conditional
         conditions:
@@ -886,6 +920,19 @@ views:
           entity: light.shed
           name: Shed
           icon: mdi:shed
+
+      # --- Switches section ---
+      - type: markdown
+        content: "## Switches"
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.any_switch_on
+            state: "off"
+        card:
+          type: markdown
+          content: "All switches off"
 
       - type: conditional
         conditions:
