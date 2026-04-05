@@ -539,7 +539,7 @@ views:
 
   # =================================================================
   # KIOSK VIEW — 65" 1080p wall display, dark theme
-  # Panel mode, three explicit columns
+  # Panel mode, three explicit columns, always-visible light tiles
   # URL: /dashboard-home/kiosk
   # =================================================================
   - title: Kiosk
@@ -550,7 +550,7 @@ views:
     cards:
       - type: vertical-stack
         cards:
-          # ---- ROW 1: Alarm + sensors ----
+          # ---- ROW 1: Alarm + Weather ----
           - type: horizontal-stack
             cards:
               - type: vertical-stack
@@ -598,424 +598,179 @@ views:
           - type: horizontal-stack
             cards:
 
-              # ===== COLUMN 1 =====
+              # ===== COLUMN 1: Kitchen, Play Room, Family Room =====
               - type: vertical-stack
                 cards:
-                  # Kitchen
                   - type: markdown
                     content: "### Kitchen"
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.kitchen_lights_on
-                        state: "off"
-                    card:
-                      type: markdown
-                      content: "All off"
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                  - type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
                         entity: light.kitchen_main
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.kitchen_main
-                      name: Main
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Main
+                      - type: tile
                         entity: light.kitchen_island
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.kitchen_island
-                      name: Island
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Island
+                      - type: tile
                         entity: light.kitchen_table
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.kitchen_table
-                      name: Table
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Table
+                      - type: tile
                         entity: light.kitchen_sink
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.kitchen_sink
-                      name: Sink
+                        name: Sink
 
-                  # Play Room
                   - type: markdown
                     content: "### Play Room"
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.play_room_lights_on
-                        state: "off"
-                    card:
-                      type: markdown
-                      content: "All off"
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                  - type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
                         entity: light.play_room
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.play_room
-                      name: Main
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Main
+                      - type: tile
                         entity: light.play_room_1
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.play_room_1
-                      name: Light 1
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Light 1
+                      - type: tile
                         entity: light.play_room_2
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.play_room_2
-                      name: Light 2
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Light 2
+                      - type: tile
                         entity: light.play_room_3
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.play_room_3
-                      name: Light 3
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Light 3
+                      - type: tile
                         entity: light.play_room_4
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.play_room_4
-                      name: Light 4
+                        name: Light 4
 
-                  # Family Room
                   - type: markdown
                     content: "### Family Room"
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.family_room_lights_on
-                        state: "off"
-                    card:
-                      type: markdown
-                      content: "All off"
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                  - type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
                         entity: light.family_room
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.family_room
-                      name: Main
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Main
+                      - type: tile
                         entity: light.family_room_2
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.family_room_2
-                      name: Light 2
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: switch.family_room_outlets
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: switch.family_room_outlets
-                      name: Outlets
-                      icon: mdi:power-plug
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Light 2
+                      - type: tile
                         entity: light.floor_lamp
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.floor_lamp
-                      name: Floor Lamp
+                        name: Floor Lamp
+                      - type: tile
+                        entity: switch.family_room_outlets
+                        name: Outlets
+                        icon: mdi:power-plug
 
-              # ===== COLUMN 2 =====
+              # ===== COLUMN 2: Office, Entry & Upstairs, Switches =====
               - type: vertical-stack
                 cards:
-                  # Office
                   - type: markdown
                     content: "### Office"
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.office_lights_on
-                        state: "off"
-                    card:
-                      type: markdown
-                      content: "All off"
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                  - type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
                         entity: light.office
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.office
-                      name: Main
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Main
+                      - type: tile
                         entity: light.office_lamp
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.office_lamp
-                      name: Lamp
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Lamp
+                      - type: tile
                         entity: light.office_bookcase
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.office_bookcase
-                      name: Bookcase
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Bookcase
+                      - type: tile
                         entity: light.office_corner
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.office_corner
-                      name: Corner
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Corner
+                      - type: tile
                         entity: light.office_back_corner
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.office_back_corner
-                      name: Back Corner
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Back Corner
+                      - type: tile
                         entity: light.office_door
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.office_door
-                      name: Door
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Door
+                      - type: tile
                         entity: light.desk_lamp
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.desk_lamp
-                      name: Desk Lamp
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Desk Lamp
+                      - type: tile
                         entity: light.desk_lamp_2
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.desk_lamp_2
-                      name: Desk Lamp 2
+                        name: Desk Lamp 2
 
-                  # Entry & Upstairs
                   - type: markdown
                     content: "### Entry & Upstairs"
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.entry_lights_on
-                        state: "off"
-                    card:
-                      type: markdown
-                      content: "All off"
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                  - type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
                         entity: light.entry_1
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.entry_1
-                      name: Entry 1
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Entry 1
+                      - type: tile
                         entity: light.entry_2
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.entry_2
-                      name: Entry 2
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Entry 2
+                      - type: tile
                         entity: light.downstairs_hallway
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.downstairs_hallway
-                      name: Downstairs Hall
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Downstairs Hall
+                      - type: tile
                         entity: light.upstairs_hallway_light
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.upstairs_hallway_light
-                      name: Upstairs Hall
+                        name: Upstairs Hall
 
-                  # Switches
                   - type: markdown
                     content: "### Switches"
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.any_switch_on
-                        state: "off"
-                    card:
-                      type: markdown
-                      content: "All off"
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                  - type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
                         entity: switch.play_room_outlet
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: switch.play_room_outlet
-                      name: Play Room Outlet
-                      icon: mdi:power-plug
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Play Room Outlet
+                        icon: mdi:power-plug
+                      - type: tile
                         entity: switch.bonus_room
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: switch.bonus_room
-                      name: Bonus Room
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Bonus Room
+                      - type: tile
                         entity: switch.basement_1
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: switch.basement_1
-                      name: Basement
+                        name: Basement
 
-              # ===== COLUMN 3 =====
+              # ===== COLUMN 3: Outdoor, Sonos =====
               - type: vertical-stack
                 cards:
-                  # Outdoor
                   - type: markdown
                     content: "### Outdoor"
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.outdoor_lights_on
-                        state: "off"
-                    card:
-                      type: markdown
-                      content: "All off"
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                  - type: grid
+                    columns: 2
+                    square: false
+                    cards:
+                      - type: tile
                         entity: light.front_door
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.front_door
-                      name: Front Door
-                      icon: mdi:coach-lamp
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Front Door
+                        icon: mdi:coach-lamp
+                      - type: tile
                         entity: light.front_lantern
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.front_lantern
-                      name: Front Lantern
-                      icon: mdi:lamp-outline
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Front Lantern
+                        icon: mdi:lamp-outline
+                      - type: tile
                         entity: light.garage_front
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.garage_front
-                      name: Garage Front
-                      icon: mdi:garage
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Garage Front
+                        icon: mdi:garage
+                      - type: tile
                         entity: light.garage_side
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.garage_side
-                      name: Garage Side
-                      icon: mdi:garage
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Garage Side
+                        icon: mdi:garage
+                      - type: tile
                         entity: light.shed
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: light.shed
-                      name: Shed
-                      icon: mdi:shed
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Shed
+                        icon: mdi:shed
+                      - type: tile
                         entity: switch.back_porch
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: switch.back_porch
-                      name: Back Porch
-                      icon: mdi:outdoor-lamp
-                  - type: conditional
-                    conditions:
-                      - condition: state
+                        name: Back Porch
+                        icon: mdi:outdoor-lamp
+                      - type: tile
                         entity: switch.garden
-                        state: "on"
-                    card:
-                      type: tile
-                      entity: switch.garden
-                      name: Garden
-                      icon: mdi:flower
+                        name: Garden
+                        icon: mdi:flower
 
-                  # Sonos (bottom of Column 3)
+                  # Sonos (conditional, bottom of Column 3)
                   - type: conditional
                     conditions:
                       - condition: state
