@@ -550,48 +550,41 @@ views:
     cards:
       - type: vertical-stack
         cards:
-          # ---- ROW 1: Alarm + Weather ----
-          - type: horizontal-stack
+          # ---- ROW 1: Alarm + sensors ----
+          - type: alarm-panel
+            entity: alarm_control_panel.home_alarm
+            name: Home Alarm
+            states:
+              - arm_away
+              - arm_home
+          - type: grid
+            columns: 3
+            square: false
             cards:
-              - type: vertical-stack
-                cards:
-                  - type: alarm-panel
-                    entity: alarm_control_panel.home_alarm
-                    name: Home Alarm
-                    states:
-                      - arm_away
-                      - arm_home
-                  - type: grid
-                    columns: 3
-                    square: false
-                    cards:
-                      - type: tile
-                        entity: binary_sensor.main_panel_front_door
-                        name: Front
-                        icon: mdi:door
-                      - type: tile
-                        entity: binary_sensor.main_panel_garage_door
-                        name: Garage
-                        icon: mdi:garage
-                      - type: tile
-                        entity: binary_sensor.main_panel_basement_door
-                        name: Basement
-                        icon: mdi:door
-                      - type: tile
-                        entity: binary_sensor.main_panel_sliding_door
-                        name: Sliding
-                        icon: mdi:door-sliding
-                      - type: tile
-                        entity: binary_sensor.main_panel_office_motion
-                        name: Office
-                        icon: mdi:motion-sensor
-                      - type: tile
-                        entity: binary_sensor.main_panel_family_room_motion
-                        name: Family Rm
-                        icon: mdi:motion-sensor
               - type: tile
-                entity: weather.forecast_home
-                name: Weather
+                entity: binary_sensor.main_panel_front_door
+                name: Front
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_garage_door
+                name: Garage
+                icon: mdi:garage
+              - type: tile
+                entity: binary_sensor.main_panel_basement_door
+                name: Basement
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_sliding_door
+                name: Sliding
+                icon: mdi:door-sliding
+              - type: tile
+                entity: binary_sensor.main_panel_office_motion
+                name: Office
+                icon: mdi:motion-sensor
+              - type: tile
+                entity: binary_sensor.main_panel_family_room_motion
+                name: Family Rm
+                icon: mdi:motion-sensor
 
           # ---- ROW 2: Three-column room layout ----
           - type: horizontal-stack
@@ -767,9 +760,12 @@ views:
                         entity: switch.basement_1
                         name: Basement
 
-              # ===== COLUMN 3: Outdoor, Sonos =====
+              # ===== COLUMN 3: Weather, Outdoor, Sonos =====
               - type: vertical-stack
                 cards:
+                  - type: tile
+                    entity: weather.forecast_home
+                    name: Weather
                   - type: grid
                     title: Outdoor
                     columns: 2
