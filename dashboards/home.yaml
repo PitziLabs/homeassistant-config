@@ -591,8 +591,7 @@ views:
                         icon: mdi:motion-sensor
               - type: weather-forecast
                 entity: weather.forecast_home
-                show_forecast: true
-                forecast_type: daily
+                show_forecast: false
 
           # ---- ROW 2: Three-column room layout ----
           - type: horizontal-stack
@@ -601,9 +600,8 @@ views:
               # ===== COLUMN 1: Kitchen, Play Room, Family Room =====
               - type: vertical-stack
                 cards:
-                  - type: markdown
-                    content: "### Kitchen"
                   - type: grid
+                    title: Kitchen
                     columns: 2
                     square: false
                     cards:
@@ -620,9 +618,8 @@ views:
                         entity: light.kitchen_sink
                         name: Sink
 
-                  - type: markdown
-                    content: "### Play Room"
                   - type: grid
+                    title: Play Room
                     columns: 2
                     square: false
                     cards:
@@ -642,9 +639,8 @@ views:
                         entity: light.play_room_4
                         name: Light 4
 
-                  - type: markdown
-                    content: "### Family Room"
                   - type: grid
+                    title: Family Room
                     columns: 2
                     square: false
                     cards:
@@ -665,9 +661,8 @@ views:
               # ===== COLUMN 2: Office, Entry & Upstairs, Switches =====
               - type: vertical-stack
                 cards:
-                  - type: markdown
-                    content: "### Office"
                   - type: grid
+                    title: Office
                     columns: 2
                     square: false
                     cards:
@@ -696,9 +691,8 @@ views:
                         entity: light.desk_lamp_2
                         name: Desk Lamp 2
 
-                  - type: markdown
-                    content: "### Entry & Upstairs"
                   - type: grid
+                    title: Entry & Upstairs
                     columns: 2
                     square: false
                     cards:
@@ -715,9 +709,8 @@ views:
                         entity: light.upstairs_hallway_light
                         name: Upstairs Hall
 
-                  - type: markdown
-                    content: "### Switches"
                   - type: grid
+                    title: Switches
                     columns: 2
                     square: false
                     cards:
@@ -735,9 +728,8 @@ views:
               # ===== COLUMN 3: Outdoor, Sonos =====
               - type: vertical-stack
                 cards:
-                  - type: markdown
-                    content: "### Outdoor"
                   - type: grid
+                    title: Outdoor
                     columns: 2
                     square: false
                     cards:
