@@ -96,25 +96,67 @@ template:
              and state_attr('media_player.roam_2', 'group_members') is not none
              and state_attr('media_player.roam_2', 'group_members')[0] == 'media_player.roam_2' }}
 
-      # --- Lights activity ---
-      - name: "Any Light On"
-        unique_id: any_light_on
-        icon: mdi:lightbulb-group
+      # --- Per-room light activity ---
+      - name: "Kitchen Lights On"
+        unique_id: kitchen_lights_on
         state: >
-          {{ states.light
-             | selectattr('state', 'eq', 'on')
-             | rejectattr('entity_id', 'search', 'alarm_panel')
-             | list | count > 0 }}
+          {{ is_state('light.kitchen_main', 'on')
+             or is_state('light.kitchen_island', 'on')
+             or is_state('light.kitchen_table', 'on')
+             or is_state('light.kitchen_sink', 'on') }}
 
-      # --- Switches activity ---
+      - name: "Office Lights On"
+        unique_id: office_lights_on
+        state: >
+          {{ is_state('light.office', 'on')
+             or is_state('light.office_lamp', 'on')
+             or is_state('light.office_bookcase', 'on')
+             or is_state('light.office_corner', 'on')
+             or is_state('light.office_back_corner', 'on')
+             or is_state('light.office_door', 'on')
+             or is_state('light.desk_lamp', 'on')
+             or is_state('light.desk_lamp_2', 'on') }}
+
+      - name: "Play Room Lights On"
+        unique_id: play_room_lights_on
+        state: >
+          {{ is_state('light.play_room', 'on')
+             or is_state('light.play_room_1', 'on')
+             or is_state('light.play_room_2', 'on')
+             or is_state('light.play_room_3', 'on')
+             or is_state('light.play_room_4', 'on') }}
+
+      - name: "Family Room Lights On"
+        unique_id: family_room_lights_on
+        state: >
+          {{ is_state('light.family_room', 'on')
+             or is_state('light.family_room_2', 'on')
+             or is_state('light.floor_lamp', 'on')
+             or is_state('switch.family_room_outlets', 'on') }}
+
+      - name: "Entry Lights On"
+        unique_id: entry_lights_on
+        state: >
+          {{ is_state('light.entry_1', 'on')
+             or is_state('light.entry_2', 'on')
+             or is_state('light.downstairs_hallway', 'on')
+             or is_state('light.upstairs_hallway_light', 'on') }}
+
+      - name: "Outdoor Lights On"
+        unique_id: outdoor_lights_on
+        state: >
+          {{ is_state('light.front_door', 'on')
+             or is_state('light.front_lantern', 'on')
+             or is_state('light.garage_front', 'on')
+             or is_state('light.garage_side', 'on')
+             or is_state('light.shed', 'on')
+             or is_state('switch.back_porch', 'on')
+             or is_state('switch.garden', 'on') }}
+
       - name: "Any Switch On"
         unique_id: any_switch_on
-        icon: mdi:power-plug
         state: >
-          {{ is_state('switch.back_porch', 'on')
-             or is_state('switch.garden', 'on')
-             or is_state('switch.family_room_outlets', 'on')
-             or is_state('switch.play_room_outlet', 'on')
+          {{ is_state('switch.play_room_outlet', 'on')
              or is_state('switch.bonus_room', 'on')
              or is_state('switch.basement_1', 'on') }}
 
