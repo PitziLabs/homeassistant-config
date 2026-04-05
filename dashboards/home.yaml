@@ -589,9 +589,9 @@ views:
                         entity: binary_sensor.main_panel_family_room_motion
                         name: Family Rm
                         icon: mdi:motion-sensor
-              - type: weather-forecast
+              - type: tile
                 entity: weather.forecast_home
-                show_forecast: false
+                name: Weather
 
           # ---- ROW 2: Three-column room layout ----
           - type: horizontal-stack
