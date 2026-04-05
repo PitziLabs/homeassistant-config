@@ -604,6 +604,13 @@ views:
                     title: Kitchen
                     columns: 2
                     square: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border: 2px solid #484f58 !important;
+                          border-radius: 12px !important;
+                          padding: 8px !important;
+                        }
                     cards:
                       - type: tile
                         entity: light.kitchen_main
@@ -622,6 +629,13 @@ views:
                     title: Play Room
                     columns: 2
                     square: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border: 2px solid #484f58 !important;
+                          border-radius: 12px !important;
+                          padding: 8px !important;
+                        }
                     cards:
                       - type: tile
                         entity: light.play_room
@@ -643,6 +657,13 @@ views:
                     title: Family Room
                     columns: 2
                     square: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border: 2px solid #484f58 !important;
+                          border-radius: 12px !important;
+                          padding: 8px !important;
+                        }
                     cards:
                       - type: tile
                         entity: light.family_room
@@ -665,6 +686,13 @@ views:
                     title: Office
                     columns: 2
                     square: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border: 2px solid #484f58 !important;
+                          border-radius: 12px !important;
+                          padding: 8px !important;
+                        }
                     cards:
                       - type: tile
                         entity: light.office
@@ -695,6 +723,13 @@ views:
                     title: Entry & Upstairs
                     columns: 2
                     square: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border: 2px solid #484f58 !important;
+                          border-radius: 12px !important;
+                          padding: 8px !important;
+                        }
                     cards:
                       - type: tile
                         entity: light.entry_1
@@ -713,6 +748,13 @@ views:
                     title: Switches
                     columns: 2
                     square: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border: 2px solid #484f58 !important;
+                          border-radius: 12px !important;
+                          padding: 8px !important;
+                        }
                     cards:
                       - type: tile
                         entity: switch.play_room_outlet
@@ -732,6 +774,13 @@ views:
                     title: Outdoor
                     columns: 2
                     square: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border: 2px solid #484f58 !important;
+                          border-radius: 12px !important;
+                          padding: 8px !important;
+                        }
                     cards:
                       - type: tile
                         entity: light.front_door
