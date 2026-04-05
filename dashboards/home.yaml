@@ -15,87 +15,49 @@ views:
     path: home
     icon: mdi:home
     cards:
-      # Alarm panel — always visible, keypad for disarm
-      - type: alarm-panel
-        entity: alarm_control_panel.home_alarm
-        name: Home Alarm
-        states:
-          - arm_away
-          - arm_home
+      # --- Alarm panel with integrated sensors ---
+      - type: vertical-stack
+        cards:
+          - type: alarm-panel
+            entity: alarm_control_panel.home_alarm
+            name: Home Alarm
+            states:
+              - arm_away
+              - arm_home
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: tile
+                entity: binary_sensor.main_panel_front_door
+                name: Front
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_garage_door
+                name: Garage
+                icon: mdi:garage
+              - type: tile
+                entity: binary_sensor.main_panel_basement_door
+                name: Basement
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_sliding_door
+                name: Sliding
+                icon: mdi:door-sliding
+              - type: tile
+                entity: binary_sensor.main_panel_office_motion
+                name: Office
+                icon: mdi:motion-sensor
+              - type: tile
+                entity: binary_sensor.main_panel_family_room_motion
+                name: Family Rm
+                icon: mdi:motion-sensor
 
       # Weather — always visible
       - type: weather-forecast
         entity: weather.forecast_home
         show_forecast: true
         forecast_type: daily
-
-      # --- Door sensors: show only when OPEN ---
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_front_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_front_door
-          name: Front Door OPEN
-          icon: mdi:door-open
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_garage_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_garage_door
-          name: Garage Door OPEN
-          icon: mdi:garage-open
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_basement_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_basement_door
-          name: Basement OPEN
-          icon: mdi:door-open
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_sliding_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_sliding_door
-          name: Sliding Door OPEN
-          icon: mdi:door-sliding-open
-
-      # --- Motion sensors: show only when DETECTED ---
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_office_motion
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_office_motion
-          name: Office Motion
-          icon: mdi:motion-sensor
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_family_room_motion
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_family_room_motion
-          name: Family Room Motion
-          icon: mdi:motion-sensor
 
       # --- Sonos: show only when PLAYING (group coordinator only) ---
       - type: conditional
@@ -529,87 +491,49 @@ views:
     theme: kiosk_dark
     icon: mdi:monitor
     cards:
-      # Alarm panel — always visible, full keypad
-      - type: alarm-panel
-        entity: alarm_control_panel.home_alarm
-        name: Home Alarm
-        states:
-          - arm_away
-          - arm_home
+      # --- Alarm panel with integrated sensors ---
+      - type: vertical-stack
+        cards:
+          - type: alarm-panel
+            entity: alarm_control_panel.home_alarm
+            name: Home Alarm
+            states:
+              - arm_away
+              - arm_home
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: tile
+                entity: binary_sensor.main_panel_front_door
+                name: Front
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_garage_door
+                name: Garage
+                icon: mdi:garage
+              - type: tile
+                entity: binary_sensor.main_panel_basement_door
+                name: Basement
+                icon: mdi:door
+              - type: tile
+                entity: binary_sensor.main_panel_sliding_door
+                name: Sliding
+                icon: mdi:door-sliding
+              - type: tile
+                entity: binary_sensor.main_panel_office_motion
+                name: Office
+                icon: mdi:motion-sensor
+              - type: tile
+                entity: binary_sensor.main_panel_family_room_motion
+                name: Family Rm
+                icon: mdi:motion-sensor
 
       # Weather — always visible
       - type: weather-forecast
         entity: weather.forecast_home
         show_forecast: true
         forecast_type: daily
-
-      # --- Door sensors: show only when OPEN ---
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_front_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_front_door
-          name: Front Door OPEN
-          icon: mdi:door-open
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_garage_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_garage_door
-          name: Garage Door OPEN
-          icon: mdi:garage-open
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_basement_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_basement_door
-          name: Basement OPEN
-          icon: mdi:door-open
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_sliding_door
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_sliding_door
-          name: Sliding Door OPEN
-          icon: mdi:door-sliding-open
-
-      # --- Motion sensors: show only when DETECTED ---
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_office_motion
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_office_motion
-          name: Office Motion
-          icon: mdi:motion-sensor
-
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.main_panel_family_room_motion
-            state: "on"
-        card:
-          type: tile
-          entity: binary_sensor.main_panel_family_room_motion
-          name: Family Room Motion
-          icon: mdi:motion-sensor
 
       # --- Sonos: playing coordinators only ---
       - type: conditional
