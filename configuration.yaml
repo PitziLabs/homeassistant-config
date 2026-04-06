@@ -158,4 +158,3 @@ template:
         unique_id: any_switch_on
         state: >
           {{ is_state('switch.play_room_outlet', 'on') }}
-
