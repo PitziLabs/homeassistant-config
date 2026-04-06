@@ -31,7 +31,13 @@ tts/
 *.swo
 *~
 
-# This script — not part of the HA config, just used for setup
-ha-git-init.sh
+# Stock HA blueprints — not customized, regenerated on install
+blueprints/
+
+# Empty scaffold files included by default configuration.yaml
+scenes.yaml
+scripts.yaml
+
+# ESPHome build artifacts and development archives
 esphome/.esphome/
-esphome/.esphome/
+esphome/archive/
