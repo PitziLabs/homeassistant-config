@@ -1,0 +1,148 @@
+# Home Assistant Configuration — PitziLabs
+
+Production-grade, git-controlled Home Assistant deployment running on Proxmox. Every configuration file is YAML-driven, version-controlled, and deployed through a structured AI-augmented development workflow.
+
+This isn't a collection of UI screenshots. It's an opinionated infrastructure project with a defined architecture, reproducible deployment patterns, and a development process built around code review and iterative refinement.
+
+## What's Here
+
+**A complete smart home platform** managing 40+ entities across lighting (Hue, Kasa), security (Konnected alarm panels with custom ESPHome firmware), media (Sonos whole-home audio), and environmental monitoring (weather, door/motion sensors) — all surfaced through two purpose-built dashboards.
+
+**A custom alarm system** built from bare hardware up. Two Konnected ESP8266 panels running fully inlined ESPHome firmware: one driving 4 door contacts, 2 motion sensors, and a siren output; the other repurposed as an interior annunciator with a piezo buzzer playing RTTTL tones. Eight YAML automations handle the full alarm lifecycle — arming sequences, entry/exit delays with audible countdowns, triggered siren activation, disarm confirmation, and a door chime for everyday use.
+
+**Two dashboard experiences** from a single YAML file. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Kiosk view drives a 65-inch wall display using CSS Grid layout, Mushroom cards with theme-driven state coloring, animated alarm status chips, and a clock-weather widget — all locked to 1080p with zero scrolling.
+
+**Template sensors** that solve real UX problems. Sonos group coordinator detection prevents duplicate media cards when speakers are grouped. Per-room light activity sensors drive the mobile view's "all off" indicators. Both patterns are documented in `configuration.yaml` with clear rationale.
+
+## Architecture
+
+```
+Proxmox VE (hypervisor)
+├── Home Assistant OS VM (192.168.139.172)
+│   ├── ESPHome Device Builder (add-on)
+│   │   ├── Main Panel — 4 doors, 2 motion, siren (ESP8266)
+│   │   └── Secondary Panel — piezo annunciator (ESP8266)
+│   ├── YAML Configuration ← this repo
+│   │   ├── configuration.yaml — core config, alarm platform, template sensors
+│   │   ├── automations.yaml — alarm lifecycle + door chime
+│   │   ├── dashboards/home.yaml — Home (mobile) + Kiosk (wall display) views
+│   │   └── themes/noctis_kiosk.yaml — global card-mod state styling
+│   └── .storage/ — HA-managed runtime state (excluded from git)
+├── Firewalla Gold SE (192.168.139.1) — network firewall
+└── Grafana/Loki stack (LXC 192.168.139.20) — observability
+```
+
+## Development Workflow
+
+This project uses an AI-augmented development process that separates architectural thinking from mechanical execution. The workflow is designed around the same principles I'd apply to any infrastructure team: clear separation of concerns, mandatory code review, and reproducible deployments.
+
+### The Cycle
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  1. DESIGN — Claude.ai (Architect)                      │
+│     Discuss requirements, constraints, tradeoffs.       │
+│     Produce an implementation guide: exact file paths,  │
+│     YAML blocks, validation steps, commit message.      │
+├─────────────────────────────────────────────────────────┤
+│  2. BUILD — Claude Code (Engineer)                      │
+│     Execute the implementation guide mechanically.      │
+│     Create/modify files, run validation commands.       │
+│     Open a pull request with descriptive commits.       │
+├─────────────────────────────────────────────────────────┤
+│  3. REVIEW — Human + Claude.ai                         │
+│     Review the PR diff for correctness, style, and      │
+│     alignment with the implementation guide.            │
+│     Catch entity ID mismatches, YAML structure issues,  │
+│     and unintended side effects.                        │
+├─────────────────────────────────────────────────────────┤
+│  4. MERGE — GitHub (automerge enabled)                  │
+│     PR merges to main after approval.                   │
+├─────────────────────────────────────────────────────────┤
+│  5. DEPLOY — SSH to HA VM                               │
+│     git pull from /homeassistant                        │
+│     ha core check (validate config)                     │
+│     ha core restart                                     │
+│     Visual verification on target device                │
+├─────────────────────────────────────────────────────────┤
+│  6. ITERATE — back to step 1                            │
+│     Observe behavior on real hardware.                  │
+│     File issues for anything unexpected.                │
+│     Next cycle addresses what was learned.              │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Why This Works
+
+**Architectural decisions are documented before code is written.** Every implementation guide captures the reasoning — not just *what* to change, but *why* this approach over alternatives. This creates a decision log that survives beyond any single session.
+
+**Mechanical execution is separated from design thinking.** Claude Code operates from a spec, not from a conversation. This eliminates the drift that happens when you design and build simultaneously, and it produces cleaner commits because the scope was defined before the first file was touched.
+
+**Code review catches a real category of bugs.** Entity IDs in Home Assistant are notoriously tricky — they're set at device adoption time and don't change when you rename things. A review step specifically looking for ID mismatches between config and actual entities has caught real issues in this project.
+
+**The deploy step includes validation.** `ha core check` catches YAML syntax errors and missing entity references before a restart. Visual verification on the target device (phone for mobile view, wall display for kiosk) confirms the actual rendered output matches intent.
+
+### What I'd Change at Scale
+
+This workflow is optimized for a single-maintainer project. For a team, I'd add:
+
+- **A CI pipeline** running `yamllint` and custom validators on PR (checking entity IDs against a known inventory, verifying theme references resolve, flagging secrets references that don't have `.example` counterparts).
+- **Automated deployment** via GitHub Actions — webhook on merge triggers `git pull` + `ha core check` + `ha core restart` on the HA VM, with rollback on check failure.
+- **Environment promotion** — a staging HA instance for testing dashboard changes before they hit the production wall display.
+
+## Design Decisions
+
+**Why ESPHome over stock Konnected firmware?** Full local control, no cloud dependency, custom GPIO repurposing (the secondary panel's Zone 1 became a piezo output), and the ability to define RTTTL services for granular tone control from HA automations.
+
+**Why a manual alarm platform instead of an integration?** The manual platform gives explicit control over every timing parameter and state transition. The alarm behavior is defined entirely in YAML — arming delays, entry delays, trigger duration, which sensors are active in which arm mode — making it auditable, version-controlled, and reproducible.
+
+**Why global theme-based card styling instead of per-card card-mod?** The Noctis Kiosk theme applies state-based backgrounds (warm amber for lights on, cool blue for switches on) to all Mushroom cards through a single `card-mod-card` block. This means adding a new light to the dashboard requires zero styling work — it inherits the theme automatically. Per-card styling creates maintenance debt that scales linearly with entity count.
+
+**Why conditional cards on the mobile view?** A house with 40+ controllable entities produces a dashboard that's mostly noise. The Home view shows only what's active — if all kitchen lights are off, you see "All off" instead of four disabled tiles. This is an opinionated UX choice: the dashboard reflects the current state of the house, not its full capability.
+
+**Why Sonos group coordinator detection?** When Sonos speakers are grouped, every speaker in the group reports as "playing." Without filtering, you'd see duplicate media cards. The template sensors check whether each speaker is the first member of its own group — only the coordinator gets a card. This is a small detail, but it's the kind of thing that separates a polished dashboard from a functional one.
+
+## File Structure
+
+```
+├── configuration.yaml        Core config: alarm, templates, frontend, Prometheus
+├── automations.yaml          8 alarm/chime automations (full lifecycle)
+├── groups.yaml               Door and motion sensor groups
+├── secrets.yaml.example      Documents required secrets (actual secrets gitignored)
+├── dashboards/
+│   └── home.yaml             Two views: Home (mobile) + Kiosk (wall display)
+├── themes/
+│   ├── noctis_kiosk.yaml     Active theme with global card-mod state styling
+│   └── kiosk_dark.yaml       Deprecated — retained for reference
+├── esphome/
+│   ├── konnected-56ac70.yaml Main alarm panel firmware
+│   ├── konnected-56a4fa.yaml Secondary panel (piezo) firmware
+│   └── secrets.yaml.example  ESPHome secrets template
+├── CLAUDE.md                 Project context for AI-assisted development
+└── .gitignore                Excludes runtime state, secrets, build artifacts
+```
+
+## HACS Dependencies
+
+| Card | Purpose |
+|------|---------|
+| [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Light/entity/alarm cards and sensor chips |
+| [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Animated weather with clock and forecast |
+| [mini-media-player](https://github.com/kalkih/mini-media-player) | Compact Sonos display with album art |
+| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid layout engine for kiosk view |
+| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling with Jinja2 |
+| [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Hides sidebar/header for wall display |
+| [Noctis](https://github.com/aFFekopp/nern) | Base dark theme (extended by Noctis Kiosk) |
+
+## Part of the PitziLabs Portfolio
+
+This repository is one piece of a broader infrastructure portfolio at [github.com/PitziLabs](https://github.com/PitziLabs):
+
+- **[aws-lab-infra](https://github.com/PitziLabs/aws-lab-infra)** — Terraform-managed three-tier AWS environment (VPC, ECS Fargate, RDS, ElastiCache, CI/CD)
+- **[firewalla-axiom-pipeline](https://github.com/PitziLabs/firewalla-axiom-pipeline)** — Fluent Bit log pipeline shipping Firewalla network telemetry to Axiom
+- **[firewalla-grafana-stack](https://github.com/PitziLabs/firewalla-grafana-stack)** — Self-hosted Grafana + Loki observability for home network monitoring
+- **[workstation-bootstrap](https://github.com/PitziLabs/workstation-bootstrap)** — Idempotent workstation provisioning for ChromeOS, Xubuntu, and Fedora
+
+## License
+
+MIT
