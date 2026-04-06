@@ -538,321 +538,478 @@ views:
               name: Basement
 
   # =================================================================
-  # KIOSK VIEW — 65" 1080p wall display, dark theme
-  # Panel mode, three explicit columns, always-visible light tiles
+  # KIOSK VIEW — Premium 65" 1080p wall display
+  # CSS Grid layout, custom cards, dark theme
   # URL: /dashboard-home/kiosk
   # =================================================================
   - title: Kiosk
     path: kiosk
     theme: kiosk_dark
-    type: panel
     icon: mdi:monitor
+    type: custom:grid-layout
+    layout:
+      grid-template-columns: 1fr 1fr 1fr 1fr
+      grid-template-rows: auto auto 1fr auto
+      grid-template-areas: |
+        "alarm alarm weather weather"
+        "sensors sensors sensors sensors"
+        "col1 col2 col3 col4"
+        "media media media media"
+      margin: 0
+      padding: 8px
+      grid-gap: 8px
+      height: 100vh
     cards:
-      - type: vertical-stack
-        cards:
-          # ---- ROW 1: Alarm + sensors ----
-          - type: alarm-panel
+
+      # ============================================================
+      # ALARM — top left (grid area: alarm)
+      # ============================================================
+      - type: custom:mushroom-alarm-control-panel-card
+        entity: alarm_control_panel.home_alarm
+        name: Home Alarm
+        states:
+          - armed_away
+          - armed_home
+        layout: horizontal
+        view_layout:
+          grid-area: alarm
+
+      # ============================================================
+      # WEATHER — top right (grid area: weather)
+      # ============================================================
+      - type: custom:clock-weather-card
+        entity: weather.forecast_home
+        forecast_rows: 5
+        hide_clock: false
+        hide_date: false
+        hide_today_section: false
+        hide_forecast_section: false
+        weather_icon_type: line
+        animated_icon: true
+        time_format: 12
+        view_layout:
+          grid-area: weather
+
+      # ============================================================
+      # SENSORS — full-width strip (grid area: sensors)
+      # ============================================================
+      - type: custom:mushroom-chips-card
+        alignment: center
+        view_layout:
+          grid-area: sensors
+        chips:
+          - type: alarm-control-panel
             entity: alarm_control_panel.home_alarm
-            name: Home Alarm
-            states:
-              - arm_away
-              - arm_home
+          - type: entity
+            entity: binary_sensor.main_panel_front_door
+            icon: mdi:door
+            name: Front
+            content_info: name
+            use_entity_picture: false
+          - type: entity
+            entity: binary_sensor.main_panel_garage_door
+            icon: mdi:garage
+            name: Garage
+            content_info: name
+          - type: entity
+            entity: binary_sensor.main_panel_basement_door
+            icon: mdi:door
+            name: Basement
+            content_info: name
+          - type: entity
+            entity: binary_sensor.main_panel_sliding_door
+            icon: mdi:door-sliding
+            name: Sliding
+            content_info: name
+          - type: entity
+            entity: binary_sensor.main_panel_office_motion
+            icon: mdi:motion-sensor
+            name: Office
+            content_info: name
+          - type: entity
+            entity: binary_sensor.main_panel_family_room_motion
+            icon: mdi:motion-sensor
+            name: Family
+            content_info: name
+
+      # ============================================================
+      # COLUMN 1 — Kitchen + Play Room (grid area: col1)
+      # ============================================================
+      - type: vertical-stack
+        view_layout:
+          grid-area: col1
+        cards:
+          - type: custom:mushroom-title-card
+            title: Kitchen
           - type: grid
-            columns: 3
+            columns: 2
             square: false
             cards:
-              - type: tile
-                entity: binary_sensor.main_panel_front_door
-                name: Front
-                icon: mdi:door
-              - type: tile
-                entity: binary_sensor.main_panel_garage_door
-                name: Garage
-                icon: mdi:garage
-              - type: tile
-                entity: binary_sensor.main_panel_basement_door
-                name: Basement
-                icon: mdi:door
-              - type: tile
-                entity: binary_sensor.main_panel_sliding_door
-                name: Sliding
-                icon: mdi:door-sliding
-              - type: tile
-                entity: binary_sensor.main_panel_office_motion
-                name: Office
-                icon: mdi:motion-sensor
-              - type: tile
-                entity: binary_sensor.main_panel_family_room_motion
-                name: Family Rm
-                icon: mdi:motion-sensor
+              - type: custom:mushroom-light-card
+                entity: light.kitchen_main
+                name: Main
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.kitchen_island
+                name: Island
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.kitchen_table
+                name: Table
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.kitchen_sink
+                name: Sink
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
 
-          # ---- ROW 2: Three-column room layout ----
-          - type: horizontal-stack
+          - type: custom:mushroom-title-card
+            title: Play Room
+          - type: grid
+            columns: 2
+            square: false
             cards:
+              - type: custom:mushroom-light-card
+                entity: light.play_room
+                name: Main
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.play_room_1
+                name: Light 1
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.play_room_2
+                name: Light 2
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.play_room_3
+                name: Light 3
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.play_room_4
+                name: Light 4
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
 
-              # ===== COLUMN 1: Kitchen, Play Room, Family Room =====
-              - type: vertical-stack
-                cards:
-                  - type: grid
-                    title: Kitchen
-                    columns: 2
-                    square: false
-                    card_mod:
-                      style: |
-                        ha-card {
-                          border: 2px solid #484f58 !important;
-                          border-radius: 12px !important;
-                          padding: 8px !important;
-                        }
-                    cards:
-                      - type: tile
-                        entity: light.kitchen_main
-                        name: Main
-                      - type: tile
-                        entity: light.kitchen_island
-                        name: Island
-                      - type: tile
-                        entity: light.kitchen_table
-                        name: Table
-                      - type: tile
-                        entity: light.kitchen_sink
-                        name: Sink
+      # ============================================================
+      # COLUMN 2 — Office (grid area: col2)
+      # ============================================================
+      - type: vertical-stack
+        view_layout:
+          grid-area: col2
+        cards:
+          - type: custom:mushroom-title-card
+            title: Office
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:mushroom-light-card
+                entity: light.office
+                name: Main
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.office_lamp
+                name: Lamp
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.office_bookcase
+                name: Bookcase
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.office_corner
+                name: Corner
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.office_back_corner
+                name: Back Corner
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.office_door
+                name: Door
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.desk_lamp
+                name: Desk Lamp
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.desk_lamp_2
+                name: Desk Lamp 2
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
 
-                  - type: grid
-                    title: Play Room
-                    columns: 2
-                    square: false
-                    card_mod:
-                      style: |
-                        ha-card {
-                          border: 2px solid #484f58 !important;
-                          border-radius: 12px !important;
-                          padding: 8px !important;
-                        }
-                    cards:
-                      - type: tile
-                        entity: light.play_room
-                        name: Main
-                      - type: tile
-                        entity: light.play_room_1
-                        name: Light 1
-                      - type: tile
-                        entity: light.play_room_2
-                        name: Light 2
-                      - type: tile
-                        entity: light.play_room_3
-                        name: Light 3
-                      - type: tile
-                        entity: light.play_room_4
-                        name: Light 4
+      # ============================================================
+      # COLUMN 3 — Family Room + Entry/Upstairs + Switches (grid area: col3)
+      # ============================================================
+      - type: vertical-stack
+        view_layout:
+          grid-area: col3
+        cards:
+          - type: custom:mushroom-title-card
+            title: Family Room
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:mushroom-light-card
+                entity: light.family_room
+                name: Main
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.family_room_2
+                name: Light 2
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-entity-card
+                entity: switch.family_room_outlets
+                name: Outlets
+                icon: mdi:power-plug
+                layout: horizontal
+              - type: custom:mushroom-light-card
+                entity: light.floor_lamp
+                name: Floor Lamp
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
 
-                  - type: grid
-                    title: Family Room
-                    columns: 2
-                    square: false
-                    card_mod:
-                      style: |
-                        ha-card {
-                          border: 2px solid #484f58 !important;
-                          border-radius: 12px !important;
-                          padding: 8px !important;
-                        }
-                    cards:
-                      - type: tile
-                        entity: light.family_room
-                        name: Main
-                      - type: tile
-                        entity: light.family_room_2
-                        name: Light 2
-                      - type: tile
-                        entity: light.floor_lamp
-                        name: Floor Lamp
-                      - type: tile
-                        entity: switch.family_room_outlets
-                        name: Outlets
-                        icon: mdi:power-plug
+          - type: custom:mushroom-title-card
+            title: Entry & Upstairs
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:mushroom-light-card
+                entity: light.entry_1
+                name: Entry 1
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.entry_2
+                name: Entry 2
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.downstairs_hallway
+                name: Downstairs
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.upstairs_hallway_light
+                name: Upstairs
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
 
-              # ===== COLUMN 2: Office, Entry & Upstairs, Switches =====
-              - type: vertical-stack
-                cards:
-                  - type: grid
-                    title: Office
-                    columns: 2
-                    square: false
-                    card_mod:
-                      style: |
-                        ha-card {
-                          border: 2px solid #484f58 !important;
-                          border-radius: 12px !important;
-                          padding: 8px !important;
-                        }
-                    cards:
-                      - type: tile
-                        entity: light.office
-                        name: Main
-                      - type: tile
-                        entity: light.office_lamp
-                        name: Lamp
-                      - type: tile
-                        entity: light.office_bookcase
-                        name: Bookcase
-                      - type: tile
-                        entity: light.office_corner
-                        name: Corner
-                      - type: tile
-                        entity: light.office_back_corner
-                        name: Back Corner
-                      - type: tile
-                        entity: light.office_door
-                        name: Door
-                      - type: tile
-                        entity: light.desk_lamp
-                        name: Desk Lamp
-                      - type: tile
-                        entity: light.desk_lamp_2
-                        name: Desk Lamp 2
+          - type: custom:mushroom-title-card
+            title: Switches
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: switch.play_room_outlet
+                name: Play Room
+                icon: mdi:power-plug
+                layout: horizontal
+              - type: custom:mushroom-entity-card
+                entity: switch.bonus_room
+                name: Bonus Room
+                layout: horizontal
+              - type: custom:mushroom-entity-card
+                entity: switch.basement_1
+                name: Basement
+                layout: horizontal
 
-                  - type: grid
-                    title: Entry & Upstairs
-                    columns: 2
-                    square: false
-                    card_mod:
-                      style: |
-                        ha-card {
-                          border: 2px solid #484f58 !important;
-                          border-radius: 12px !important;
-                          padding: 8px !important;
-                        }
-                    cards:
-                      - type: tile
-                        entity: light.entry_1
-                        name: Entry 1
-                      - type: tile
-                        entity: light.entry_2
-                        name: Entry 2
-                      - type: tile
-                        entity: light.downstairs_hallway
-                        name: Downstairs Hall
-                      - type: tile
-                        entity: light.upstairs_hallway_light
-                        name: Upstairs Hall
+      # ============================================================
+      # COLUMN 4 — Outdoor (grid area: col4)
+      # ============================================================
+      - type: vertical-stack
+        view_layout:
+          grid-area: col4
+        cards:
+          - type: custom:mushroom-title-card
+            title: Outdoor
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:mushroom-light-card
+                entity: light.front_door
+                name: Front Door
+                icon: mdi:coach-lamp
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.front_lantern
+                name: Lantern
+                icon: mdi:lamp-outline
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.garage_front
+                name: Garage Fr
+                icon: mdi:garage
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.garage_side
+                name: Garage Sd
+                icon: mdi:garage
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-light-card
+                entity: light.shed
+                name: Shed
+                icon: mdi:shed
+                layout: horizontal
+                use_light_color: true
+                show_brightness_control: false
+              - type: custom:mushroom-entity-card
+                entity: switch.back_porch
+                name: Porch
+                icon: mdi:outdoor-lamp
+                layout: horizontal
+              - type: custom:mushroom-entity-card
+                entity: switch.garden
+                name: Garden
+                icon: mdi:flower
+                layout: horizontal
 
-                  - type: grid
-                    title: Switches
-                    columns: 2
-                    square: false
-                    card_mod:
-                      style: |
-                        ha-card {
-                          border: 2px solid #484f58 !important;
-                          border-radius: 12px !important;
-                          padding: 8px !important;
-                        }
-                    cards:
-                      - type: tile
-                        entity: switch.play_room_outlet
-                        name: Play Room Outlet
-                        icon: mdi:power-plug
-                      - type: tile
-                        entity: switch.bonus_room
-                        name: Bonus Room
-                      - type: tile
-                        entity: switch.basement_1
-                        name: Basement
+      # ============================================================
+      # MEDIA — bottom strip (grid area: media)
+      # Conditional: only shows when Sonos is playing
+      # ============================================================
+      - type: horizontal-stack
+        view_layout:
+          grid-area: media
+        cards:
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.sonos_office_leader
+                state: "on"
+            card:
+              type: custom:mini-media-player
+              entity: media_player.office
+              artwork: cover
+              hide:
+                power: true
+                icon: true
+                source: true
+              info: scroll
 
-              # ===== COLUMN 3: Weather, Outdoor, Sonos =====
-              - type: vertical-stack
-                cards:
-                  - type: tile
-                    entity: weather.forecast_home
-                    name: Weather
-                  - type: grid
-                    title: Outdoor
-                    columns: 2
-                    square: false
-                    card_mod:
-                      style: |
-                        ha-card {
-                          border: 2px solid #484f58 !important;
-                          border-radius: 12px !important;
-                          padding: 8px !important;
-                        }
-                    cards:
-                      - type: tile
-                        entity: light.front_door
-                        name: Front Door
-                        icon: mdi:coach-lamp
-                      - type: tile
-                        entity: light.front_lantern
-                        name: Front Lantern
-                        icon: mdi:lamp-outline
-                      - type: tile
-                        entity: light.garage_front
-                        name: Garage Front
-                        icon: mdi:garage
-                      - type: tile
-                        entity: light.garage_side
-                        name: Garage Side
-                        icon: mdi:garage
-                      - type: tile
-                        entity: light.shed
-                        name: Shed
-                        icon: mdi:shed
-                      - type: tile
-                        entity: switch.back_porch
-                        name: Back Porch
-                        icon: mdi:outdoor-lamp
-                      - type: tile
-                        entity: switch.garden
-                        name: Garden
-                        icon: mdi:flower
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.sonos_kitchen_leader
+                state: "on"
+            card:
+              type: custom:mini-media-player
+              entity: media_player.kitchen
+              artwork: cover
+              hide:
+                power: true
+                icon: true
+                source: true
+              info: scroll
 
-                  # Sonos (conditional, bottom of Column 3)
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.sonos_office_leader
-                        state: "on"
-                    card:
-                      type: media-control
-                      entity: media_player.office
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.sonos_kitchen_leader
-                        state: "on"
-                    card:
-                      type: media-control
-                      entity: media_player.kitchen
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.sonos_dining_room_leader
-                        state: "on"
-                    card:
-                      type: media-control
-                      entity: media_player.dining_room
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.sonos_master_bedroom_leader
-                        state: "on"
-                    card:
-                      type: media-control
-                      entity: media_player.master_bedroom
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.sonos_basement_leader
-                        state: "on"
-                    card:
-                      type: media-control
-                      entity: media_player.basement
-                  - type: conditional
-                    conditions:
-                      - condition: state
-                        entity: binary_sensor.sonos_roam_leader
-                        state: "on"
-                    card:
-                      type: media-control
-                      entity: media_player.roam_2
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.sonos_dining_room_leader
+                state: "on"
+            card:
+              type: custom:mini-media-player
+              entity: media_player.dining_room
+              artwork: cover
+              hide:
+                power: true
+                icon: true
+                source: true
+              info: scroll
+
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.sonos_master_bedroom_leader
+                state: "on"
+            card:
+              type: custom:mini-media-player
+              entity: media_player.master_bedroom
+              artwork: cover
+              hide:
+                power: true
+                icon: true
+                source: true
+              info: scroll
+
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.sonos_basement_leader
+                state: "on"
+            card:
+              type: custom:mini-media-player
+              entity: media_player.basement
+              artwork: cover
+              hide:
+                power: true
+                icon: true
+                source: true
+              info: scroll
+
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.sonos_roam_leader
+                state: "on"
+            card:
+              type: custom:mini-media-player
+              entity: media_player.roam_2
+              artwork: cover
+              hide:
+                power: true
+                icon: true
+                source: true
+              info: scroll
