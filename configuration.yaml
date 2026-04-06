@@ -6,6 +6,10 @@ frontend:
   extra_module_url:
     - /hacsfiles/kiosk-mode/kiosk-mode.js
     - /hacsfiles/card-mod/card-mod.js
+    - /hacsfiles/lovelace-mushroom/mushroom.js
+    - /hacsfiles/clock-weather-card/clock-weather-card.js
+    - /hacsfiles/mini-media-player/mini-media-player-bundle.js
+    - /hacsfiles/lovelace-layout-card/layout-card.js
 
 # Text to speech
 tts:
