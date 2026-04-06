@@ -34,9 +34,6 @@ tts/
 # Stock HA blueprints — not customized, regenerated on install
 blueprints/
 
-# Empty scaffold files included by default configuration.yaml
-scenes.yaml
-scripts.yaml
 
 # ESPHome build artifacts and development archives
 esphome/.esphome/
