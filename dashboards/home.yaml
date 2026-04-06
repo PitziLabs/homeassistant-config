@@ -4,7 +4,7 @@ kiosk_mode:
     hide_sidebar: true
   user_settings:
     - users:
-        - "Kiosker"
+        - "Kiosk"
       kiosk: true
 
 views:
@@ -538,14 +538,14 @@ views:
               name: Basement
 
   # =================================================================
-  # KIOSK VIEW — 65" 1080p wall display, Noctis theme
+  # KIOSK VIEW — 65" 1080p wall display, Noctis Kiosk theme
   # Grid layout, four columns, alarm chip animation
-  # Unavailable entities hidden via conditional wrapping
+  # Global state-based card colors via theme card-mod
   # URL: /dashboard-home/kiosk
   # =================================================================
   - title: Kiosk
     path: kiosk
-    theme: Noctis
+    theme: Noctis Kiosk
     type: custom:grid-layout
     icon: mdi:monitor
     layout:
@@ -655,17 +655,11 @@ views:
         view_layout:
           grid-area: col1
         cards:
-          - type: grid
+          - type: custom:mushroom-title-card
             title: Kitchen
+          - type: grid
             columns: 2
             square: false
-            card_mod:
-              style: |
-                ha-card {
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                  border-radius: 12px !important;
-                  padding: 8px !important;
-                }
             cards:
               - type: conditional
                 conditions:
@@ -673,48 +667,58 @@ views:
                     entity: light.kitchen_main
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.kitchen_main
                   name: Main
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.kitchen_island
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.kitchen_island
                   name: Island
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.kitchen_table
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.kitchen_table
                   name: Table
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.kitchen_sink
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.kitchen_sink
                   name: Sink
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
 
-          - type: grid
+          - type: custom:mushroom-title-card
             title: Play Room
+          - type: grid
             columns: 2
             square: false
-            card_mod:
-              style: |
-                ha-card {
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                  border-radius: 12px !important;
-                  padding: 8px !important;
-                }
             cards:
               - type: conditional
                 conditions:
@@ -722,45 +726,65 @@ views:
                     entity: light.play_room
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.play_room
                   name: Main
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.play_room_1
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.play_room_1
                   name: Light 1
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.play_room_2
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.play_room_2
                   name: Light 2
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.play_room_3
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.play_room_3
                   name: Light 3
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.play_room_4
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.play_room_4
                   name: Light 4
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
 
       # ============================================================
       # COLUMN 2 — Office (grid area: col2)
@@ -769,17 +793,11 @@ views:
         view_layout:
           grid-area: col2
         cards:
-          - type: grid
+          - type: custom:mushroom-title-card
             title: Office
+          - type: grid
             columns: 2
             square: false
-            card_mod:
-              style: |
-                ha-card {
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                  border-radius: 12px !important;
-                  padding: 8px !important;
-                }
             cards:
               - type: conditional
                 conditions:
@@ -787,72 +805,104 @@ views:
                     entity: light.office
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.office
                   name: Main
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.office_lamp
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.office_lamp
                   name: Lamp
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.office_bookcase
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.office_bookcase
                   name: Bookcase
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.office_corner
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.office_corner
                   name: Corner
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.office_back_corner
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.office_back_corner
                   name: Back Corner
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.office_door
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.office_door
                   name: Door
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.desk_lamp
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.desk_lamp
                   name: Desk Lamp
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.desk_lamp_2
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.desk_lamp_2
                   name: Desk Lamp 2
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
 
       # ============================================================
       # COLUMN 3 — Family Room + Entry + Switches (grid area: col3)
@@ -861,17 +911,11 @@ views:
         view_layout:
           grid-area: col3
         cards:
-          - type: grid
+          - type: custom:mushroom-title-card
             title: Family Room
+          - type: grid
             columns: 2
             square: false
-            card_mod:
-              style: |
-                ha-card {
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                  border-radius: 12px !important;
-                  padding: 8px !important;
-                }
             cards:
               - type: conditional
                 conditions:
@@ -879,49 +923,57 @@ views:
                     entity: light.family_room
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.family_room
                   name: Main
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.family_room_2
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.family_room_2
                   name: Light 2
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: switch.family_room_outlets
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-entity-card
                   entity: switch.family_room_outlets
                   name: Outlets
                   icon: mdi:power-plug
+                  layout: horizontal
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.floor_lamp
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.floor_lamp
                   name: Floor Lamp
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
 
-          - type: grid
+          - type: custom:mushroom-title-card
             title: Entry & Upstairs
+          - type: grid
             columns: 2
             square: false
-            card_mod:
-              style: |
-                ha-card {
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                  border-radius: 12px !important;
-                  padding: 8px !important;
-                }
             cards:
               - type: conditional
                 conditions:
@@ -929,48 +981,58 @@ views:
                     entity: light.entry_1
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.entry_1
                   name: Entry 1
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.entry_2
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.entry_2
                   name: Entry 2
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.downstairs_hallway
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.downstairs_hallway
                   name: Downstairs Hall
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
                     entity: light.upstairs_hallway_light
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-light-card
                   entity: light.upstairs_hallway_light
                   name: Upstairs Hall
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
 
-          - type: grid
+          - type: custom:mushroom-title-card
             title: Switches
+          - type: grid
             columns: 2
             square: false
-            card_mod:
-              style: |
-                ha-card {
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                  border-radius: 12px !important;
-                  padding: 8px !important;
-                }
             cards:
               - type: conditional
                 conditions:
@@ -978,10 +1040,12 @@ views:
                     entity: switch.play_room_outlet
                     state_not: unavailable
                 card:
-                  type: tile
+                  type: custom:mushroom-entity-card
                   entity: switch.play_room_outlet
                   name: Play Room Outlet
                   icon: mdi:power-plug
+                  layout: horizontal
+                  fill_container: true
 
       # ============================================================
       # COLUMN 4 — Weather + Outdoor + Sonos (grid area: col4)
@@ -1007,13 +1071,6 @@ views:
           - type: grid
             columns: 2
             square: false
-            card_mod:
-              style: |
-                ha-card {
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                  border-radius: 12px !important;
-                  padding: 8px !important;
-                }
             cards:
               - type: conditional
                 conditions:
@@ -1028,6 +1085,7 @@ views:
                   layout: horizontal
                   use_light_color: true
                   show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
@@ -1041,6 +1099,7 @@ views:
                   layout: horizontal
                   use_light_color: true
                   show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
@@ -1054,6 +1113,7 @@ views:
                   layout: horizontal
                   use_light_color: true
                   show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
@@ -1067,6 +1127,7 @@ views:
                   layout: horizontal
                   use_light_color: true
                   show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
@@ -1080,6 +1141,7 @@ views:
                   layout: horizontal
                   use_light_color: true
                   show_brightness_control: false
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
@@ -1091,6 +1153,7 @@ views:
                   name: Porch
                   icon: mdi:outdoor-lamp
                   layout: horizontal
+                  fill_container: true
               - type: conditional
                 conditions:
                   - condition: state
@@ -1102,6 +1165,7 @@ views:
                   name: Garden
                   icon: mdi:flower
                   layout: horizontal
+                  fill_container: true
 
           # Sonos — conditional, bottom of Column 4
           - type: conditional

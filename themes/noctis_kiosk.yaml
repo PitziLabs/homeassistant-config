@@ -1,0 +1,70 @@
+Noctis Kiosk:
+  # Required — must match theme name exactly for card-mod
+  card-mod-theme: Noctis Kiosk
+
+  # Inherit Noctis base colors
+  # (Noctis is loaded separately via HACS, these override specific values)
+  modes:
+    dark:
+      # Noctis core palette
+      primary-color: "#4882c2"
+      accent-color: "#4882c2"
+      primary-background-color: "#0b0c0f"
+      secondary-background-color: "#171a21"
+      card-background-color: "#171a21"
+      primary-text-color: "#e1e1e1"
+      secondary-text-color: "#9b9b9b"
+
+      # Card styling
+      ha-card-background: "#171a21"
+      ha-card-border-color: "rgba(255, 255, 255, 0.08)"
+      ha-card-border-width: "1px"
+      ha-card-border-radius: "12px"
+      ha-card-box-shadow: "none"
+
+      # Header/sidebar
+      app-header-background-color: "#0b0c0f"
+      app-header-text-color: "#e1e1e1"
+      sidebar-background-color: "#0b0c0f"
+      sidebar-text-color: "#e1e1e1"
+
+      # Dividers
+      divider-color: "rgba(255, 255, 255, 0.08)"
+
+      # State icon colors
+      state-icon-active-color: "#f0b429"
+      state-icon-color: "#9b9b9b"
+
+  # ============================================================
+  # GLOBAL CARD-MOD — automatic state-based backgrounds
+  # Applied to ALL cards, filtered by card type
+  # ============================================================
+  card-mod-card: |
+    ha-card {
+      {% if config.type == "custom:mushroom-light-card" %}
+        {% if is_state(config.entity, 'on') %}
+          background: rgba(255, 180, 50, 0.20) !important;
+          box-shadow: 0 0 12px rgba(255, 160, 40, 0.15);
+        {% else %}
+          background: var(--card-background-color) !important;
+          box-shadow: none;
+        {% endif %}
+        transition: background 0.4s ease, box-shadow 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+      {% elif config.type == "custom:mushroom-entity-card" %}
+        {% if is_state(config.entity, 'on') %}
+          background: rgba(72, 130, 194, 0.20) !important;
+          box-shadow: 0 0 12px rgba(72, 130, 194, 0.15);
+        {% else %}
+          background: var(--card-background-color) !important;
+          box-shadow: none;
+        {% endif %}
+        transition: background 0.4s ease, box-shadow 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+      {% elif config.type == "custom:mushroom-alarm-control-panel-card" %}
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+      {% endif %}
+    }
