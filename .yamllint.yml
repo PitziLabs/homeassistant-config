@@ -1,0 +1,37 @@
+extends: default
+
+rules:
+  # HA Jinja2 templates and base64 keys create long lines
+  line-length:
+    max: 250
+    allow-non-breakable-inline-mappings: true
+
+  # HA uses !include, !include_dir_merge_named, !secret, !lambda
+  # yamllint flags these as unknown tags by default
+  truthy:
+    allowed-values: ["true", "false", "yes", "no"]
+
+  # HA convention allows both 2-space and context-dependent indentation
+  indentation:
+    spaces: 2
+    indent-sequences: whatever
+
+  # Don't require document start markers (---) — HA files omit them
+  document-start: disable
+
+  # Allow blank lines for readability in long files
+  empty-lines:
+    max: 2
+
+  # Comments need a space after # but don't require them at specific indentation
+  comments:
+    require-starting-space: true
+    ignore-shebangs: true
+    min-spaces-from-content: 1
+
+  # ESPHome uses !lambda and !secret which trigger this
+  quoted-strings: disable
+
+ignore: |
+  # ESPHome build artifacts (shouldn't be committed, but belt and suspenders)
+  esphome/.esphome/
