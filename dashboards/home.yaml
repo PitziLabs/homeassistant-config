@@ -562,12 +562,14 @@ views:
       # ============================================================
       # ALARM — full width (grid area: alarm)
       # ============================================================
-      - type: alarm-panel
+      - type: custom:mushroom-alarm-control-panel-card
         entity: alarm_control_panel.home_alarm
         name: Home Alarm
         states:
-          - arm_away
-          - arm_home
+          - armed_away
+          - armed_home
+        layout: horizontal
+        show_keypad: false
         view_layout:
           grid-area: alarm
 
