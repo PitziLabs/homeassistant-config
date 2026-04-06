@@ -982,24 +982,6 @@ views:
                   entity: switch.play_room_outlet
                   name: Play Room Outlet
                   icon: mdi:power-plug
-              - type: conditional
-                conditions:
-                  - condition: state
-                    entity: switch.bonus_room
-                    state_not: unavailable
-                card:
-                  type: tile
-                  entity: switch.bonus_room
-                  name: Bonus Room
-              - type: conditional
-                conditions:
-                  - condition: state
-                    entity: switch.basement_1
-                    state_not: unavailable
-                card:
-                  type: tile
-                  entity: switch.basement_1
-                  name: Basement
 
       # ============================================================
       # COLUMN 4 — Weather + Outdoor + Sonos (grid area: col4)
