@@ -538,60 +538,41 @@ views:
               name: Basement
 
   # =================================================================
-  # KIOSK VIEW — Premium 65" 1080p wall display
-  # CSS Grid layout, custom cards, dark theme
+  # KIOSK VIEW — 65" 1080p wall display, dark theme
+  # Grid layout, four columns, alarm chip animation
   # URL: /dashboard-home/kiosk
   # =================================================================
   - title: Kiosk
     path: kiosk
     theme: kiosk_dark
-    icon: mdi:monitor
     type: custom:grid-layout
+    icon: mdi:monitor
     layout:
       grid-template-columns: 1fr 1fr 1fr 1fr
-      grid-template-rows: auto auto 1fr auto
+      grid-template-rows: auto auto 1fr
       grid-template-areas: |
-        "alarm alarm weather weather"
+        "alarm alarm alarm alarm"
         "sensors sensors sensors sensors"
         "col1 col2 col3 col4"
-        "media media media media"
       margin: 0
       padding: 8px
       grid-gap: 8px
       height: 100vh
     cards:
-
       # ============================================================
-      # ALARM — top left (grid area: alarm)
+      # ALARM — full width (grid area: alarm)
       # ============================================================
-      - type: custom:mushroom-alarm-control-panel-card
+      - type: alarm-panel
         entity: alarm_control_panel.home_alarm
         name: Home Alarm
         states:
-          - armed_away
-          - armed_home
-        layout: horizontal
+          - arm_away
+          - arm_home
         view_layout:
           grid-area: alarm
 
       # ============================================================
-      # WEATHER — top right (grid area: weather)
-      # ============================================================
-      - type: custom:clock-weather-card
-        entity: weather.forecast_home
-        forecast_rows: 5
-        hide_clock: false
-        hide_date: false
-        hide_today_section: false
-        hide_forecast_section: false
-        weather_icon_type: line
-        animated_icon: true
-        time_format: 12
-        view_layout:
-          grid-area: weather
-
-      # ============================================================
-      # SENSORS — full-width strip (grid area: sensors)
+      # SENSOR CHIPS — with animated alarm chip (grid area: sensors)
       # ============================================================
       - type: custom:mushroom-chips-card
         alignment: center
@@ -600,6 +581,38 @@ views:
         chips:
           - type: alarm-control-panel
             entity: alarm_control_panel.home_alarm
+            card_mod:
+              style: |
+                ha-card {
+                  {% set state = states('alarm_control_panel.home_alarm') %}
+                  {% if state == 'armed_away' %}
+                    animation: pulse-blue 2s ease-in-out infinite;
+                  {% elif state == 'armed_home' %}
+                    animation: pulse-green 2s ease-in-out infinite;
+                  {% elif state == 'triggered' %}
+                    animation: pulse-red 0.5s ease-in-out infinite;
+                  {% elif state == 'arming' %}
+                    animation: pulse-amber 1s ease-in-out infinite;
+                  {% elif state == 'pending' %}
+                    animation: pulse-red 0.7s ease-in-out infinite;
+                  {% endif %}
+                }
+                @keyframes pulse-blue {
+                  0%, 100% { box-shadow: 0 0 4px rgba(79, 195, 247, 0.3); }
+                  50% { box-shadow: 0 0 16px rgba(79, 195, 247, 0.8); }
+                }
+                @keyframes pulse-green {
+                  0%, 100% { box-shadow: 0 0 4px rgba(76, 175, 80, 0.3); }
+                  50% { box-shadow: 0 0 16px rgba(76, 175, 80, 0.8); }
+                }
+                @keyframes pulse-red {
+                  0%, 100% { box-shadow: 0 0 4px rgba(244, 67, 54, 0.3); }
+                  50% { box-shadow: 0 0 20px rgba(244, 67, 54, 0.9); }
+                }
+                @keyframes pulse-amber {
+                  0%, 100% { box-shadow: 0 0 4px rgba(255, 193, 7, 0.3); }
+                  50% { box-shadow: 0 0 16px rgba(255, 193, 7, 0.8); }
+                }
           - type: entity
             entity: binary_sensor.main_panel_front_door
             icon: mdi:door
@@ -639,73 +652,58 @@ views:
         view_layout:
           grid-area: col1
         cards:
-          - type: custom:mushroom-title-card
-            title: Kitchen
           - type: grid
+            title: Kitchen
             columns: 2
             square: false
+            card_mod:
+              style: |
+                ha-card {
+                  border: 2px solid #484f58 !important;
+                  border-radius: 12px !important;
+                  padding: 8px !important;
+                }
             cards:
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.kitchen_main
                 name: Main
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.kitchen_island
                 name: Island
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.kitchen_table
                 name: Table
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.kitchen_sink
                 name: Sink
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
 
-          - type: custom:mushroom-title-card
-            title: Play Room
           - type: grid
+            title: Play Room
             columns: 2
             square: false
+            card_mod:
+              style: |
+                ha-card {
+                  border: 2px solid #484f58 !important;
+                  border-radius: 12px !important;
+                  padding: 8px !important;
+                }
             cards:
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.play_room
                 name: Main
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.play_room_1
                 name: Light 1
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.play_room_2
                 name: Light 2
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.play_room_3
                 name: Light 3
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.play_room_4
                 name: Light 4
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
 
       # ============================================================
       # COLUMN 2 — Office (grid area: col2)
@@ -714,156 +712,143 @@ views:
         view_layout:
           grid-area: col2
         cards:
-          - type: custom:mushroom-title-card
-            title: Office
           - type: grid
+            title: Office
             columns: 2
             square: false
+            card_mod:
+              style: |
+                ha-card {
+                  border: 2px solid #484f58 !important;
+                  border-radius: 12px !important;
+                  padding: 8px !important;
+                }
             cards:
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.office
                 name: Main
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.office_lamp
                 name: Lamp
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.office_bookcase
                 name: Bookcase
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.office_corner
                 name: Corner
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.office_back_corner
                 name: Back Corner
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.office_door
                 name: Door
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.desk_lamp
                 name: Desk Lamp
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.desk_lamp_2
                 name: Desk Lamp 2
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
 
       # ============================================================
-      # COLUMN 3 — Family Room + Entry/Upstairs + Switches (grid area: col3)
+      # COLUMN 3 — Family Room + Entry + Switches (grid area: col3)
       # ============================================================
       - type: vertical-stack
         view_layout:
           grid-area: col3
         cards:
-          - type: custom:mushroom-title-card
-            title: Family Room
           - type: grid
+            title: Family Room
             columns: 2
             square: false
+            card_mod:
+              style: |
+                ha-card {
+                  border: 2px solid #484f58 !important;
+                  border-radius: 12px !important;
+                  padding: 8px !important;
+                }
             cards:
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.family_room
                 name: Main
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.family_room_2
                 name: Light 2
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-entity-card
+              - type: tile
                 entity: switch.family_room_outlets
                 name: Outlets
                 icon: mdi:power-plug
-                layout: horizontal
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.floor_lamp
                 name: Floor Lamp
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
 
-          - type: custom:mushroom-title-card
-            title: Entry & Upstairs
           - type: grid
+            title: Entry & Upstairs
             columns: 2
             square: false
+            card_mod:
+              style: |
+                ha-card {
+                  border: 2px solid #484f58 !important;
+                  border-radius: 12px !important;
+                  padding: 8px !important;
+                }
             cards:
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.entry_1
                 name: Entry 1
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.entry_2
                 name: Entry 2
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+              - type: tile
                 entity: light.downstairs_hallway
-                name: Downstairs
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
-              - type: custom:mushroom-light-card
+                name: Downstairs Hall
+              - type: tile
                 entity: light.upstairs_hallway_light
-                name: Upstairs
-                layout: horizontal
-                use_light_color: true
-                show_brightness_control: false
+                name: Upstairs Hall
 
-          - type: custom:mushroom-title-card
-            title: Switches
           - type: grid
+            title: Switches
             columns: 2
             square: false
+            card_mod:
+              style: |
+                ha-card {
+                  border: 2px solid #484f58 !important;
+                  border-radius: 12px !important;
+                  padding: 8px !important;
+                }
             cards:
-              - type: custom:mushroom-entity-card
+              - type: tile
                 entity: switch.play_room_outlet
-                name: Play Room
+                name: Play Room Outlet
                 icon: mdi:power-plug
-                layout: horizontal
-              - type: custom:mushroom-entity-card
+              - type: tile
                 entity: switch.bonus_room
                 name: Bonus Room
-                layout: horizontal
-              - type: custom:mushroom-entity-card
+              - type: tile
                 entity: switch.basement_1
                 name: Basement
-                layout: horizontal
 
       # ============================================================
-      # COLUMN 4 — Outdoor (grid area: col4)
+      # COLUMN 4 — Weather + Outdoor + Sonos (grid area: col4)
       # ============================================================
       - type: vertical-stack
         view_layout:
           grid-area: col4
         cards:
+          # Weather with clock — compact
+          - type: custom:clock-weather-card
+            entity: weather.forecast_home
+            forecast_rows: 3
+            hide_clock: false
+            hide_date: true
+            hide_today_section: false
+            hide_forecast_section: false
+            weather_icon_type: line
+            animated_icon: true
+            time_format: 12
+
           - type: custom:mushroom-title-card
             title: Outdoor
           - type: grid
@@ -916,14 +901,7 @@ views:
                 icon: mdi:flower
                 layout: horizontal
 
-      # ============================================================
-      # MEDIA — bottom strip (grid area: media)
-      # Conditional: only shows when Sonos is playing
-      # ============================================================
-      - type: horizontal-stack
-        view_layout:
-          grid-area: media
-        cards:
+          # Sonos — conditional, bottom of Column 4
           - type: conditional
             conditions:
               - condition: state
