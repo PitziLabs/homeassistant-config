@@ -321,4 +321,3 @@
     - action: switch.turn_off
       target:
         entity_id: switch.rachels_office_in_meeting
-        
