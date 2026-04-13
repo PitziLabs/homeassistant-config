@@ -201,7 +201,7 @@
 # than displaying stale state. On reconnect, it re-syncs.
 #
 # Signal flow:
-#   Slap button → ESP32 toggles switch.rachels_office_in_meeting
+#   Slap button → ESP32 toggles switch.meeting_button_in_meeting
 #   → HA automation sets Hue Go red (meeting) or green (available)
 #
 # The dome LED on the button itself is driven directly by the
@@ -213,7 +213,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: switch.rachels_office_in_meeting
+      entity_id: switch.meeting_button_in_meeting
       to: "on"
   condition: []
   action:
@@ -231,7 +231,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: switch.rachels_office_in_meeting
+      entity_id: switch.meeting_button_in_meeting
       to: "off"
   condition: []
   action:
@@ -252,7 +252,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: switch.rachels_office_in_meeting
+      entity_id: switch.meeting_button_in_meeting
       to: "unavailable"
       for:
         seconds: 10
@@ -273,14 +273,14 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: switch.rachels_office_in_meeting
+      entity_id: switch.meeting_button_in_meeting
       from: "unavailable"
   condition: []
   action:
     - choose:
         - conditions:
             - condition: state
-              entity_id: switch.rachels_office_in_meeting
+              entity_id: switch.meeting_button_in_meeting
               state: "on"
           sequence:
             - action: light.turn_on
@@ -292,7 +292,7 @@
                 transition: 1
         - conditions:
             - condition: state
-              entity_id: switch.rachels_office_in_meeting
+              entity_id: switch.meeting_button_in_meeting
               state: "off"
           sequence:
             - action: light.turn_on
@@ -315,9 +315,9 @@
       at: "18:00:00"
   condition:
     - condition: state
-      entity_id: switch.rachels_office_in_meeting
+      entity_id: switch.meeting_button_in_meeting
       state: "on"
   action:
     - action: switch.turn_off
       target:
-        entity_id: switch.rachels_office_in_meeting
+        entity_id: switch.meeting_button_in_meeting
