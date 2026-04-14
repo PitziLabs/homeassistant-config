@@ -1,3 +1,12 @@
+# Core config
+homeassistant:
+  auth_providers:
+    - type: homeassistant
+    - type: trusted_networks
+      trusted_networks:
+        - 192.168.139.0/24
+      allow_bypass_login: true
+
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
