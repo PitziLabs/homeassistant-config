@@ -235,12 +235,10 @@
       to: "off"
   condition: []
   action:
-    - action: light.turn_on
+    - action: light.turn_off
       target:
         entity_id: light.office_back_corner
       data:
-        rgb_color: [0, 255, 0]
-        brightness: 100
         transition: 1
 
 # --- ESP32 disconnected → hallway light off ---
@@ -295,12 +293,10 @@
               entity_id: switch.meeting_button_in_meeting
               state: "off"
           sequence:
-            - action: light.turn_on
+            - action: light.turn_off
               target:
                 entity_id: light.office_back_corner
               data:
-                rgb_color: [0, 255, 0]
-                brightness: 100
                 transition: 1
 
 # --- Auto-clear at end of workday ---
