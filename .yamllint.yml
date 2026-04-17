@@ -2,10 +2,19 @@
 extends: default
 
 rules:
+  truthy:
+    check-keys: false   # shut up about 'on:' being reserved
+  brackets:
+    max-spaces-inside: 1  # allow the `[ x, y ]` style GitHub uses everywhere
+  line-length:
+    max: 150
+  document-start: disable
+
   # HA Jinja2 templates and base64 keys create long lines
   line-length:
     max: 250
     allow-non-breakable-inline-mappings: true
+
 
   # HA uses !include, !include_dir_merge_named, !secret, !lambda
   # yamllint flags these as unknown tags by default
@@ -38,12 +47,3 @@ ignore: |
   esphome/.esphome/
 
 extends: default
-
-rules:
-  truthy:
-    check-keys: false   # shut up about 'on:' being reserved
-  brackets:
-    max-spaces-inside: 1  # allow the `[ x, y ]` style GitHub uses everywhere
-  line-length:
-    max: 150
-  document-start: disable
