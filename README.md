@@ -92,6 +92,22 @@ This workflow is optimized for a single-maintainer project. For a team, I'd add:
 - **Automated deployment** via GitHub Actions — webhook on merge triggers `git pull` + `ha core check` + `ha core restart` on the HA VM, with rollback on check failure.
 - **Environment promotion** — a staging HA instance for testing dashboard changes before they hit the production wall display.
 
+## GitOps Auto-Deploy
+
+Config changes merge to `main` and deploy automatically — no SSH required.
+
+A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.gitops_sync` every 5 minutes. The script fetches `origin/main`, compares it to `HEAD`, and if diverged: resets to the latest commits, validates via the Supervisor API (`POST /core/check`), and restarts HA Core on success. On validation failure, it rolls back to the pre-sync SHA without restarting.
+
+**Upper-bound deployment time:** 5 minutes from merge to running config.
+
+**Logs:** `/config/gitops-sync.log` — timestamped, leveled entries; rotates at 1 MB to `gitops-sync.log.1`.
+
+**Rollback:** Automatic on failure. If config check returns non-200, the working tree resets to the pre-sync commit and HA Core is not restarted. A mobile notification is sent on both success and failure. No-op polls (already up to date) are silent.
+
+**Disable:** Developer Tools → Automations → `GitOps: Poll and deploy` → toggle off.
+
+**Force sync:** Developer Tools → Services → `shell_command.gitops_sync` → Call Service.
+
 ## Design Decisions
 
 **Why ESPHome over stock Konnected firmware?** Full local control, no cloud dependency, custom GPIO repurposing (the secondary panel's Zone 1 became a piezo output), and the ability to define RTTTL services for granular tone control from HA automations.
