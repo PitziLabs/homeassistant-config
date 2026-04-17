@@ -269,6 +269,7 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) 
 - **Global styling via theme.** The `noctis_kiosk.yaml` theme uses `card-mod-card` with `config.type` checks to automatically apply state-based backgrounds to all Mushroom cards. No per-card `card_mod` blocks in the dashboard YAML.
 - **fill_container: true** on all Mushroom cards in the Kiosk view for full grid-cell color coverage.
 - **Alarm animation** is on the Mushroom alarm chip in the sensor bar, using card-mod CSS `@keyframes` with Jinja2 state checks. Blue=armed_away, green=armed_home, amber=arming, red=pending/triggered.
+- **PR creation is part of done.** When implementation is complete, open a pull request as the final step — do not stop at "pushed the branch." PR title should match or clearly refine the issue title. PR body must include `Closes #<number>` so merge closes the issue, plus a short summary of what changed and why. Do not merge the PR yourself; auto-merge is configured and will handle it once checks pass.
 
 ---
 
