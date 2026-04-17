@@ -2,16 +2,17 @@
 extends: default
 
 rules:
+  brackets:
+    max-spaces-inside: 1 # allow the `[ x, y ]` style GitHub uses everywhere
   # HA Jinja2 templates and base64 keys create long lines
   line-length:
     max: 250
     allow-non-breakable-inline-mappings: true
-
   # HA uses !include, !include_dir_merge_named, !secret, !lambda
   # yamllint flags these as unknown tags by default
   truthy:
-    allowed-values: ["true", "false", "yes", "no"]
-
+    allowed-values: [ "true", "false", "yes", "no" ]
+    check-keys: false # shut up about 'on:' being reserved
   # HA convention allows both 2-space and context-dependent indentation
   indentation:
     spaces: 2
