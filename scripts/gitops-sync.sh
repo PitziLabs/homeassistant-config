@@ -38,6 +38,93 @@ ha_notify() {
     > /dev/null || true
 }
 
+ha_call_service() {
+  local domain="$1" service="$2"
+  curl -s -X POST \
+    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d '{}' \
+    "${SUPERVISOR_BASE}/core/api/services/${domain}/${service}" \
+    > /dev/null || true
+}
+
+ha_core_restart() {
+  curl -s -X POST \
+    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+    -H "Content-Type: application/json" \
+    "${SUPERVISOR_BASE}/core/restart" \
+    > /dev/null || true
+}
+
+# Inspect changed files and call the lightest reload path safe for that change set.
+# Falls back to full core restart if diff is unavailable or any file falls outside
+# the lightweight set (dashboards, automations, scripts, scenes).
+apply_reload() {
+  local old_sha="$1" new_sha="$2"
+
+  if [[ -z "$old_sha" ]]; then
+    log INFO "Routing: OLD_SHA unavailable → full restart (safe fallback)"
+    ha_core_restart
+    return
+  fi
+
+  local changed_files
+  changed_files=$(git diff --name-only "${old_sha}..${new_sha}") || true
+
+  if [[ -z "$changed_files" ]]; then
+    log INFO "Routing: empty diff → full restart (safe fallback)"
+    ha_core_restart
+    return
+  fi
+
+  local needs_restart=false
+  local reload_dashboard=false
+  local reload_automations=false
+  local reload_scripts=false
+  local reload_scenes=false
+
+  while IFS= read -r f; do
+    if [[ -z "$f" ]]; then
+      continue
+    fi
+    if [[ "$f" =~ ^dashboards/.*\.yaml$ ]]; then
+      reload_dashboard=true
+    elif [[ "$f" == "automations.yaml" ]]; then
+      reload_automations=true
+    elif [[ "$f" == "scripts.yaml" ]]; then
+      reload_scripts=true
+    elif [[ "$f" == "scenes.yaml" ]]; then
+      reload_scenes=true
+    else
+      needs_restart=true
+    fi
+  done <<< "$changed_files"
+
+  if [[ "$needs_restart" == true ]]; then
+    log INFO "Routing: changes outside lightweight set → full restart"
+    ha_core_restart
+    return
+  fi
+
+  if [[ "$reload_dashboard" == true ]]; then
+    log INFO "Routing: dashboards → lovelace.reload_resources + frontend.reload_themes"
+    ha_call_service lovelace reload_resources
+    ha_call_service frontend reload_themes
+  fi
+  if [[ "$reload_automations" == true ]]; then
+    log INFO "Routing: automations.yaml → automation.reload"
+    ha_call_service automation reload
+  fi
+  if [[ "$reload_scripts" == true ]]; then
+    log INFO "Routing: scripts.yaml → script.reload"
+    ha_call_service script reload
+  fi
+  if [[ "$reload_scenes" == true ]]; then
+    log INFO "Routing: scenes.yaml → scene.reload"
+    ha_call_service scene reload
+  fi
+}
+
 main() {
   rotate_log
 
@@ -104,13 +191,9 @@ main() {
   if [[ "$http_code" == "200" ]]; then
     local commit_info
     commit_info=$(git log -1 --pretty=format:'%h %s')
-    log INFO "Config validated. Restarting HA Core."
+    log INFO "Config validated."
     ha_notify "HA config deployed: ${commit_info}"
-    curl -s -X POST \
-      -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
-      -H "Content-Type: application/json" \
-      "${SUPERVISOR_BASE}/core/restart" \
-      > /dev/null || true
+    apply_reload "$rollback_sha" "$new_sha"
     exit 0
   else
     local truncated
