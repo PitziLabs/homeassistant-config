@@ -37,7 +37,6 @@ ignore: |
   # ESPHome build artifacts (shouldn't be committed, but belt and suspenders)
   esphome/.esphome/
 
----
 extends: default
 
 rules:
