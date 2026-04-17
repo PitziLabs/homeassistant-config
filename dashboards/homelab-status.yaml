@@ -139,8 +139,16 @@ views:
             name: Memory
           - entity: sensor.pve_disk_usage
             name: Disk Usage
-          - entity: sensor.pve_uptime
-            name: Uptime
+
+      - type: custom:mushroom-template-card
+        primary: Uptime
+        secondary: >
+          {% set s = states('sensor.pve_uptime') | int(-1) %}
+          {% if s < 0 %}—{% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h {{ ((s % 3600) // 60) }}m{% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m{% else %}{{ (s // 60) }}m{% endif %}
+        icon: mdi:clock-outline
+        entity: sensor.pve_uptime
+        tap_action:
+          action: none
 
       - type: grid
         columns: 2
@@ -203,8 +211,6 @@ views:
                 name: Status
               - entity: sensor.main_panel_wifi_signal
                 name: WiFi RSSI
-              - entity: sensor.alarm_panel_56ac70_uptime
-                name: Uptime
           - type: entities
             title: Secondary Panel (56a4fa)
             entities:
@@ -212,8 +218,29 @@ views:
                 name: Status
               - entity: sensor.secondary_panel_wifi_signal
                 name: WiFi RSSI
-              - entity: sensor.alarm_panel_56a4fa_uptime
-                name: Uptime
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Main Panel Uptime
+            secondary: >
+              {% set s = states('sensor.alarm_panel_56ac70_uptime') | int(-1) %}
+              {% if s < 0 %}—{% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h {{ ((s % 3600) // 60) }}m{% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m{% else %}{{ (s // 60) }}m{% endif %}
+            icon: mdi:clock-outline
+            entity: sensor.alarm_panel_56ac70_uptime
+            tap_action:
+              action: none
+          - type: custom:mushroom-template-card
+            primary: Secondary Panel Uptime
+            secondary: >
+              {% set s = states('sensor.alarm_panel_56a4fa_uptime') | int(-1) %}
+              {% if s < 0 %}—{% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h {{ ((s % 3600) // 60) }}m{% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m{% else %}{{ (s // 60) }}m{% endif %}
+            icon: mdi:clock-outline
+            entity: sensor.alarm_panel_56a4fa_uptime
+            tap_action:
+              action: none
 
 
       # ═══════════════════════════════════════════════════════════
@@ -467,10 +494,15 @@ views:
         columns: 2
         square: false
         cards:
-          - type: custom:mushroom-entity-card
-            entity: sensor.meeting_button_uptime
-            name: Uptime
+          - type: custom:mushroom-template-card
+            primary: Uptime
+            secondary: >
+              {% set s = states('sensor.meeting_button_uptime') | int(-1) %}
+              {% if s < 0 %}—{% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h {{ ((s % 3600) // 60) }}m{% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m{% else %}{{ (s // 60) }}m{% endif %}
             icon: mdi:clock-outline
+            entity: sensor.meeting_button_uptime
+            tap_action:
+              action: more-info
           - type: custom:mushroom-entity-card
             entity: sensor.meeting_button_ip_address
             name: IP Address
