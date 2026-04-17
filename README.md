@@ -12,6 +12,8 @@ This isn't a collection of UI screenshots. It's an opinionated infrastructure pr
 
 **Two dashboard experiences** from a single YAML file. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Kiosk view drives a 65-inch wall display using CSS Grid layout, Mushroom cards with theme-driven state coloring, animated alarm status chips, and a clock-weather widget — all locked to 1080p with zero scrolling.
 
+**A Homelab Status dashboard** providing an at-a-glance infrastructure overview: NAS health (Neptune UGREEN DXP2800 — pool status, disk temps, SMART hours, LAN throughput), Proxmox node and VM metrics, smart home coordinator firmware/signal status, battery health grid with amber/red color coding, CMYK toner levels, GitHub repo activity, and the custom-built ESP32 meeting indicator device.
+
 **Template sensors** that solve real UX problems. Sonos group coordinator detection prevents duplicate media cards when speakers are grouped. Per-room light activity sensors drive the mobile view's "all off" indicators. Both patterns are documented in `configuration.yaml` with clear rationale.
 
 ## Architecture
@@ -102,6 +104,21 @@ This workflow is optimized for a single-maintainer project. For a team, I'd add:
 
 **Why Sonos group coordinator detection?** When Sonos speakers are grouped, every speaker in the group reports as "playing." Without filtering, you'd see duplicate media cards. The template sensors check whether each speaker is the first member of its own group — only the coordinator gets a card. This is a small detail, but it's the kind of thing that separates a polished dashboard from a functional one.
 
+## Homelab Status Dashboard
+
+Portfolio-grade infrastructure status page surfacing NAS health, Proxmox VM metrics, smart home coordinator status, and device telemetry in a single scrollable view.
+
+![](./docs/homelab-status.png)
+
+Seven sections:
+1. **Neptune (UGREEN DXP2800)** — server status, RAID pool health, disk temps and power-on hours, CPU/RAM/fan/LAN throughput
+2. **Proxmox (pve)** — node CPU/memory/disk, HAOS and grafana-stack VM health, backup schedule
+3. **Coordinators** — ZWA-2, ZBT-2, and both Konnected ESPHome alarm panels with WiFi RSSI
+4. **Battery Health** — 8-device grid with amber (<40%) and red (<20%) color thresholds
+5. **Printer** — HP M477fdw CMYK toner levels with warning colors
+6. **GitHub** — cpitzi/prompts commits, issues, PRs, stars, forks
+7. **Meeting Indicator** — ESP32 device built for Rachel's office: state, WiFi signal quality, uptime
+
 ## File Structure
 
 ```
@@ -110,7 +127,8 @@ This workflow is optimized for a single-maintainer project. For a team, I'd add:
 ├── groups.yaml               Door and motion sensor groups
 ├── secrets.yaml.example      Documents required secrets (actual secrets gitignored)
 ├── dashboards/
-│   └── home.yaml             Two views: Home (mobile) + Kiosk (wall display)
+│   ├── home.yaml             Two views: Home (mobile) + Kiosk (wall display)
+│   └── homelab-status.yaml   Homelab Status dashboard (7 sections)
 ├── themes/
 │   ├── noctis_kiosk.yaml     Active theme with global card-mod state styling
 │   └── kiosk_dark.yaml       Deprecated — retained for reference

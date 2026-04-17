@@ -1,0 +1,477 @@
+views:
+  - title: Homelab Status
+    path: homelab-status
+    icon: mdi:server-network
+    type: masonry
+    cards:
+
+      # ═══════════════════════════════════════════════════════════
+      # 1. NAS — Neptune (UGREEN DXP2800)
+      # ═══════════════════════════════════════════════════════════
+      - type: markdown
+        content: "### 🗄️ Neptune (UGREEN DXP2800)"
+
+      - type: custom:mushroom-entity-card
+        entity: sensor.ugreen_nas_server_status
+        name: Server Status
+        icon: mdi:nas
+
+      - type: entities
+        title: Pool 1 — RAID 1 btrfs
+        entities:
+          - entity: sensor.ugreen_nas_pool_1_status
+            name: Status
+          - entity: sensor.ugreen_nas_pool_1_level
+            name: RAID Level
+          - entity: sensor.ugreen_nas_pool_1_volume_1_used_size
+            name: Used
+          - entity: sensor.ugreen_nas_pool_1_volume_1_total_size
+            name: Total
+
+      - type: custom:mushroom-template-card
+        primary: Volume Usage
+        secondary: >
+          {% set used = states('sensor.ugreen_nas_pool_1_volume_1_used_size') %}
+          {% set total = states('sensor.ugreen_nas_pool_1_volume_1_total_size') %}
+          {% set used_raw = states('sensor.ugreen_nas_pool_1_volume_1_used_size_raw') | float(0) %}
+          {% set total_raw = states('sensor.ugreen_nas_pool_1_volume_1_total_size_raw') | float(0) %}
+          {% if total_raw > 0 %}{{ used }} / {{ total }} — {{ (used_raw / total_raw * 100) | round(1) }}% used
+          {% else %}{{ used }} / {{ total }}{% endif %}
+        icon: mdi:harddisk
+        icon_color: >
+          {% set used_raw = states('sensor.ugreen_nas_pool_1_volume_1_used_size_raw') | float(0) %}
+          {% set total_raw = states('sensor.ugreen_nas_pool_1_volume_1_total_size_raw') | float(1) %}
+          {% set pct = used_raw / total_raw * 100 %}
+          {% if pct > 80 %}red{% elif pct > 60 %}amber{% else %}green{% endif %}
+        tap_action:
+          action: none
+
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_cpu_temperature
+            name: CPU Temp
+            icon: mdi:thermometer
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_cpu_usage
+            name: CPU Usage
+            icon: mdi:chip
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_ram_usage
+            name: RAM Usage
+            icon: mdi:memory
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_device_fan
+            name: Fan (RPM)
+            icon: mdi:fan
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_fans_system_mode
+            name: Fan Mode
+            icon: mdi:fan-auto
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_overall_lan_download
+            name: LAN Download
+            icon: mdi:download-network
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_overall_lan_upload
+            name: LAN Upload
+            icon: mdi:upload-network
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            title: Disk 1
+            entities:
+              - entity: sensor.ugreen_nas_pool_1_disk_1_brand
+                name: Brand / Model
+              - entity: sensor.ugreen_nas_pool_1_disk_1_temperature
+                name: Temperature
+              - entity: sensor.ugreen_nas_pool_1_disk_1_power_on_hours
+                name: Power-On Hours
+              - entity: sensor.ugreen_nas_pool_1_disk_1_status
+                name: Status
+          - type: entities
+            title: Disk 2
+            entities:
+              - entity: sensor.ugreen_nas_pool_1_disk_2_brand
+                name: Brand / Model
+              - entity: sensor.ugreen_nas_pool_1_disk_2_temperature
+                name: Temperature
+              - entity: sensor.ugreen_nas_pool_1_disk_2_power_on_hours
+                name: Power-On Hours
+              - entity: sensor.ugreen_nas_pool_1_disk_2_status
+                name: Status
+
+      - type: custom:mushroom-entity-card
+        entity: sensor.ugreen_nas_last_boot_timestamp
+        name: Last Boot / Uptime
+        icon: mdi:clock-start
+
+
+      # ═══════════════════════════════════════════════════════════
+      # 2. Proxmox — pve
+      # ═══════════════════════════════════════════════════════════
+      - type: markdown
+        content: "### 🖥️ Proxmox (pve)"
+
+      - type: entities
+        title: Node — pve
+        entities:
+          - entity: sensor.pve_status
+            name: Status
+          - entity: sensor.pve_cpu_usage
+            name: CPU Usage
+          - entity: sensor.pve_memory_usage_percentage
+            name: Memory
+          - entity: sensor.pve_disk_usage
+            name: Disk Usage
+          - entity: sensor.pve_uptime
+            name: Uptime
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            title: HAOS VM
+            entities:
+              - entity: binary_sensor.haos_17_1_status
+                name: Status
+              - entity: sensor.haos_17_1_cpu_usage
+                name: CPU Usage
+              - entity: sensor.haos_17_1_memory_usage_percentage
+                name: Memory
+          - type: entities
+            title: grafana-stack VM
+            entities:
+              - entity: binary_sensor.grafana_stack_status
+                name: Status
+              - entity: sensor.grafana_stack_cpu_usage
+                name: CPU Usage
+              - entity: sensor.grafana_stack_memory_usage_percentage
+                name: Memory
+
+      - type: entities
+        title: Backup
+        entities:
+          - entity: sensor.pve_last_backup
+            name: Last Backup
+          - entity: sensor.backup_backup_manager_state
+            name: Manager State
+          - entity: sensor.backup_next_scheduled_automatic_backup
+            name: Next Scheduled
+
+
+      # ═══════════════════════════════════════════════════════════
+      # 3. Smart Home Coordinators
+      # ═══════════════════════════════════════════════════════════
+      - type: markdown
+        content: "### 📡 Coordinators"
+
+      - type: entities
+        title: Z-Wave / Zigbee
+        entities:
+          - entity: sensor.home_assistant_connect_zwa_2_status
+            name: ZWA-2 Status
+          - entity: update.home_assistant_connect_zwa_2_firmware
+            name: ZWA-2 Firmware
+          - entity: update.home_assistant_connect_zbt_2_dcb4d90d5790_firmware
+            name: ZBT-2 Firmware
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            title: Main Panel (56ac70)
+            entities:
+              - entity: binary_sensor.main_panel_status
+                name: Status
+              - entity: sensor.main_panel_wifi_signal
+                name: WiFi RSSI
+              - entity: sensor.alarm_panel_56ac70_uptime
+                name: Uptime
+          - type: entities
+            title: Secondary Panel (56a4fa)
+            entities:
+              - entity: binary_sensor.secondary_panel_status
+                name: Status
+              - entity: sensor.secondary_panel_wifi_signal
+                name: WiFi RSSI
+              - entity: sensor.alarm_panel_56a4fa_uptime
+                name: Uptime
+
+
+      # ═══════════════════════════════════════════════════════════
+      # 4. Battery Health
+      # ═══════════════════════════════════════════════════════════
+      - type: markdown
+        content: "### 🔋 Battery Health"
+
+      - type: grid
+        columns: 4
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Sonos Office
+            secondary: "{{ states('sensor.office_battery') }}%"
+            icon: >
+              {% set v = states('sensor.office_battery') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.office_battery') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.office_battery
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Basement Kitchen Door
+            secondary: "{{ states('sensor.basement_kitchen_door_battery') }}%"
+            icon: >
+              {% set v = states('sensor.basement_kitchen_door_battery') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.basement_kitchen_door_battery') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.basement_kitchen_door_battery
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Z-Wave Door/Window 1
+            secondary: "{{ states('sensor.z_wave_door_window_sensor_battery_level') }}%"
+            icon: >
+              {% set v = states('sensor.z_wave_door_window_sensor_battery_level') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.z_wave_door_window_sensor_battery_level') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.z_wave_door_window_sensor_battery_level
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Z-Wave Door/Window 2
+            secondary: "{{ states('sensor.z_wave_door_window_sensor_battery_level_2') }}%"
+            icon: >
+              {% set v = states('sensor.z_wave_door_window_sensor_battery_level_2') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.z_wave_door_window_sensor_battery_level_2') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.z_wave_door_window_sensor_battery_level_2
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Samsung Galaxy (SM-S926U1)
+            secondary: "{{ states('sensor.sm_s926u1_battery_level') }}%"
+            icon: >
+              {% set v = states('sensor.sm_s926u1_battery_level') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.sm_s926u1_battery_level') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.sm_s926u1_battery_level
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Sonos Dining Room
+            secondary: "{{ states('sensor.dining_room_battery') }}%"
+            icon: >
+              {% set v = states('sensor.dining_room_battery') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.dining_room_battery') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.dining_room_battery
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Sonos Roam 2
+            secondary: "{{ states('sensor.roam_2_battery') }}%"
+            icon: >
+              {% set v = states('sensor.roam_2_battery') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.roam_2_battery') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.roam_2_battery
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Play Room Tap
+            secondary: "{{ states('sensor.play_room_tap_battery') }}%"
+            icon: >
+              {% set v = states('sensor.play_room_tap_battery') | int(100) %}
+              {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
+            icon_color: >
+              {% set v = states('sensor.play_room_tap_battery') | int(100) %}
+              {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
+            entity: sensor.play_room_tap_battery
+            tap_action:
+              action: more-info
+
+
+      # ═══════════════════════════════════════════════════════════
+      # 5. Consumables — Printer (HP M477fdw)
+      # ═══════════════════════════════════════════════════════════
+      - type: markdown
+        content: "### 🖨️ Printer (HP M477fdw)"
+
+      - type: custom:mushroom-entity-card
+        entity: sensor.hp_color_laserjet_mfp_m477fdw
+        name: Printer Status
+        icon: mdi:printer
+
+      - type: grid
+        columns: 4
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Cyan
+            secondary: "{{ states('sensor.hp_color_laserjet_mfp_m477fdw_cyan_cartridge_hp_cf411x') }}%"
+            icon: mdi:water
+            icon_color: >
+              {% set v = states('sensor.hp_color_laserjet_mfp_m477fdw_cyan_cartridge_hp_cf411x') | int(100) %}
+              {% if v < 25 %}red{% elif v < 40 %}amber{% else %}cyan{% endif %}
+            entity: sensor.hp_color_laserjet_mfp_m477fdw_cyan_cartridge_hp_cf411x
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Magenta
+            secondary: "{{ states('sensor.hp_color_laserjet_mfp_m477fdw_magenta_cartridge_hp_cf413x') }}%"
+            icon: mdi:water
+            icon_color: >
+              {% set v = states('sensor.hp_color_laserjet_mfp_m477fdw_magenta_cartridge_hp_cf413x') | int(100) %}
+              {% if v < 25 %}red{% elif v < 40 %}amber{% else %}pink{% endif %}
+            entity: sensor.hp_color_laserjet_mfp_m477fdw_magenta_cartridge_hp_cf413x
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Yellow
+            secondary: "{{ states('sensor.hp_color_laserjet_mfp_m477fdw_yellow_cartridge_hp_cf412x') }}%"
+            icon: mdi:water
+            icon_color: >
+              {% set v = states('sensor.hp_color_laserjet_mfp_m477fdw_yellow_cartridge_hp_cf412x') | int(100) %}
+              {% if v < 25 %}red{% elif v < 40 %}amber{% else %}yellow{% endif %}
+            entity: sensor.hp_color_laserjet_mfp_m477fdw_yellow_cartridge_hp_cf412x
+            tap_action:
+              action: more-info
+
+          - type: custom:mushroom-template-card
+            primary: Black
+            secondary: "{{ states('sensor.hp_color_laserjet_mfp_m477fdw_black_cartridge_hp_cf410a') }}%"
+            icon: mdi:water
+            icon_color: >
+              {% set v = states('sensor.hp_color_laserjet_mfp_m477fdw_black_cartridge_hp_cf410a') | int(100) %}
+              {% if v < 25 %}red{% elif v < 40 %}amber{% else %}grey{% endif %}
+            entity: sensor.hp_color_laserjet_mfp_m477fdw_black_cartridge_hp_cf410a
+            tap_action:
+              action: more-info
+
+
+      # ═══════════════════════════════════════════════════════════
+      # 6. GitHub
+      # ═══════════════════════════════════════════════════════════
+      - type: markdown
+        content: "### 🐙 GitHub"
+
+      - type: entities
+        title: cpitzi/prompts
+        entities:
+          - entity: sensor.cpitzi_prompts_latest_commit
+            name: Latest Commit
+          - entity: sensor.cpitzi_prompts_issues
+            name: Open Issues
+          - entity: sensor.cpitzi_prompts_pull_requests
+            name: Open PRs
+
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.cpitzi_prompts_stars
+            name: Stars
+            icon: mdi:star
+          - type: custom:mushroom-entity-card
+            entity: sensor.cpitzi_prompts_forks
+            name: Forks
+            icon: mdi:source-fork
+          - type: custom:mushroom-entity-card
+            entity: sensor.cpitzi_prompts_watchers
+            name: Watchers
+            icon: mdi:eye
+
+      - type: markdown
+        content: >
+          _More repos (hass, homelab-observability, workstation-bootstrap) coming in a follow-up issue once sensors are configured._
+
+
+      # ═══════════════════════════════════════════════════════════
+      # 7. Meeting Indicator (Rachel's Office)
+      # ═══════════════════════════════════════════════════════════
+      - type: markdown
+        content: "### 🔴 Meeting Indicator (Rachel's Office)"
+
+      - type: custom:mushroom-entity-card
+        entity: switch.meeting_button_in_meeting
+        name: In Meeting
+        icon: mdi:video-account
+        tap_action:
+          action: toggle
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.meeting_button_meeting_button
+            name: Button State
+            icon: mdi:gesture-tap-button
+          - type: custom:mushroom-template-card
+            primary: WiFi Signal
+            secondary: >
+              {% set v = states('sensor.meeting_button_wifi_signal') | int(-100) %}
+              {{ v }} dBm{% if v > -65 %} — Good{% elif v > -75 %} — Weak{% else %} — Poor{% endif %}
+            icon: mdi:wifi
+            icon_color: >
+              {% set v = states('sensor.meeting_button_wifi_signal') | int(-100) %}
+              {% if v > -65 %}green{% elif v > -75 %}amber{% else %}red{% endif %}
+            entity: sensor.meeting_button_wifi_signal
+            tap_action:
+              action: more-info
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.meeting_button_uptime
+            name: Uptime
+            icon: mdi:clock-outline
+          - type: custom:mushroom-entity-card
+            entity: sensor.meeting_button_ip_address
+            name: IP Address
+            icon: mdi:ip-network
