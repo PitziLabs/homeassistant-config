@@ -1,0 +1,78 @@
+# ============================================================================
+# Claude Code — Automated PR Review
+# ============================================================================
+# Runs automatically on every PR. No plugins, no marketplace — just a focused
+# review prompt with the PR context the action provides natively.
+#
+# The action already knows the PR context (repo, number, diff, branch) when
+# triggered by pull_request events. We just need to tell it what to focus on.
+#
+# The reviewer is read-only by design: it reads the diff and source files,
+# then returns a single consolidated review. The action posts the result.
+# No incremental commenting — one pass, one artifact.
+# ============================================================================
+
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+    paths-ignore:
+      - "*.md"
+      - "docs/**"
+      - "LICENSE"
+      - ".gitignore"
+
+jobs:
+  claude-review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request. The PR branch is already checked out.
+
+            This repository contains bash bootstrap scripts for Linux workstations
+            and Terraform infrastructure code. Focus your review on:
+
+            1. **Bash correctness** — quoting bugs, unset variable references,
+               broken conditionals, incorrect exit codes, non-portable syntax
+            2. **Idempotency** — will re-running the script break anything?
+            3. **Security** — hardcoded credentials, secrets in output, unsafe
+               permissions, curl|bash pitfalls
+            4. **Terraform** — if HCL files changed: dependency graph issues,
+               resources requiring multiple applies, missing variable validation
+
+            Rules:
+            - Only comment on actual problems or meaningful improvements
+            - Do NOT comment on style, formatting, or naming preferences
+            - Do NOT give positive feedback or praise — just flag issues
+            - Do NOT propose inline fix code — describe the problem and why it
+              matters, not the solution. Fixes go through a separate commit.
+            - If nothing significant is wrong, say so in one sentence and move on
+
+            Output format:
+            - Read the full diff and any source files needed for context
+            - Collect ALL findings before producing any output
+            - Return a single consolidated review — do not post comments
+              incrementally as you discover issues
+          claude_args: |
+            --max-turns 15
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Read"
