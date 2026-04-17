@@ -55,6 +55,12 @@ lovelace:
       title: Home
       icon: mdi:home
       show_in_sidebar: true
+    dashboard-homelab-status:
+      mode: yaml
+      filename: dashboards/homelab-status.yaml
+      title: Homelab Status
+      icon: mdi:server-network
+      show_in_sidebar: true
 
 # Prometheus
 prometheus:
