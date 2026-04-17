@@ -38,3 +38,6 @@ blueprints/
 # ESPHome build artifacts and development archives
 esphome/.esphome/
 esphome/archive/
+
+# GitOps sync artifacts
+.gitops-sync.lock
