@@ -280,7 +280,7 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) 
     gh pr merge PR_NUMBER --auto --squash --delete-branch
 ```
 
-    Auto-merge is a per-PR action, not a repo-wide default — without this command
+Auto-merge is a per-PR action, not a repo-wide default — without this command
   the PR will wait for a human click forever. Do not merge the PR yourself with
   a non-`--auto` merge; let the required status checks (`YAML Lint`,
   `claude-review`) gate the merge and fire it when green. Skip auto-merge only
