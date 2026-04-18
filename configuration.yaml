@@ -129,7 +129,6 @@ template:
              or is_state('light.office_lamp', 'on')
              or is_state('light.office_bookcase', 'on')
              or is_state('light.office_corner', 'on')
-             or is_state('light.office_back_corner', 'on')
              or is_state('light.office_door', 'on')
              or is_state('light.desk_lamp', 'on')
              or is_state('light.desk_lamp_2', 'on') }}
@@ -157,7 +156,8 @@ template:
           {{ is_state('light.entry_1', 'on')
              or is_state('light.entry_2', 'on')
              or is_state('light.downstairs_hallway', 'on')
-             or is_state('light.upstairs_hallway_light', 'on') }}
+             or is_state('light.upstairs_hallway_light', 'on')
+             or is_state('light.meeting_light', 'on') }}
 
       - name: "Outdoor Lights On"
         unique_id: outdoor_lights_on
