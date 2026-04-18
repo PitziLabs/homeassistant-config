@@ -1,334 +1,232 @@
-# automations.yaml — Home Alarm System
-# All automations defined in YAML. No UI-created automations.
-#
-# Alarm behavior:
-#   armed_away: all doors + motion sensors active
-#   armed_home: all doors active, motion sensors ignored
-#   All doors use entry/exit delay (no instant zones)
-#   Piezo buzzer provides audible feedback for all state transitions
-#   Siren activates only on triggered state
-#   Door chime plays when any door opens while disarmed
-
-# ============================================================
-# SENSOR TRIGGERS
-# ============================================================
-
-# Any door opened while armed → starts entry delay
 - id: alarm_door_trigger
-  alias: "Alarm: Door opened while armed"
-  description: >
-    Fires alarm_trigger when any door sensor goes ON while the alarm
-    is in armed_away or armed_home. The manual alarm platform handles
-    the pending → triggered state transition with the configured delay_time.
+  alias: 'Alarm: Door opened while armed'
+  description: 'Fires alarm_trigger when any door sensor goes ON while the alarm is
+    in armed_away or armed_home. The manual alarm platform handles the pending → triggered
+    state transition with the configured delay_time.
+
+    '
   mode: single
   trigger:
-    - platform: state
-      entity_id:
-        - binary_sensor.main_panel_front_door
-        - binary_sensor.main_panel_garage_door
-        - binary_sensor.main_panel_basement_door
-        - binary_sensor.main_panel_sliding_door
-      to: "on"
+  - platform: state
+    entity_id:
+    - binary_sensor.main_panel_front_door
+    - binary_sensor.main_panel_garage_door
+    - binary_sensor.main_panel_basement_door
+    - binary_sensor.main_panel_sliding_door
+    to: 'on'
   condition:
-    - condition: state
-      entity_id: alarm_control_panel.home_alarm
-      state:
-        - armed_away
-        - armed_home
+  - condition: state
+    entity_id: alarm_control_panel.home_alarm
+    state:
+    - armed_away
+    - armed_home
   action:
-    - action: alarm_control_panel.alarm_trigger
-      entity_id: alarm_control_panel.home_alarm
-
-# Motion detected while armed_away only → starts entry delay
-# Ignored in armed_home so you can move around the house at night.
+  - action: alarm_control_panel.alarm_trigger
+    entity_id: alarm_control_panel.home_alarm
 - id: alarm_motion_trigger
-  alias: "Alarm: Motion detected while armed away"
+  alias: 'Alarm: Motion detected while armed away'
   mode: single
   trigger:
-    - platform: state
-      entity_id:
-        - binary_sensor.main_panel_office_motion
-        - binary_sensor.main_panel_family_room_motion
-      to: "on"
+  - platform: state
+    entity_id:
+    - binary_sensor.main_panel_office_motion
+    - binary_sensor.main_panel_family_room_motion
+    to: 'on'
   condition:
-    - condition: state
-      entity_id: alarm_control_panel.home_alarm
-      state: armed_away
+  - condition: state
+    entity_id: alarm_control_panel.home_alarm
+    state: armed_away
   action:
-    - action: alarm_control_panel.alarm_trigger
-      entity_id: alarm_control_panel.home_alarm
-
-# ============================================================
-# EXIT DELAY — beeping while arming (leaving the house)
-# ============================================================
-
-# Slow beep every 1.5s while alarm is in "arming" state.
-# Loop exits automatically when state changes.
+  - action: alarm_control_panel.alarm_trigger
+    entity_id: alarm_control_panel.home_alarm
 - id: alarm_exit_delay_beep
-  alias: "Alarm: Exit delay beeping"
+  alias: 'Alarm: Exit delay beeping'
   mode: restart
   trigger:
-    - platform: state
-      entity_id: alarm_control_panel.home_alarm
-      to: arming
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: arming
   action:
-    - repeat:
-        while:
-          - condition: state
-            entity_id: alarm_control_panel.home_alarm
-            state: arming
-        sequence:
-          - action: esphome.konnected_56a4fa_play_rtttl
-            data:
-              song_str: "exit:d=32,o=4,b=100:e,p"
-          - delay:
-              milliseconds: 1500
-
-# ============================================================
-# ENTRY DELAY — faster beeping while pending
-# ============================================================
-
-# Faster beep every 0.7s, higher pitch. Urgency signal:
-# "you have seconds to disarm."
+  - repeat:
+      while:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: arming
+      sequence:
+      - action: esphome.konnected_56a4fa_play_rtttl
+        data:
+          song_str: exit:d=32,o=4,b=100:e,p
+      - delay:
+          milliseconds: 1500
 - id: alarm_entry_delay_beep
-  alias: "Alarm: Entry delay beeping"
+  alias: 'Alarm: Entry delay beeping'
   mode: restart
   trigger:
-    - platform: state
-      entity_id: alarm_control_panel.home_alarm
-      to: pending
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: pending
   action:
-    - repeat:
-        while:
-          - condition: state
-            entity_id: alarm_control_panel.home_alarm
-            state: pending
-        sequence:
-          - action: esphome.konnected_56a4fa_play_rtttl
-            data:
-              song_str: "entry:d=32,o=4,b=100:e,p"
-          - delay:
-              milliseconds: 700
-
-# ============================================================
-# TRIGGERED — siren activation
-# ============================================================
-
-# Entry delay expired without disarming. Bell goes off.
+  - repeat:
+      while:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: pending
+      sequence:
+      - action: esphome.konnected_56a4fa_play_rtttl
+        data:
+          song_str: entry:d=32,o=4,b=100:e,p
+      - delay:
+          milliseconds: 700
 - id: alarm_triggered_siren
-  alias: "Alarm: Triggered — activate siren"
+  alias: 'Alarm: Triggered — activate siren'
   mode: single
   trigger:
-    - platform: state
-      entity_id: alarm_control_panel.home_alarm
-      to: triggered
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: triggered
   action:
-    - action: esphome.konnected_56a4fa_stop_rtttl
-    - action: switch.turn_on
-      entity_id: switch.alarm_panel_56ac70_siren
-
-# ============================================================
-# DISARMED — silence everything
-# ============================================================
-
-# Kill siren, stop beeping, play descending confirmation tone.
+  - action: esphome.konnected_56a4fa_stop_rtttl
+  - action: switch.turn_on
+    entity_id: switch.alarm_panel_56ac70_siren
 - id: alarm_disarmed
-  alias: "Alarm: Disarmed — all clear"
+  alias: 'Alarm: Disarmed — all clear'
   mode: single
   trigger:
-    - platform: state
-      entity_id: alarm_control_panel.home_alarm
-      to: disarmed
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: disarmed
   action:
-    - action: switch.turn_off
-      entity_id: switch.alarm_panel_56ac70_siren
-    - action: esphome.konnected_56a4fa_stop_rtttl
-    - delay:
-        milliseconds: 300
-    - action: esphome.konnected_56a4fa_play_rtttl
-      data:
-        song_str: "disarm:d=32,o=4,b=100:e,p,e,p,e"
-
-# ============================================================
-# ARMED — confirmation tone
-# ============================================================
-
-# Ascending chirp when alarm reaches armed state.
+  - action: switch.turn_off
+    entity_id: switch.alarm_panel_56ac70_siren
+  - action: esphome.konnected_56a4fa_stop_rtttl
+  - delay:
+      milliseconds: 300
+  - action: esphome.konnected_56a4fa_play_rtttl
+    data:
+      song_str: disarm:d=32,o=4,b=100:e,p,e,p,e
 - id: alarm_armed_confirmation
-  alias: "Alarm: Armed — confirmation tone"
+  alias: 'Alarm: Armed — confirmation tone'
   mode: single
   trigger:
-    - platform: state
-      entity_id: alarm_control_panel.home_alarm
-      to:
-        - armed_away
-        - armed_home
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to:
+    - armed_away
+    - armed_home
   action:
-    - action: esphome.konnected_56a4fa_play_rtttl
-      data:
-        song_str: "armed:d=32,o=4,b=100:e,p,e"
-
-# ============================================================
-# DOOR CHIME — when disarmed
-# ============================================================
-
-# Two-note chime when any door opens while disarmed.
+  - action: esphome.konnected_56a4fa_play_rtttl
+    data:
+      song_str: armed:d=32,o=4,b=100:e,p,e
 - id: door_chime
-  alias: "Door chime when disarmed"
+  alias: Door chime when disarmed
   mode: single
   trigger:
-    - platform: state
-      entity_id:
-        - binary_sensor.main_panel_front_door
-        - binary_sensor.main_panel_garage_door
-        - binary_sensor.main_panel_basement_door
-        - binary_sensor.main_panel_sliding_door
-      to: "on"
+  - platform: state
+    entity_id:
+    - binary_sensor.main_panel_front_door
+    - binary_sensor.main_panel_garage_door
+    - binary_sensor.main_panel_basement_door
+    - binary_sensor.main_panel_sliding_door
+    to: 'on'
   condition:
-    - condition: state
-      entity_id: alarm_control_panel.home_alarm
-      state: disarmed
+  - condition: state
+    entity_id: alarm_control_panel.home_alarm
+    state: disarmed
   action:
-    - action: esphome.konnected_56a4fa_play_rtttl
-      data:
-        song_str: "chime:d=32,o=4,b=100:e,p,e"
-# ============================================================
-# MEETING STATUS INDICATOR
-# ============================================================
-# Syncs Rachel's meeting button (ESPHome) to the Hue Go in the
-# hallway outside her office. Includes disconnect protection:
-# if the ESP32 goes offline, the hallway light turns off rather
-# than displaying stale state. On reconnect, it re-syncs.
-#
-# Signal flow:
-#   Slap button → ESP32 toggles switch.meeting_button_in_meeting
-#   → HA automation sets Hue Go red (meeting) or green (available)
-#
-# The dome LED on the button itself is driven directly by the
-# ESP32 firmware (GPIO27 → MOSFET), no automation needed.
-
-# --- Meeting started → hallway light red ---
+  - action: esphome.konnected_56a4fa_play_rtttl
+    data:
+      song_str: chime:d=32,o=4,b=100:e,p,e
 - id: meeting_status_on
-  alias: "Meeting: Status ON — hallway red"
+  alias: 'Meeting: Status ON — hallway red'
+  triggers:
+  - entity_id: switch.meeting_button_in_meeting
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - action: light.turn_on
+    data:
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      brightness: 150
+      transition: 1
+    target:
+      device_id: caa9c445375f8b67c1a29b11c8ae61c3
   mode: single
-  trigger:
-    - platform: state
-      entity_id: switch.meeting_button_in_meeting
-      to: "on"
-  condition: []
-  action:
-    - action: light.turn_on
-      target:
-        entity_id: light.meeting_light
-      data:
-        rgb_color: [255, 0, 0]
-        brightness: 150
-        transition: 1
-
-# --- Meeting ended → hallway light green ---
 - id: meeting_status_off
-  alias: "Meeting: Status OFF — hallway green"
+  alias: 'Meeting: Status OFF — hallway green'
+  triggers:
+  - entity_id: switch.meeting_button_in_meeting
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: light.turn_off
+    data:
+      transition: 1
+    target:
+      device_id: caa9c445375f8b67c1a29b11c8ae61c3
   mode: single
-  trigger:
-    - platform: state
-      entity_id: switch.meeting_button_in_meeting
-      to: "off"
-  condition: []
-  action:
-    - action: light.turn_off
-      target:
-        entity_id: light.meeting_light
-      data:
-        transition: 1
-
-# --- ESP32 disconnected → hallway light off ---
-# If the meeting button goes unavailable (WiFi drop, power loss,
-# crash), kill the hallway light immediately. Stale red is worse
-# than no signal — it means "don't knock" when maybe you can.
 - id: meeting_button_offline
-  alias: "Meeting: Button offline — hallway off"
+  alias: 'Meeting: Button offline — hallway off'
+  triggers:
+  - entity_id: switch.meeting_button_in_meeting
+    to: unavailable
+    for:
+      seconds: 10
+    trigger: state
+  conditions: []
+  actions:
+  - action: light.turn_off
+    target:
+      device_id: caa9c445375f8b67c1a29b11c8ae61c3
+    data:
+      transition: 2
   mode: single
-  trigger:
-    - platform: state
-      entity_id: switch.meeting_button_in_meeting
-      to: "unavailable"
-      for:
-        seconds: 10
-  condition: []
-  action:
-    - action: light.turn_off
-      target:
-        entity_id: light.meeting_light
-      data:
-        transition: 2
-
-# --- ESP32 reconnected → re-sync hallway light ---
-# When the button comes back online, immediately mirror its
-# current state to the hallway light. Handles reboots, WiFi
-# blips, and OTA updates gracefully.
 - id: meeting_button_reconnect
-  alias: "Meeting: Button reconnected — re-sync hallway"
-  mode: single
-  trigger:
-    - platform: state
-      entity_id: switch.meeting_button_in_meeting
-      from: "unavailable"
-  condition: []
-  action:
-    - choose:
-        - conditions:
-            - condition: state
-              entity_id: switch.meeting_button_in_meeting
-              state: "on"
-          sequence:
-            - action: light.turn_on
-              target:
-                entity_id: light.meeting_light
-              data:
-                rgb_color: [255, 0, 0]
-                brightness: 150
-                transition: 1
-        - conditions:
-            - condition: state
-              entity_id: switch.meeting_button_in_meeting
-              state: "off"
-          sequence:
-            - action: light.turn_off
-              target:
-                entity_id: light.meeting_light
-              data:
-                transition: 1
-
-# --- Auto-clear at end of workday ---
-# Safety net: if Rachel forgets to un-slap, reset at 6 PM.
-# Turns off both the ESP32 switch (which kills the dome LED
-# via firmware) and the hallway light.
-- id: meeting_status_auto_clear
-  alias: "Meeting: Auto-clear at 6 PM"
-  mode: single
-  trigger:
-    - platform: time
-      at: "18:00:00"
-  condition:
-    - condition: state
-      entity_id: switch.meeting_button_in_meeting
-      state: "on"
-  action:
-    - action: switch.turn_off
-      target:
+  alias: 'Meeting: Button reconnected — re-sync hallway'
+  triggers:
+  - entity_id: switch.meeting_button_in_meeting
+    from: unavailable
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
         entity_id: switch.meeting_button_in_meeting
-
-# ============================================================
-# GITOPS SYNC — poll and deploy
-# ============================================================
-
+        state: 'on'
+      sequence:
+      - action: light.turn_on
+        data:
+          rgb_color:
+          - 255
+          - 0
+          - 0
+          brightness: 150
+          transition: 1
+        target:
+          device_id: caa9c445375f8b67c1a29b11c8ae61c3
+    - conditions:
+      - condition: state
+        entity_id: switch.meeting_button_in_meeting
+        state: 'off'
+      sequence:
+      - action: light.turn_off
+        data:
+          transition: 1
+        target:
+          device_id: caa9c445375f8b67c1a29b11c8ae61c3
+  mode: single
 - id: gitops_sync_poll
-  alias: "GitOps: Poll and deploy"
-  description: "Fetch repo every 5 min; validate and restart HA on change"
+  alias: 'GitOps: Poll and deploy'
+  description: Fetch repo every 5 min; validate and restart HA on change
   trigger:
-    - platform: time_pattern
-      minutes: "/5"
+  - platform: time_pattern
+    minutes: /5
   action:
-    - service: shell_command.gitops_sync
+  - service: shell_command.gitops_sync
   mode: single
   max_exceeded: silent
