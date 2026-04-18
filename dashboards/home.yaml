@@ -217,15 +217,6 @@ views:
           - type: conditional
             conditions:
               - condition: state
-                entity: light.office_back_corner
-                state: "on"
-            card:
-              type: tile
-              entity: light.office_back_corner
-              name: Back Corner
-          - type: conditional
-            conditions:
-              - condition: state
                 entity: light.office_door
                 state: "on"
             card:
@@ -410,6 +401,15 @@ views:
               type: tile
               entity: light.upstairs_hallway_light
               name: Upstairs Hall
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: light.meeting_light
+                state: "on"
+            card:
+              type: tile
+              entity: light.meeting_light
+              name: Meeting Light
 
       # --- Outdoor ---
       - type: vertical-stack
@@ -854,19 +854,6 @@ views:
               - type: conditional
                 conditions:
                   - condition: state
-                    entity: light.office_back_corner
-                    state_not: unavailable
-                card:
-                  type: custom:mushroom-light-card
-                  entity: light.office_back_corner
-                  name: Back Corner
-                  layout: horizontal
-                  use_light_color: true
-                  show_brightness_control: false
-                  fill_container: true
-              - type: conditional
-                conditions:
-                  - condition: state
                     entity: light.office_door
                     state_not: unavailable
                 card:
@@ -1023,6 +1010,19 @@ views:
                   type: custom:mushroom-light-card
                   entity: light.upstairs_hallway_light
                   name: Upstairs Hall
+                  layout: horizontal
+                  use_light_color: true
+                  show_brightness_control: false
+                  fill_container: true
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.meeting_light
+                    state_not: unavailable
+                card:
+                  type: custom:mushroom-light-card
+                  entity: light.meeting_light
+                  name: Meeting Light
                   layout: horizontal
                   use_light_color: true
                   show_brightness_control: false
