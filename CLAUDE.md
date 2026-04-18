@@ -269,14 +269,14 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) 
 - **Global styling via theme.** The `noctis_kiosk.yaml` theme uses `card-mod-card` with `config.type` checks to automatically apply state-based backgrounds to all Mushroom cards. No per-card `card_mod` blocks in the dashboard YAML.
 - **fill_container: true** on all Mushroom cards in the Kiosk view for full grid-cell color coverage.
 - **Alarm animation** is on the Mushroom alarm chip in the sensor bar, using card-mod CSS `@keyframes` with Jinja2 state checks. Blue=armed_away, green=armed_home, amber=arming, red=pending/triggered.
-* **PR creation includes arming auto-merge.** When implementation is complete,
+- **PR creation includes arming auto-merge.** When implementation is complete,
   open a pull request as the final step — do not stop at "pushed the branch."
   PR title should match or clearly refine the issue title. PR body must include
   `Closes #<number>` so merge closes the issue, plus a short summary of what
   changed and why. Immediately after opening the PR, arm auto-merge with:
 
 ```bash
-  gh pr merge  --auto --squash --delete-branch
+    gh pr merge PR_NUMBER --auto --squash --delete-branch
 ```
 
   Use the number returned from `gh pr create`, or read it with `gh pr view
@@ -286,6 +286,7 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) 
   status checks (`YAML Lint`, `claude-review`) gate the merge and fire it
   when green. Skip auto-merge only if the PR is a draft — it won't arm on
   drafts and will error.
+
 ---
 
 ## Infrastructure Context
