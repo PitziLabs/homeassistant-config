@@ -1,0 +1,36 @@
+# HA Version Sync package
+# Reads the running HA version and dispatches it to GitHub on every full startup.
+#
+# Prerequisite: secrets.yaml must contain:
+#   github_pat: "Bearer <your-fine-grained-PAT>"
+#   (PAT needs Contents:Write on PitziLabs/homeassistant-config)
+
+command_line:
+  - sensor:
+      name: "HA Core Version"
+      unique_id: ha_core_version
+      command: "cat /config/.HA_VERSION"
+      scan_interval: 3600
+
+rest_command:
+  github_dispatch_version:
+    url: "https://api.github.com/repos/PitziLabs/homeassistant-config/dispatches"
+    method: POST
+    headers:
+      Accept: "application/vnd.github+json"
+      Authorization: !secret github_pat
+      X-GitHub-Api-Version: "2022-11-28"
+      User-Agent: "homeassistant-version-sync"
+    payload: >-
+      {"event_type": "ha-version-report", "client_payload": {"version": "{{ states('sensor.ha_core_version') }}"}}
+    content_type: "application/json; charset=utf-8"
+
+automation:
+  - id: ha_version_sync_on_start
+    alias: "HA Version Sync: Dispatch on Start"
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - service: rest_command.github_dispatch_version
+    mode: single

@@ -110,9 +110,37 @@ A `check_config` failure blocks merge. A YAML syntax error or a voluptuous schem
 
 `.ha-version` contains a single line matching the format of `/config/.HA_VERSION` on the running instance (e.g., `2026.4.1`). This pin ensures CI validates against the same HA release actually deployed — not latest, which may have breaking schema changes.
 
-### Card 2 — auto-sync (upcoming)
+### Card 2 — auto-sync via `repository_dispatch`
 
-Card 2 will wire the running HAOS instance to push version bumps via `repository_dispatch` whenever HA upgrades, keeping `.ha-version` in sync automatically. Until then, bump `.ha-version` manually after upgrading the HA VM.
+HAOS pushes the running version to GitHub on every full startup. The loop is event-driven — no polling, no cron, no external exposure.
+
+```
+homeassistant_started event
+  → rest_command POSTs to /repos/PitziLabs/homeassistant-config/dispatches
+  → ha-version-sync workflow validates payload, compares to .ha-version
+  → if drift: branch, bump, PR (opened with HA_SYNC_PAT so downstream workflows fire)
+  → PR triggers Card 1 ha-config-check against the new version
+  → auto-merge via existing branch protection Ruleset on pass
+```
+
+#### HA-side components (`packages/ha_version_sync.yaml`)
+
+- **`sensor.ha_core_version`** — `command_line` sensor reading `/config/.HA_VERSION`, refreshed hourly (startup dispatch is event-driven, not polled)
+- **`rest_command.github_dispatch_version`** — POSTs a `ha-version-report` dispatch event with `client_payload.version` to the GitHub API
+- **`automation.ha_version_sync_on_start`** — fires on `homeassistant_started`, calls the rest command; `mode: single` prevents burst duplication
+
+#### Workflow (`ha-version-sync.yml`)
+
+1. Validates the incoming `client_payload.version` against `^[0-9]+\.[0-9]+\.[0-9]+(b[0-9]+)?$` — dev builds are explicitly rejected; fail-closed on bad input before any shell interpolation
+2. Compares to `.ha-version` on `main`; exits 0 if versions match
+3. Checks for an existing open PR on `ha-version-bump/<version>` (idempotent — handles rapid reboot bursts)
+4. If drift and no existing PR: creates branch, bumps `.ha-version`, opens PR via `HA_SYNC_PAT`
+
+#### Why `HA_SYNC_PAT` instead of `GITHUB_TOKEN`
+
+GitHub's default `GITHUB_TOKEN` cannot trigger other GitHub Actions workflows on events it creates (this is an intentional anti-loop guard). The `ha-version-sync` workflow needs the version bump PR to fire `ha-config-check` and the Claude review — both of which run on `pull_request` events. Opening the PR with a fine-grained PAT (`HA_SYNC_PAT`) bypasses this restriction. The same PAT lives in HAOS `secrets.yaml` as `github_pat` (for the dispatch POST) and in repo Actions secrets as `HA_SYNC_PAT` (for PR creation).
+
+> **PAT rotation reminder:** Rotate `HA_SYNC_PAT` and `github_pat` annually. The PAT needs `Contents: Write` on this repo only.
 
 ## Config Governance
 
@@ -182,6 +210,8 @@ Seven sections:
 ├── automations.yaml          UI-authored automations (HA editor target; drift expected)
 ├── automations/
 │   └── meeting.yaml          Git-managed automations (pipeline-managed, PR-only)
+├── packages/
+│   └── ha_version_sync.yaml  HA Version Sync — startup dispatch to GitHub
 ├── groups.yaml               Door and motion sensor groups
 ├── secrets.yaml.example      Documents required secrets (actual secrets gitignored)
 ├── secrets.fake.yaml         Safe dummy secrets for CI check_config validation
@@ -197,7 +227,8 @@ Seven sections:
 │   ├── konnected-56a4fa.yaml Secondary panel (piezo) firmware
 │   └── secrets.yaml.example  ESPHome secrets template
 ├── .github/workflows/
-│   ├── ha-config-check.yml   HA check_config CI gate
+│   ├── ha-config-check.yml   HA check_config CI gate (Card 1)
+│   ├── ha-version-sync.yml   Auto-bump .ha-version on HAOS startup (Card 2)
 │   ├── lint.yml              YAML lint gate
 │   └── claude.yml            Claude Code automation
 ├── CLAUDE.md                 Project context for AI-assisted development
