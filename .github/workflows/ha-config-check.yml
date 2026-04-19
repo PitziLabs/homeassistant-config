@@ -1,28 +1,85 @@
-name: HA Config Check
+name: HA Version Sync
 
-"on":
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+on:
+  repository_dispatch:
+    types: [ha-version-report]
+
+permissions:
+  contents: read
 
 jobs:
-  ha-config-check:
-    name: HA Config Check
+  sync-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Validate version payload
+        env:
+          RAW_VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          if ! printf '%s' "$RAW_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(b[0-9]+)?$'; then
+            echo "::error::Version '${RAW_VERSION}' failed format check." \
+              "Expected: YYYY.MM.N or YYYY.MM.NbN. Dev builds not supported — update regex to widen."
+            exit 1
+          fi
+          echo "VERSION=$RAW_VERSION" >> "$GITHUB_ENV"
 
-      - name: Read HA version
-        id: version
-        run: echo "version=$(cat .ha-version)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - name: Copy fake secrets
-        run: cp secrets.fake.yaml secrets.yaml
+      - name: Compare versions
+        id: compare
+        run: |
+          CURRENT=$(cat .ha-version)
+          if [ "$CURRENT" = "$VERSION" ]; then
+            echo "Versions match ($VERSION) — nothing to do."
+            echo "match=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Drift detected: .ha-version=$CURRENT, HAOS reports=$VERSION"
+            echo "match=false" >> "$GITHUB_OUTPUT"
+            echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Run Home Assistant config check
-        uses: frenck/action-home-assistant@941d5d917f4c1c7a7e7d4087526daf90d53f4437 # v1.4.1
-        with:
-          path: "."
-          version: "${{ steps.version.outputs.version }}"
+      - name: Check for existing bump PR
+        if: steps.compare.outputs.match == 'false'
+        id: existing_pr
+        env:
+          GH_TOKEN: ${{ secrets.HA_SYNC_PAT }}
+        run: |
+          BRANCH="ha-version-bump/$VERSION"
+          COUNT=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$COUNT" -gt "0" ]; then
+            echo "PR already open for $BRANCH — idempotent exit."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create version bump branch and PR
+        if: steps.compare.outputs.match == 'false' && steps.existing_pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.HA_SYNC_PAT }}
+          CURRENT_VERSION: ${{ steps.compare.outputs.current }}
+        run: |
+          BRANCH="ha-version-bump/$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          printf '%s\n' "$VERSION" > .ha-version
+          git add .ha-version
+          git commit -m "Bump .ha-version to $VERSION (auto-dispatched from HAOS startup)"
+          git push origin "$BRANCH"
+          BODY="Auto-dispatched from the HAOS \`homeassistant_started\` event.
+
+          | | Version |
+          |---|---|
+          | Previous | \`${CURRENT_VERSION}\` |
+          | New | \`${VERSION}\` |
+
+          Card 1 [\`ha-config-check\`](../../actions/workflows/ha-config-check.yml) is the merge gate. Auto-merges via branch protection Ruleset once all checks pass.
+
+          > **Note:** Opened with \`HA_SYNC_PAT\` (not \`GITHUB_TOKEN\`) so downstream workflows fire. See README → Validation Pipeline for the \`GITHUB_TOKEN\` limitation.
+
+          @claude"
+          gh pr create \
+            --title "Bump .ha-version to ${VERSION}" \
+            --body "$BODY" \
+            --head "$BRANCH" \
+            --base main
