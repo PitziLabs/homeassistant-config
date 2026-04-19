@@ -92,6 +92,24 @@ This workflow is optimized for a single-maintainer project. For a team, I'd add:
 - **Automated deployment** via GitHub Actions — webhook on merge triggers `git pull` + `ha core check` + `ha core restart` on the HA VM, with rollback on check failure.
 - **Environment promotion** — a staging HA instance for testing dashboard changes before they hit the production wall display.
 
+## Config Governance
+
+Automation files are partitioned by governance model to prevent bidirectional sync conflicts:
+
+| File | Owner | Sync Direction | Edit Surface |
+|------|-------|----------------|--------------|
+| `automations.yaml` | UI-authored | git ← HA (manual, on drift) | HA editor (Settings → Automations) |
+| `automations/*.yaml` | Git-authored | git → HA (via GitOps) | PR only |
+
+**Why this matters:** The GitOps deploy pipeline uses `git reset --hard origin/main`. Any UI edit to a git-tracked automation would be silently clobbered on the next sync. The partition makes the authority explicit: `automations.yaml` is the HA editor's scratchpad, `automations/` is the pipeline's domain.
+
+**Reconciling UI drift:** When `automations.yaml` accumulates UI edits worth keeping:
+1. SSH to the HA VM: `cat /config/automations.yaml`
+2. Copy the file content into a local checkout
+3. Open a PR — automated review catches any issues
+
+**Adding new git-managed automations:** Create a new `.yaml` file under `automations/` (e.g., `automations/lighting.yaml`). HA merges all files in the directory at startup via `!include_dir_merge_list`.
+
 ## GitOps Auto-Deploy
 
 Config changes merge to `main` and deploy automatically — no SSH required.
@@ -139,7 +157,9 @@ Seven sections:
 
 ```
 ├── configuration.yaml        Core config: alarm, templates, frontend, Prometheus
-├── automations.yaml          8 alarm/chime automations (full lifecycle)
+├── automations.yaml          UI-authored automations (HA editor target; drift expected)
+├── automations/
+│   └── meeting.yaml          Git-managed automations (pipeline-managed, PR-only)
 ├── groups.yaml               Door and motion sensor groups
 ├── secrets.yaml.example      Documents required secrets (actual secrets gitignored)
 ├── dashboards/
