@@ -138,7 +138,12 @@ homeassistant_started event
 
 #### Why `HA_SYNC_PAT` instead of `GITHUB_TOKEN`
 
-GitHub's default `GITHUB_TOKEN` cannot trigger other GitHub Actions workflows on events it creates (this is an intentional anti-loop guard). The `ha-version-sync` workflow needs the version bump PR to fire `ha-config-check` and the Claude review — both of which run on `pull_request` events. Opening the PR with a fine-grained PAT (`HA_SYNC_PAT`) bypasses this restriction. The same PAT lives in HAOS `secrets.yaml` as `github_pat` (for the dispatch POST) and in repo Actions secrets as `HA_SYNC_PAT` (for PR creation).
+`HA_SYNC_PAT` is used for **both** `actions/checkout` (via `with: token:`) and `gh pr create` — two reasons, one token:
+
+1. **Downstream workflows won't fire on `GITHUB_TOKEN` events.** GitHub's default `GITHUB_TOKEN` cannot trigger other GitHub Actions workflows on events it creates (intentional anti-loop guard). The PR needs to fire `ha-config-check` and the Claude review — both run on `pull_request`. A PAT-opened PR bypasses this.
+2. **`github-actions[bot]` lacks push permission.** `actions/checkout` configures git credentials from its `token:` input (defaults to `GITHUB_TOKEN`). All `git push` calls in the job inherit those credentials. `github-actions[bot]` is denied write access to this repo by the branch protection ruleset, so the push to `ha-version-bump/<version>` fails with 403 unless the PAT is passed to checkout.
+
+The same PAT lives in HAOS `secrets.yaml` as `github_pat` (for the dispatch POST) and in repo Actions secrets as `HA_SYNC_PAT` (for checkout + PR creation).
 
 > **PAT rotation reminder:** Rotate `HA_SYNC_PAT` and `github_pat` annually. The PAT needs `Contents: Write` on this repo only.
 
