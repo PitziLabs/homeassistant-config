@@ -92,6 +92,28 @@ This workflow is optimized for a single-maintainer project. For a team, I'd add:
 - **Automated deployment** via GitHub Actions — webhook on merge triggers `git pull` + `ha core check` + `ha core restart` on the HA VM, with rollback on check failure.
 - **Environment promotion** — a staging HA instance for testing dashboard changes before they hit the production wall display.
 
+## Validation Pipeline
+
+Every PR runs Home Assistant's actual `check_config` validator as a CI gate — the same validator the daemon runs at startup. This catches schema errors, missing integrations, and bad `!include` paths that plain YAML linters miss entirely.
+
+### What the gate does
+
+The `ha-config-check` workflow (`.github/workflows/ha-config-check.yml`):
+
+1. Reads the pinned HA version from `.ha-version` at repo root
+2. Copies `secrets.fake.yaml` → `secrets.yaml` so `!secret` references resolve without exposing real credentials
+3. Runs `frenck/action-home-assistant` (pinned to a commit SHA for supply-chain hygiene) which pulls the exact HA Docker image for that version and runs `check_config` against the full config tree
+
+A `check_config` failure blocks merge. A YAML syntax error or a voluptuous schema violation will show the exact integration and line number in the job log.
+
+### `.ha-version`
+
+`.ha-version` contains a single line matching the format of `/config/.HA_VERSION` on the running instance (e.g., `2026.4.1`). This pin ensures CI validates against the same HA release actually deployed — not latest, which may have breaking schema changes.
+
+### Card 2 — auto-sync (upcoming)
+
+Card 2 will wire the running HAOS instance to push version bumps via `repository_dispatch` whenever HA upgrades, keeping `.ha-version` in sync automatically. Until then, bump `.ha-version` manually after upgrading the HA VM.
+
 ## Config Governance
 
 Automation files are partitioned by governance model to prevent bidirectional sync conflicts:
@@ -162,6 +184,8 @@ Seven sections:
 │   └── meeting.yaml          Git-managed automations (pipeline-managed, PR-only)
 ├── groups.yaml               Door and motion sensor groups
 ├── secrets.yaml.example      Documents required secrets (actual secrets gitignored)
+├── secrets.fake.yaml         Safe dummy secrets for CI check_config validation
+├── .ha-version               Pinned HA version for CI (matches running instance)
 ├── dashboards/
 │   ├── home.yaml             Two views: Home (mobile) + Kiosk (wall display)
 │   └── homelab-status.yaml   Homelab Status dashboard (7 sections)
@@ -172,6 +196,10 @@ Seven sections:
 │   ├── konnected-56ac70.yaml Main alarm panel firmware
 │   ├── konnected-56a4fa.yaml Secondary panel (piezo) firmware
 │   └── secrets.yaml.example  ESPHome secrets template
+├── .github/workflows/
+│   ├── ha-config-check.yml   HA check_config CI gate
+│   ├── lint.yml              YAML lint gate
+│   └── claude.yml            Claude Code automation
 ├── CLAUDE.md                 Project context for AI-assisted development
 └── .gitignore                Excludes runtime state, secrets, build artifacts
 ```
