@@ -6,6 +6,7 @@ homeassistant:
       trusted_networks:
         - 192.168.139.0/24
       allow_bypass_login: true
+  packages: !include_dir_named packages
 
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
