@@ -1,0 +1,28 @@
+name: HA Config Check
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ha-config-check:
+    name: HA Config Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read HA version
+        id: version
+        run: echo "version=$(cat .ha-version)" >> "$GITHUB_OUTPUT"
+
+      - name: Copy fake secrets
+        run: cp secrets.fake.yaml secrets.yaml
+
+      - name: Run Home Assistant config check
+        uses: frenck/action-home-assistant@941d5d917f4c1c7a7e7d4087526daf90d53f4437 # v1.4.1
+        with:
+          path: "."
+          version: "${{ steps.version.outputs.version }}"
