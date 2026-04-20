@@ -573,6 +573,49 @@ views:
         show_keypad: false
         view_layout:
           grid-area: alarm
+        card_mod:
+          style: |
+            ha-card {
+              {% set state = states('alarm_control_panel.home_alarm') %}
+              transition: background 0.6s ease, box-shadow 0.6s ease;
+              will-change: box-shadow, background;
+              {% if state == 'armed_home' %}
+                background: rgba(76, 175, 80, 0.06) !important;
+                animation: alarm-pulse-green 3.0s ease-in-out infinite;
+              {% elif state == 'armed_away' %}
+                background: rgba(79, 195, 247, 0.06) !important;
+                animation: alarm-pulse-blue 2.0s ease-in-out infinite;
+              {% elif state == 'arming' %}
+                background: rgba(255, 193, 7, 0.08) !important;
+                animation: alarm-pulse-amber 1.0s ease-in-out infinite;
+              {% elif state == 'pending' %}
+                background: rgba(244, 67, 54, 0.10) !important;
+                animation: alarm-pulse-red-pending 0.7s ease-in-out infinite;
+              {% elif state == 'triggered' %}
+                background: rgba(244, 67, 54, 0.14) !important;
+                animation: alarm-pulse-red-triggered 0.4s ease-in-out infinite;
+              {% endif %}
+            }
+            @keyframes alarm-pulse-green {
+              0%, 100% { box-shadow: 0 0 8px rgba(76, 175, 80, 0.3); }
+              50% { box-shadow: 0 0 32px rgba(76, 175, 80, 0.9); }
+            }
+            @keyframes alarm-pulse-blue {
+              0%, 100% { box-shadow: 0 0 8px rgba(79, 195, 247, 0.3); }
+              50% { box-shadow: 0 0 40px rgba(79, 195, 247, 0.9); }
+            }
+            @keyframes alarm-pulse-amber {
+              0%, 100% { box-shadow: 0 0 8px rgba(255, 193, 7, 0.3); }
+              50% { box-shadow: 0 0 32px rgba(255, 193, 7, 0.9); }
+            }
+            @keyframes alarm-pulse-red-pending {
+              0%, 100% { box-shadow: 0 0 8px rgba(244, 67, 54, 0.3); }
+              50% { box-shadow: 0 0 48px rgba(244, 67, 54, 0.9); }
+            }
+            @keyframes alarm-pulse-red-triggered {
+              0%, 100% { box-shadow: 0 0 8px rgba(244, 67, 54, 0.3); }
+              50% { box-shadow: 0 0 60px rgba(244, 67, 54, 0.9); }
+            }
 
       # ============================================================
       # SENSOR CHIPS — with animated alarm chip (grid area: sensors)
@@ -581,41 +624,30 @@ views:
         alignment: center
         view_layout:
           grid-area: sensors
+        card_mod:
+          style: |
+            ha-card {
+              {% set state = states('alarm_control_panel.home_alarm') %}
+              will-change: box-shadow, background;
+              {% if state == 'pending' %}
+                background: rgba(244, 67, 54, 0.08) !important;
+                animation: sensors-pulse-red-pending 0.7s ease-in-out infinite;
+              {% elif state == 'triggered' %}
+                background: rgba(244, 67, 54, 0.12) !important;
+                animation: sensors-pulse-red-triggered 0.4s ease-in-out infinite;
+              {% endif %}
+            }
+            @keyframes sensors-pulse-red-pending {
+              0%, 100% { box-shadow: 0 0 8px rgba(244, 67, 54, 0.3); }
+              50% { box-shadow: 0 0 32px rgba(244, 67, 54, 0.9); }
+            }
+            @keyframes sensors-pulse-red-triggered {
+              0%, 100% { box-shadow: 0 0 8px rgba(244, 67, 54, 0.3); }
+              50% { box-shadow: 0 0 48px rgba(244, 67, 54, 0.9); }
+            }
         chips:
           - type: alarm-control-panel
             entity: alarm_control_panel.home_alarm
-            card_mod:
-              style: |
-                ha-card {
-                  {% set state = states('alarm_control_panel.home_alarm') %}
-                  {% if state == 'armed_away' %}
-                    animation: pulse-blue 2s ease-in-out infinite;
-                  {% elif state == 'armed_home' %}
-                    animation: pulse-green 2s ease-in-out infinite;
-                  {% elif state == 'triggered' %}
-                    animation: pulse-red 0.5s ease-in-out infinite;
-                  {% elif state == 'arming' %}
-                    animation: pulse-amber 1s ease-in-out infinite;
-                  {% elif state == 'pending' %}
-                    animation: pulse-red 0.7s ease-in-out infinite;
-                  {% endif %}
-                }
-                @keyframes pulse-blue {
-                  0%, 100% { box-shadow: 0 0 4px rgba(79, 195, 247, 0.3); }
-                  50% { box-shadow: 0 0 16px rgba(79, 195, 247, 0.8); }
-                }
-                @keyframes pulse-green {
-                  0%, 100% { box-shadow: 0 0 4px rgba(76, 175, 80, 0.3); }
-                  50% { box-shadow: 0 0 16px rgba(76, 175, 80, 0.8); }
-                }
-                @keyframes pulse-red {
-                  0%, 100% { box-shadow: 0 0 4px rgba(244, 67, 54, 0.3); }
-                  50% { box-shadow: 0 0 20px rgba(244, 67, 54, 0.9); }
-                }
-                @keyframes pulse-amber {
-                  0%, 100% { box-shadow: 0 0 4px rgba(255, 193, 7, 0.3); }
-                  50% { box-shadow: 0 0 16px rgba(255, 193, 7, 0.8); }
-                }
           - type: entity
             entity: binary_sensor.main_panel_front_door
             icon: mdi:door
