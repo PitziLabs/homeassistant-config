@@ -680,6 +680,39 @@ views:
             icon: mdi:motion-sensor
             name: Family
             content_info: name
+          - type: template
+            content: >-
+              {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
+              {% set has_system = is_state('update.home_assistant_core_update', 'on')
+                               or is_state('update.home_assistant_operating_system_update', 'on')
+                               or is_state('update.home_assistant_supervisor_update', 'on') %}
+              {% if n == 0 %}All up to date
+              {% elif has_system %}{{ n }} update{% if n != 1 %}s{% endif %} · system
+              {% else %}{{ n }} update{% if n != 1 %}s{% endif %}
+              {% endif %}
+            icon: >-
+              {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
+              {% set has_system = is_state('update.home_assistant_core_update', 'on')
+                               or is_state('update.home_assistant_operating_system_update', 'on')
+                               or is_state('update.home_assistant_supervisor_update', 'on') %}
+              {% if n == 0 %}mdi:check-circle
+              {% elif has_system %}mdi:shield-refresh
+              {% else %}mdi:package-up
+              {% endif %}
+            icon_color: >-
+              {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
+              {% set has_system = is_state('update.home_assistant_core_update', 'on')
+                               or is_state('update.home_assistant_operating_system_update', 'on')
+                               or is_state('update.home_assistant_supervisor_update', 'on') %}
+              {% if n == 0 %}green
+              {% elif has_system %}var(--primary-color)
+              {% elif n >= 3 %}amber
+              {% else %}var(--secondary-text-color)
+              {% endif %}
+            tap_action:
+              action: none
+            hold_action:
+              action: none
 
       # ============================================================
       # COLUMN 1 — Kitchen + Play Room (grid area: col1)
