@@ -550,11 +550,12 @@ views:
     icon: mdi:monitor
     layout:
       grid-template-columns: 1fr 1fr 1fr 1fr
-      grid-template-rows: auto auto 1fr
+      grid-template-rows: auto auto 1fr auto
       grid-template-areas: |
         "alarm alarm alarm alarm"
         "sensors sensors sensors sensors"
         "col1 col2 col3 col4"
+        "metrics metrics metrics metrics"
       margin: 0
       padding: 8px
       grid-gap: 8px
@@ -1430,3 +1431,109 @@ views:
                     action: none
                   layout: horizontal
                   fill_container: true
+
+      # ============================================================
+      # METRICS STRIP — Personal metrics (grid area: metrics)
+      # Annotation goal zone values (168–172) derive from
+      # sensor.withings_weight_goal ≈ 170 lbs ± 2. Update if goal
+      # changes significantly; the goal series line stays dynamic.
+      # ============================================================
+      - type: custom:mod-card
+        view_layout:
+          grid-area: metrics
+        card_mod:
+          style: |
+            ha-card {
+              border: 1px solid var(--divider-color);
+              border-radius: 16px;
+              padding: 8px;
+              background: rgba(255, 255, 255, 0.015);
+              box-shadow: none;
+            }
+        card:
+          type: vertical-stack
+          cards:
+            - type: custom:mushroom-template-card
+              primary: >-
+                {{ states('sensor.withings_weight') | float | round(1) }} lbs
+              secondary: >-
+                {% set w = states('sensor.withings_weight') | float %}
+                {% set g = states('sensor.withings_weight_goal') | float %}
+                {% set delta = (w - g) | round(1) %}
+                {%- if delta <= 0 -%}At goal{%- else -%}{{ delta }} lbs to go{%- endif %}
+              icon: mdi:scale-bathroom
+              icon_color: >-
+                {% set w = states('sensor.withings_weight') | float %}
+                {% set g = states('sensor.withings_weight_goal') | float %}
+                {%- if w <= g -%}green{%- elif (w - g) < 5 -%}amber{%- else -%}red{%- endif %}
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+              layout: horizontal
+              fill_container: true
+            - type: custom:apexcharts-card
+              graph_span: 365d
+              header:
+                show: false
+              apex_config:
+                chart:
+                  background: transparent
+                  height: 130
+                  toolbar:
+                    show: false
+                stroke:
+                  curve: smooth
+                  width:
+                    - 2
+                    - 1
+                fill:
+                  type: gradient
+                  gradient:
+                    opacityFrom: 0.3
+                    opacityTo: 0.05
+                markers:
+                  size: 0
+                xaxis:
+                  labels:
+                    datetimeFormatter:
+                      month: MMM
+                yaxis:
+                  forceNiceScale: true
+                annotations:
+                  yaxis:
+                    - y: 168.0
+                      y2: 172.0
+                      fillColor: "rgba(76, 175, 80, 0.15)"
+                      borderColor: transparent
+                      label:
+                        text: ""
+                    - y: 170.0
+                      borderColor: "rgba(76, 175, 80, 0.5)"
+                      strokeDashArray: 4
+                      label:
+                        text: Goal
+                        position: left
+                        offsetX: 30
+                        style:
+                          color: "rgba(76, 175, 80, 0.8)"
+                          background: transparent
+                          fontSize: "10px"
+              series:
+                - entity: sensor.withings_weight
+                  name: Weight
+                  color: var(--primary-color)
+                  type: area
+                  statistics:
+                    type: mean
+                    period: day
+                - entity: sensor.withings_weight_goal
+                  name: Goal
+                  color: "rgba(76, 175, 80, 0.6)"
+                  type: line
+                  statistics:
+                    type: mean
+                    period: day
+                  show:
+                    legend_value: false
+                    in_header: false
