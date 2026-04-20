@@ -1,7 +1,7 @@
 # Konnected Alarm Panel — Secondary (Add-on) Board
 # Board: ESP8266 (NodeMCU v2 compatible)
 # MAC: 2C:F4:32:56:A4:FA
-# IP: 192.168.139.175
+# IP: (local network)
 #
 # Zone wiring:
 #   Zone 1 (GPIO5)  → Piezo buzzer (output)
