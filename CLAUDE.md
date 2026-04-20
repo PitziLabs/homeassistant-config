@@ -45,9 +45,11 @@ Two Konnected ESP8266 alarm panels running custom ESPHome firmware (fully inline
 - All 4 doors are entry-delay (no instant zones)
 - Motion: active in armed_away only, ignored in armed_home
 
-### Automations (`/config/automations.yaml`)
+### Automations
 
-7 alarm automations + 1 door chime:
+Automations are split across two locations with different governance models:
+
+**`/config/automations.yaml`** — UI-authored. HA editor writes here; git is updated manually on drift. 8 alarm/chime automations + 1 GitOps poller:
 
 | ID | Description |
 |----|-------------|
@@ -59,8 +61,15 @@ Two Konnected ESP8266 alarm panels running custom ESPHome firmware (fully inline
 | `alarm_disarmed` | Disarm → siren OFF, triple tick confirmation |
 | `alarm_armed_confirmation` | Armed → double tick confirmation |
 | `door_chime` | Door opens while disarmed → double tick |
+| `gitops_sync_poll` | `time_pattern` every 5 min → `shell_command.gitops_sync` |
 
 **RTTTL tone formula:** `d=32,o=4,b=100` — short ticks at octave 4. Differentiation by tick count (1=delay, 2=armed/chime, 3=disarm) and repeat interval.
+
+**`/config/automations/`** — Git-authored. Managed entirely via PR; never touched by the HA UI editor. HA merges these at startup via `!include_dir_merge_list`. Adding a new YAML file here is sufficient — no changes needed to `configuration.yaml`.
+
+| File | Automations |
+|------|-------------|
+| `meeting.yaml` | 4 automations: meeting button ON/OFF → hallway light red/off; button unavailable → light off; reconnect → re-sync state |
 
 ### Template Sensors (`/config/configuration.yaml`)
 
@@ -134,19 +143,11 @@ Two Konnected ESP8266 alarm panels running custom ESPHome firmware (fully inline
 
 ---
 
-## Dashboard Architecture (`/config/dashboards/home.yaml`)
+## Dashboard Architecture
 
-Registered as a named YAML dashboard in `configuration.yaml`:
-```yaml
-lovelace:
-  dashboards:
-    dashboard-home:
-      mode: yaml
-      filename: dashboards/home.yaml
-      title: Home
-      icon: mdi:home
-      show_in_sidebar: true
-```
+Two YAML dashboards registered in `configuration.yaml`. Both are fully git-tracked; no UI editing.
+
+### `dashboards/home.yaml` — Home + Kiosk
 
 ### Two Views
 
@@ -199,6 +200,20 @@ lovelace:
 - `/config/themes/kiosk_dark.yaml` — Original custom dark theme (deprecated, replaced by Noctis Kiosk)
 - Noctis base theme installed via HACS
 
+### `dashboards/homelab-status.yaml` — Homelab Status
+
+Seven-section infrastructure overview dashboard (sidebar: Homelab Status, icon: `mdi:server-network`):
+
+| Section | Entities surfaced |
+|---------|-------------------|
+| Neptune NAS (UGREEN DXP2800) | Pool health, disk temps, SMART hours, CPU/RAM/fan, LAN throughput |
+| Proxmox (pve) | Node CPU/memory/disk, HAOS + grafana-stack VM status, backup schedule |
+| Smart Home Coordinators | ZWA-2, ZBT-2, both Konnected panels — WiFi RSSI, firmware uptime |
+| Battery Health | 8-device grid with amber (<40%) / red (<20%) color thresholds |
+| Printer (HP M477fdw) | CMYK toner levels with color-coded warnings |
+| GitHub (cpitzi/prompts) | Commits, issues, PRs, stars, forks, watchers via REST sensor |
+| Meeting Indicator | ESP32 device state, WiFi signal quality, uptime |
+
 ### Kiosk Mode Config (top of dashboards/home.yaml)
 ```yaml
 kiosk_mode:
@@ -218,30 +233,69 @@ The "Kiosk" person/user (Settings → People) is a non-admin local account used 
 
 ```
 /config/
-├── configuration.yaml          # Core config: alarm panel, template sensors, frontend, prometheus
-├── automations.yaml            # 8 alarm/chime automations
+├── configuration.yaml          # Core config: alarm panel, template sensors, frontend, Prometheus
+├── automations.yaml            # UI-authored automations (alarm + door chime + GitOps poller)
+├── shell_commands.yaml         # shell_command.gitops_sync → scripts/gitops-sync.sh
 ├── groups.yaml                 # Door and motion sensor groups
-├── scripts.yaml                # Empty
-├── scenes.yaml                 # Empty
-├── secrets.yaml                # WiFi, alarm code, API keys (gitignored)
-├── secrets.yaml.example        # Documents required secrets
-├── .gitignore                  # Excludes .storage/, db, deps, tts, secrets, etc.
-├── .HA_VERSION                 # Tracks HA version (currently 2026.4.1)
+├── scripts.yaml                # Empty (placeholder)
+├── scenes.yaml                 # Empty (placeholder)
+├── secrets.yaml                # API keys, alarm code, WiFi (gitignored)
+├── secrets.yaml.example        # Documents required secret keys
+├── secrets.fake.yaml           # Safe dummy values for CI check_config validation
+├── .ha-version                 # Pinned HA version for CI (matches running instance)
+├── .yamllint.yml               # YAML lint rules (line length 250, indentation 2, etc.)
+├── automations/
+│   └── meeting.yaml            # Git-managed automations: meeting indicator (Rachel's office)
+├── packages/
+│   └── ha_version_sync.yaml    # HA version dispatch to GitHub on startup
+├── scripts/
+│   └── gitops-sync.sh          # GitOps deploy: fetch → validate → reload/restart or rollback
 ├── dashboards/
-│   └── home.yaml               # Two-view dashboard (Home + Kiosk)
+│   ├── home.yaml               # Two-view dashboard (Home mobile + Kiosk wall display)
+│   └── homelab-status.yaml     # Homelab Status (NAS, Proxmox, coordinators, battery, printer)
 ├── themes/
-│   ├── noctis_kiosk.yaml       # Active kiosk theme with card-mod overrides
-│   └── kiosk_dark.yaml         # Deprecated custom theme
+│   ├── noctis_kiosk.yaml       # Active theme: global card-mod state-based backgrounds
+│   └── kiosk_dark.yaml         # Deprecated custom theme (retained for reference)
 ├── esphome/
-│   ├── konnected-56ac70.yaml   # Main alarm panel firmware config
-│   ├── konnected-56a4fa.yaml   # Secondary panel (piezo buzzer) firmware config
+│   ├── konnected-56ac70.yaml   # Main panel firmware: 4 doors, 2 motion, siren
+│   ├── konnected-56a4fa.yaml   # Secondary panel firmware: piezo RTTTL annunciator
 │   ├── secrets.yaml            # ESPHome WiFi + API keys (gitignored)
-│   ├── secrets.yaml.example    # Documents required ESPHome secrets
-│   └── .esphome/               # Build artifacts (gitignored)
-└── blueprints/                 # Stock HA automation/script blueprints
+│   └── secrets.yaml.example    # Documents required ESPHome secrets
+├── .github/workflows/
+│   ├── ha-config-check.yml     # CI gate: HA check_config against pinned version
+│   ├── ha-version-sync.yml     # Auto-bump .ha-version on HAOS startup dispatch
+│   ├── lint.yml                # YAML lint gate
+│   ├── claude.yml              # Claude Code issue/PR automation
+│   └── claude-code-review.yml  # Automated PR review (bash safety, security, idempotency)
+├── CLAUDE.md                   # AI-assistant project context (this file)
+└── .gitignore                  # Excludes runtime state, secrets, build artifacts, blueprints
 ```
 
 ---
+
+## GitOps Auto-Deploy (`scripts/gitops-sync.sh`)
+
+`shell_command.gitops_sync` invokes `scripts/gitops-sync.sh` every 5 minutes via a `time_pattern` automation. The script:
+
+1. Acquires a lock file (prevents concurrent runs)
+2. Verifies branch is `main` before touching anything
+3. Fetches `origin/main`; exits 0 (silent) if already up to date
+4. On divergence: resets working tree to `origin/main`
+5. Calls `POST /core/check` via Supervisor API
+6. On success: smart-routes to the lightest reload (lovelace → automation → script → scene → full restart based on changed paths), sends success notification
+7. On failure: rolls back to pre-sync SHA, sends failure notification; HA Core is never restarted
+
+**Log:** `/config/gitops-sync.log` — timestamped, leveled; rotates at 1 MB.
+
+## Packages (`packages/ha_version_sync.yaml`)
+
+HA version tracking and auto-sync on startup. Components:
+
+- **`sensor.ha_core_version`** — `command_line` sensor reading `/config/.HA_VERSION` (HA's own runtime version file, uppercase), refreshed hourly
+- **`rest_command.github_dispatch_version`** — POSTs `ha-version-report` dispatch event with `client_payload.version` to GitHub API (uses `!secret github_pat`)
+- **`automation.ha_version_sync_on_start`** — fires on `homeassistant_started`, calls the rest command; `mode: single` prevents burst duplication on rapid reboots
+
+The GitHub workflow (`ha-version-sync.yml`) validates the incoming version, compares to `.ha-version` on main, and opens a PR to bump the pin if they differ. The PR triggers `ha-config-check` against the new version, then auto-merges on pass.
 
 ## Frontend Resource Loading
 
