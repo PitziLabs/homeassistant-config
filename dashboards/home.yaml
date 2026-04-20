@@ -1505,7 +1505,7 @@ views:
               layout: horizontal
               fill_container: true
             - type: custom:apexcharts-card
-              graph_span: 365d
+              graph_span: 30d
               header:
                 show: false
               apex_config:
@@ -1529,6 +1529,7 @@ views:
                 xaxis:
                   labels:
                     datetimeFormatter:
+                      day: "d MMM"
                       month: MMM
                 yaxis:
                   forceNiceScale: true
