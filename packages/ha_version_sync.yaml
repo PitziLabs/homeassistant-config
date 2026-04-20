@@ -28,9 +28,9 @@ rest_command:
 automation:
   - id: ha_version_sync_on_start
     alias: "HA Version Sync: Dispatch on Start"
-    trigger:
-      - platform: homeassistant
+    triggers:
+      - trigger: homeassistant
         event: start
-    action:
-      - service: rest_command.github_dispatch_version
+    actions:
+      - action: rest_command.github_dispatch_version
     mode: single
