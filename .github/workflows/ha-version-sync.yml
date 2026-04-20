@@ -39,23 +39,27 @@ jobs:
             echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Check for existing bump PR
+      - name: Check for existing bump branch or PR
         if: steps.compare.outputs.match == 'false'
-        id: existing_pr
+        id: existing
         env:
           GH_TOKEN: ${{ secrets.HA_SYNC_PAT }}
         run: |
           BRANCH="ha-version-bump/$VERSION"
-          COUNT=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
-          if [ "$COUNT" -gt "0" ]; then
-            echo "PR already open for $BRANCH — idempotent exit."
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+          PR_COUNT=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$PR_COUNT" -gt "0" ]; then
+            echo "Open PR exists for $BRANCH — idempotent exit."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
+            echo "::warning::Branch $BRANCH exists on remote with no open PR (orphan). Deleting and recreating."
+            git push origin --delete "$BRANCH"
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Create version bump branch and PR
-        if: steps.compare.outputs.match == 'false' && steps.existing_pr.outputs.exists == 'false'
+        if: steps.compare.outputs.match == 'false' && steps.existing.outputs.skip == 'false'
         env:
           GH_TOKEN: ${{ secrets.HA_SYNC_PAT }}
           CURRENT_VERSION: ${{ steps.compare.outputs.current }}
