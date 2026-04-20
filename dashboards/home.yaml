@@ -726,7 +726,6 @@ views:
                         use_light_color: true
                         show_brightness_control: false
                         fill_container: true
-
           - type: custom:mod-card
             card_mod:
               style: |
@@ -1007,7 +1006,6 @@ views:
                         use_light_color: true
                         show_brightness_control: false
                         fill_container: true
-
           - type: custom:mod-card
             card_mod:
               style: |
@@ -1092,7 +1090,6 @@ views:
                         use_light_color: true
                         show_brightness_control: false
                         fill_container: true
-
           - type: custom:mod-card
             card_mod:
               style: |
