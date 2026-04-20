@@ -1255,93 +1255,178 @@ views:
                         layout: horizontal
                         fill_container: true
 
-          # Sonos — conditional, bottom of Column 4
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: binary_sensor.sonos_office_leader
-                state: "on"
+          # Sonos — persistent status, bottom of Column 4
+          - type: custom:mod-card
+            card_mod:
+              style: |
+                ha-card {
+                  border: 1px solid var(--divider-color);
+                  border-radius: 16px;
+                  padding: 8px;
+                  background: rgba(255, 255, 255, 0.015);
+                  box-shadow: none;
+                }
             card:
-              type: custom:mini-media-player
-              entity: media_player.office
-              artwork: cover
-              hide:
-                power: true
-                icon: true
-                source: true
-              info: scroll
-
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: binary_sensor.sonos_kitchen_leader
-                state: "on"
-            card:
-              type: custom:mini-media-player
-              entity: media_player.kitchen
-              artwork: cover
-              hide:
-                power: true
-                icon: true
-                source: true
-              info: scroll
-
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: binary_sensor.sonos_dining_room_leader
-                state: "on"
-            card:
-              type: custom:mini-media-player
-              entity: media_player.dining_room
-              artwork: cover
-              hide:
-                power: true
-                icon: true
-                source: true
-              info: scroll
-
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: binary_sensor.sonos_master_bedroom_leader
-                state: "on"
-            card:
-              type: custom:mini-media-player
-              entity: media_player.master_bedroom
-              artwork: cover
-              hide:
-                power: true
-                icon: true
-                source: true
-              info: scroll
-
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: binary_sensor.sonos_basement_leader
-                state: "on"
-            card:
-              type: custom:mini-media-player
-              entity: media_player.basement
-              artwork: cover
-              hide:
-                power: true
-                icon: true
-                source: true
-              info: scroll
-
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: binary_sensor.sonos_roam_leader
-                state: "on"
-            card:
-              type: custom:mini-media-player
-              entity: media_player.roam_2
-              artwork: cover
-              hide:
-                power: true
-                icon: true
-                source: true
-              info: scroll
+              type: vertical-stack
+              cards:
+                - type: custom:mushroom-title-card
+                  title: Sonos
+                  subtitle: >-
+                    {% set ns = namespace(n=0) %}
+                    {% if states('binary_sensor.sonos_office_leader') == 'on' %}{% set ns.n = ns.n + 1 %}{% endif %}
+                    {% if states('binary_sensor.sonos_kitchen_leader') == 'on' %}{% set ns.n = ns.n + 1 %}{% endif %}
+                    {% if states('binary_sensor.sonos_dining_room_leader') == 'on' %}{% set ns.n = ns.n + 1 %}{% endif %}
+                    {% if states('binary_sensor.sonos_master_bedroom_leader') == 'on' %}{% set ns.n = ns.n + 1 %}{% endif %}
+                    {% if states('binary_sensor.sonos_basement_leader') == 'on' %}{% set ns.n = ns.n + 1 %}{% endif %}
+                    {% if states('binary_sensor.sonos_roam_leader') == 'on' %}{% set ns.n = ns.n + 1 %}{% endif %}
+                    {{- 'All quiet' if ns.n == 0 else (ns.n ~ ' of 6 playing') }}
+                - type: custom:mushroom-template-card
+                  primary: Office
+                  secondary: >-
+                    {% set entity = 'media_player.office' %}
+                    {% set st = states(entity) %}
+                    {% set members = state_attr(entity, 'group_members') %}
+                    {% set is_grouped = members is not none and (members | count) > 1 %}
+                    {% set is_leader = not is_grouped or members[0] == entity %}
+                    {% set title = state_attr(entity, 'media_title') %}
+                    {% set artist = state_attr(entity, 'media_artist') %}
+                    {% set track = title ~ ' — ' ~ artist if (title and artist) else title if title else artist if artist else 'Playing' %}
+                    {% set leader_name = (members[0] | replace('media_player.', '') | replace('_', ' ')).title() if (is_grouped and not is_leader and members is not none) else '' %}
+                    {{- 'Offline' if st == 'unavailable' else ('Grouped with ' ~ leader_name) if (is_grouped and not is_leader) else track if st == 'playing' else 'Paused' if st == 'paused' else 'Idle' if st == 'idle' else (st | title) }}
+                  icon: >-
+                    {% set st = states('media_player.office') %}
+                    {{- 'mdi:play-circle' if st == 'playing' else 'mdi:pause-circle' if st == 'paused' else 'mdi:music-circle-outline' if st == 'idle' else 'mdi:music-off' }}
+                  icon_color: >-
+                    {% set st = states('media_player.office') %}
+                    {{- 'green' if st == 'playing' else 'amber' if st == 'paused' else 'grey' if st == 'idle' else 'disabled' }}
+                  tap_action:
+                    action: none
+                  hold_action:
+                    action: none
+                  layout: horizontal
+                  fill_container: true
+                - type: custom:mushroom-template-card
+                  primary: Kitchen
+                  secondary: >-
+                    {% set entity = 'media_player.kitchen' %}
+                    {% set st = states(entity) %}
+                    {% set members = state_attr(entity, 'group_members') %}
+                    {% set is_grouped = members is not none and (members | count) > 1 %}
+                    {% set is_leader = not is_grouped or members[0] == entity %}
+                    {% set title = state_attr(entity, 'media_title') %}
+                    {% set artist = state_attr(entity, 'media_artist') %}
+                    {% set track = title ~ ' — ' ~ artist if (title and artist) else title if title else artist if artist else 'Playing' %}
+                    {% set leader_name = (members[0] | replace('media_player.', '') | replace('_', ' ')).title() if (is_grouped and not is_leader and members is not none) else '' %}
+                    {{- 'Offline' if st == 'unavailable' else ('Grouped with ' ~ leader_name) if (is_grouped and not is_leader) else track if st == 'playing' else 'Paused' if st == 'paused' else 'Idle' if st == 'idle' else (st | title) }}
+                  icon: >-
+                    {% set st = states('media_player.kitchen') %}
+                    {{- 'mdi:play-circle' if st == 'playing' else 'mdi:pause-circle' if st == 'paused' else 'mdi:music-circle-outline' if st == 'idle' else 'mdi:music-off' }}
+                  icon_color: >-
+                    {% set st = states('media_player.kitchen') %}
+                    {{- 'green' if st == 'playing' else 'amber' if st == 'paused' else 'grey' if st == 'idle' else 'disabled' }}
+                  tap_action:
+                    action: none
+                  hold_action:
+                    action: none
+                  layout: horizontal
+                  fill_container: true
+                - type: custom:mushroom-template-card
+                  primary: Dining Room
+                  secondary: >-
+                    {% set entity = 'media_player.dining_room' %}
+                    {% set st = states(entity) %}
+                    {% set members = state_attr(entity, 'group_members') %}
+                    {% set is_grouped = members is not none and (members | count) > 1 %}
+                    {% set is_leader = not is_grouped or members[0] == entity %}
+                    {% set title = state_attr(entity, 'media_title') %}
+                    {% set artist = state_attr(entity, 'media_artist') %}
+                    {% set track = title ~ ' — ' ~ artist if (title and artist) else title if title else artist if artist else 'Playing' %}
+                    {% set leader_name = (members[0] | replace('media_player.', '') | replace('_', ' ')).title() if (is_grouped and not is_leader and members is not none) else '' %}
+                    {{- 'Offline' if st == 'unavailable' else ('Grouped with ' ~ leader_name) if (is_grouped and not is_leader) else track if st == 'playing' else 'Paused' if st == 'paused' else 'Idle' if st == 'idle' else (st | title) }}
+                  icon: >-
+                    {% set st = states('media_player.dining_room') %}
+                    {{- 'mdi:play-circle' if st == 'playing' else 'mdi:pause-circle' if st == 'paused' else 'mdi:music-circle-outline' if st == 'idle' else 'mdi:music-off' }}
+                  icon_color: >-
+                    {% set st = states('media_player.dining_room') %}
+                    {{- 'green' if st == 'playing' else 'amber' if st == 'paused' else 'grey' if st == 'idle' else 'disabled' }}
+                  tap_action:
+                    action: none
+                  hold_action:
+                    action: none
+                  layout: horizontal
+                  fill_container: true
+                - type: custom:mushroom-template-card
+                  primary: Master Bedroom
+                  secondary: >-
+                    {% set entity = 'media_player.master_bedroom' %}
+                    {% set st = states(entity) %}
+                    {% set members = state_attr(entity, 'group_members') %}
+                    {% set is_grouped = members is not none and (members | count) > 1 %}
+                    {% set is_leader = not is_grouped or members[0] == entity %}
+                    {% set title = state_attr(entity, 'media_title') %}
+                    {% set artist = state_attr(entity, 'media_artist') %}
+                    {% set track = title ~ ' — ' ~ artist if (title and artist) else title if title else artist if artist else 'Playing' %}
+                    {% set leader_name = (members[0] | replace('media_player.', '') | replace('_', ' ')).title() if (is_grouped and not is_leader and members is not none) else '' %}
+                    {{- 'Offline' if st == 'unavailable' else ('Grouped with ' ~ leader_name) if (is_grouped and not is_leader) else track if st == 'playing' else 'Paused' if st == 'paused' else 'Idle' if st == 'idle' else (st | title) }}
+                  icon: >-
+                    {% set st = states('media_player.master_bedroom') %}
+                    {{- 'mdi:play-circle' if st == 'playing' else 'mdi:pause-circle' if st == 'paused' else 'mdi:music-circle-outline' if st == 'idle' else 'mdi:music-off' }}
+                  icon_color: >-
+                    {% set st = states('media_player.master_bedroom') %}
+                    {{- 'green' if st == 'playing' else 'amber' if st == 'paused' else 'grey' if st == 'idle' else 'disabled' }}
+                  tap_action:
+                    action: none
+                  hold_action:
+                    action: none
+                  layout: horizontal
+                  fill_container: true
+                - type: custom:mushroom-template-card
+                  primary: Basement
+                  secondary: >-
+                    {% set entity = 'media_player.basement' %}
+                    {% set st = states(entity) %}
+                    {% set members = state_attr(entity, 'group_members') %}
+                    {% set is_grouped = members is not none and (members | count) > 1 %}
+                    {% set is_leader = not is_grouped or members[0] == entity %}
+                    {% set title = state_attr(entity, 'media_title') %}
+                    {% set artist = state_attr(entity, 'media_artist') %}
+                    {% set track = title ~ ' — ' ~ artist if (title and artist) else title if title else artist if artist else 'Playing' %}
+                    {% set leader_name = (members[0] | replace('media_player.', '') | replace('_', ' ')).title() if (is_grouped and not is_leader and members is not none) else '' %}
+                    {{- 'Offline' if st == 'unavailable' else ('Grouped with ' ~ leader_name) if (is_grouped and not is_leader) else track if st == 'playing' else 'Paused' if st == 'paused' else 'Idle' if st == 'idle' else (st | title) }}
+                  icon: >-
+                    {% set st = states('media_player.basement') %}
+                    {{- 'mdi:play-circle' if st == 'playing' else 'mdi:pause-circle' if st == 'paused' else 'mdi:music-circle-outline' if st == 'idle' else 'mdi:music-off' }}
+                  icon_color: >-
+                    {% set st = states('media_player.basement') %}
+                    {{- 'green' if st == 'playing' else 'amber' if st == 'paused' else 'grey' if st == 'idle' else 'disabled' }}
+                  tap_action:
+                    action: none
+                  hold_action:
+                    action: none
+                  layout: horizontal
+                  fill_container: true
+                - type: custom:mushroom-template-card
+                  primary: Roam
+                  secondary: >-
+                    {% set entity = 'media_player.roam_2' %}
+                    {% set st = states(entity) %}
+                    {% set members = state_attr(entity, 'group_members') %}
+                    {% set is_grouped = members is not none and (members | count) > 1 %}
+                    {% set is_leader = not is_grouped or members[0] == entity %}
+                    {% set title = state_attr(entity, 'media_title') %}
+                    {% set artist = state_attr(entity, 'media_artist') %}
+                    {% set track = title ~ ' — ' ~ artist if (title and artist) else title if title else artist if artist else 'Playing' %}
+                    {% set leader_name = (members[0] | replace('media_player.', '') | replace('_', ' ')).title() if (is_grouped and not is_leader and members is not none) else '' %}
+                    {{- 'Offline' if st == 'unavailable' else ('Grouped with ' ~ leader_name) if (is_grouped and not is_leader) else track if st == 'playing' else 'Paused' if st == 'paused' else 'Idle' if st == 'idle' else (st | title) }}
+                  icon: >-
+                    {% set st = states('media_player.roam_2') %}
+                    {{- 'mdi:play-circle' if st == 'playing' else 'mdi:pause-circle' if st == 'paused' else 'mdi:music-circle-outline' if st == 'idle' else 'mdi:music-off' }}
+                  icon_color: >-
+                    {% set st = states('media_player.roam_2') %}
+                    {{- 'green' if st == 'playing' else 'amber' if st == 'paused' else 'grey' if st == 'idle' else 'disabled' }}
+                  tap_action:
+                    action: none
+                  hold_action:
+                    action: none
+                  layout: horizontal
+                  fill_container: true
