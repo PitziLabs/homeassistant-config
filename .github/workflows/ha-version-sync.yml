@@ -60,6 +60,8 @@ jobs:
           GH_TOKEN: ${{ secrets.HA_SYNC_PAT }}
           CURRENT_VERSION: ${{ steps.compare.outputs.current }}
         run: |
+          git config user.name "ha-version-sync[bot]"
+          git config user.email "ha-version-sync@users.noreply.github.com"
           BRANCH="ha-version-bump/$VERSION"
           git checkout -b "$BRANCH"
           printf '%s\n' "$VERSION" > .ha-version
