@@ -176,3 +176,28 @@ template:
         unique_id: any_switch_on
         state: >
           {{ is_state('switch.play_room_outlet', 'on') }}
+
+  - light:
+      - name: "Floor Lamp Composite"
+        unique_id: floor_lamp_composite
+        turn_on:
+          - service: switch.turn_on
+            target:
+              entity_id: switch.family_room_outlets
+          - delay: "00:00:01"
+          - service: light.turn_on
+            target:
+              entity_id: light.floor_lamp
+            data:
+              brightness: "{{ brightness | default(255) }}"
+        turn_off:
+          - service: light.turn_off
+            target:
+              entity_id: light.floor_lamp
+          - delay: "00:00:01"
+          - service: switch.turn_off
+            target:
+              entity_id: switch.family_room_outlets
+        state: >
+          {{ is_state('switch.family_room_outlets', 'on') and is_state('light.floor_lamp', 'on') }}
+        level: "{{ state_attr('light.floor_lamp', 'brightness') | int(0) }}"
