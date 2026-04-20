@@ -963,7 +963,7 @@ views:
                         fill_container: true
 
       # ============================================================
-      # COLUMN 3 — Family Room + Entry + Switches (grid area: col3)
+      # COLUMN 3 — Family Room + Entry + Infra (grid area: col3)
       # ============================================================
       - type: vertical-stack
         view_layout:
@@ -1137,23 +1137,264 @@ views:
               type: vertical-stack
               cards:
                 - type: custom:mushroom-title-card
-                  title: Switches
+                  title: Infra
                 - type: grid
-                  columns: 2
+                  columns: 3
                   square: false
                   cards:
-                    - type: conditional
-                      conditions:
-                        - condition: state
-                          entity: switch.play_room_outlet
-                          state_not: unavailable
-                      card:
-                        type: custom:mushroom-entity-card
-                        entity: switch.play_room_outlet
-                        name: Play Room Outlet
-                        icon: mdi:power-plug
-                        layout: horizontal
-                        fill_container: true
+                    - type: custom:apexcharts-card
+                      chart_type: radialBar
+                      header:
+                        show: true
+                        show_states: true
+                        colorize_states: true
+                      series:
+                        - entity: sensor.ugreen_nas_cpu_usage
+                          name: NAS CPU
+                          min: 0
+                          max: 100
+                          color_threshold:
+                            - value: 0
+                              color: "#4caf50"
+                            - value: 50
+                              color: "#ffc107"
+                            - value: 80
+                              color: "#f44336"
+                      apex_config:
+                        chart:
+                          background: transparent
+                          toolbar:
+                            show: false
+                          sparkline:
+                            enabled: true
+                        plotOptions:
+                          radialBar:
+                            hollow:
+                              size: "55%"
+                            track:
+                              background: "rgba(255, 255, 255, 0.08)"
+                            dataLabels:
+                              value:
+                                fontSize: "14px"
+                                formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
+                              name:
+                                fontSize: "11px"
+                        yaxis:
+                          min: 0
+                          max: 100
+                    - type: custom:apexcharts-card
+                      chart_type: radialBar
+                      header:
+                        show: true
+                        show_states: true
+                        colorize_states: true
+                      series:
+                        - entity: sensor.ugreen_nas_cpu_temperature
+                          name: NAS Temp
+                          min: 20
+                          max: 90
+                          color_threshold:
+                            - value: 0
+                              color: "#4caf50"
+                            - value: 55
+                              color: "#ffc107"
+                            - value: 70
+                              color: "#f44336"
+                      apex_config:
+                        chart:
+                          background: transparent
+                          toolbar:
+                            show: false
+                          sparkline:
+                            enabled: true
+                        plotOptions:
+                          radialBar:
+                            hollow:
+                              size: "55%"
+                            track:
+                              background: "rgba(255, 255, 255, 0.08)"
+                            dataLabels:
+                              value:
+                                fontSize: "14px"
+                                formatter: "EVAL:function(val) { return Math.round(val) + '°C'; }"
+                              name:
+                                fontSize: "11px"
+                        yaxis:
+                          min: 20
+                          max: 90
+                    - type: custom:apexcharts-card
+                      chart_type: radialBar
+                      header:
+                        show: true
+                        show_states: true
+                        colorize_states: true
+                      series:
+                        - entity: sensor.pve_memory_usage_percentage
+                          name: pve Mem
+                          min: 0
+                          max: 100
+                          color_threshold:
+                            - value: 0
+                              color: "#4caf50"
+                            - value: 75
+                              color: "#ffc107"
+                            - value: 90
+                              color: "#f44336"
+                      apex_config:
+                        chart:
+                          background: transparent
+                          toolbar:
+                            show: false
+                          sparkline:
+                            enabled: true
+                        plotOptions:
+                          radialBar:
+                            hollow:
+                              size: "55%"
+                            track:
+                              background: "rgba(255, 255, 255, 0.08)"
+                            dataLabels:
+                              value:
+                                fontSize: "14px"
+                                formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
+                              name:
+                                fontSize: "11px"
+                        yaxis:
+                          min: 0
+                          max: 100
+                - type: grid
+                  columns: 3
+                  square: false
+                  cards:
+                    - type: custom:apexcharts-card
+                      chart_type: radialBar
+                      header:
+                        show: true
+                        show_states: true
+                        colorize_states: true
+                      series:
+                        - entity: sensor.haos_17_1_memory_usage_percentage
+                          name: HAOS Mem
+                          min: 0
+                          max: 100
+                          color_threshold:
+                            - value: 0
+                              color: "#4caf50"
+                            - value: 70
+                              color: "#ffc107"
+                            - value: 85
+                              color: "#f44336"
+                      apex_config:
+                        chart:
+                          background: transparent
+                          toolbar:
+                            show: false
+                          sparkline:
+                            enabled: true
+                        plotOptions:
+                          radialBar:
+                            hollow:
+                              size: "55%"
+                            track:
+                              background: "rgba(255, 255, 255, 0.08)"
+                            dataLabels:
+                              value:
+                                fontSize: "14px"
+                                formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
+                              name:
+                                fontSize: "11px"
+                        yaxis:
+                          min: 0
+                          max: 100
+                    - type: custom:apexcharts-card
+                      chart_type: radialBar
+                      header:
+                        show: true
+                        show_states: true
+                        colorize_states: true
+                      series:
+                        - entity: sensor.grafana_stack_memory_usage_percentage
+                          name: Grafana Mem
+                          min: 0
+                          max: 100
+                          color_threshold:
+                            - value: 0
+                              color: "#4caf50"
+                            - value: 70
+                              color: "#ffc107"
+                            - value: 85
+                              color: "#f44336"
+                      apex_config:
+                        chart:
+                          background: transparent
+                          toolbar:
+                            show: false
+                          sparkline:
+                            enabled: true
+                        plotOptions:
+                          radialBar:
+                            hollow:
+                              size: "55%"
+                            track:
+                              background: "rgba(255, 255, 255, 0.08)"
+                            dataLabels:
+                              value:
+                                fontSize: "14px"
+                                formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
+                              name:
+                                fontSize: "11px"
+                        yaxis:
+                          min: 0
+                          max: 100
+                    # NAS Volume: data_generator computes used/total*100 from raw byte sensors.
+                    # Returns empty series if either sensor is unavailable (gauge stays blank).
+                    - type: custom:apexcharts-card
+                      chart_type: radialBar
+                      header:
+                        show: true
+                        show_states: true
+                        colorize_states: true
+                      series:
+                        - entity: sensor.ugreen_nas_pool_1_volume_1_used_size_raw
+                          name: NAS Vol
+                          min: 0
+                          max: 100
+                          color_threshold:
+                            - value: 0
+                              color: "#4caf50"
+                            - value: 70
+                              color: "#ffc107"
+                            - value: 85
+                              color: "#f44336"
+                          data_generator: |
+                            const totalSensor = hass.states['sensor.ugreen_nas_pool_1_volume_1_total_size_raw'];
+                            if (!totalSensor) return [];
+                            const used = parseFloat(entity.state);
+                            const total = parseFloat(totalSensor.state);
+                            if (!isFinite(used) || !isFinite(total) || total === 0) return [];
+                            return [[Date.now(), used / total * 100]];
+                      apex_config:
+                        chart:
+                          background: transparent
+                          toolbar:
+                            show: false
+                          sparkline:
+                            enabled: true
+                        plotOptions:
+                          radialBar:
+                            hollow:
+                              size: "55%"
+                            track:
+                              background: "rgba(255, 255, 255, 0.08)"
+                            dataLabels:
+                              value:
+                                fontSize: "14px"
+                                formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
+                              name:
+                                fontSize: "11px"
+                        yaxis:
+                          min: 0
+                          max: 100
 
       # ============================================================
       # COLUMN 4 — Weather + Outdoor + Sonos (grid area: col4)
