@@ -88,4 +88,5 @@ jobs:
             --title "Bump .ha-version to ${VERSION}" \
             --body "$BODY" \
             --head "$BRANCH" \
-            --base main
+            --base main)
+          gh pr merge --auto --squash "$PR_URL"
