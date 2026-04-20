@@ -84,7 +84,7 @@ jobs:
           > **Note:** Opened with \`HA_SYNC_PAT\` (not \`GITHUB_TOKEN\`) so downstream workflows fire. See README → Validation Pipeline for the \`GITHUB_TOKEN\` limitation.
 
           @claude"
-          gh pr create \
+          gh pr create --auto \
             --title "Bump .ha-version to ${VERSION}" \
             --body "$BODY" \
             --head "$BRANCH" \
