@@ -26,8 +26,11 @@ Proxmox VE (hypervisor)
 │   │   └── Secondary Panel — piezo annunciator (ESP8266)
 │   ├── YAML Configuration ← this repo
 │   │   ├── configuration.yaml — core config, alarm platform, template sensors
-│   │   ├── automations.yaml — alarm lifecycle + door chime
-│   │   ├── dashboards/home.yaml — Home (mobile) + Kiosk (wall display) views
+│   │   ├── automations.yaml — alarm lifecycle + door chime + GitOps poller
+│   │   ├── automations/ — git-managed automations (meeting indicator)
+│   │   ├── packages/ — HA version sync (startup dispatch to GitHub)
+│   │   ├── scripts/gitops-sync.sh — fetch → validate → smart reload or rollback
+│   │   ├── dashboards/ — Home (mobile) + Kiosk (wall display) + Homelab Status
 │   │   └── themes/noctis_kiosk.yaml — global card-mod state styling
 │   └── .storage/ — HA-managed runtime state (excluded from git)
 ├── Firewalla Gold SE (192.168.139.1) — network firewall
@@ -61,11 +64,11 @@ This project uses an AI-augmented development process that separates architectur
 │  4. MERGE — GitHub (automerge enabled)                  │
 │     PR merges to main after approval.                   │
 ├─────────────────────────────────────────────────────────┤
-│  5. DEPLOY — SSH to HA VM                               │
-│     git pull from /homeassistant                        │
-│     ha core check (validate config)                     │
-│     ha core restart                                     │
-│     Visual verification on target device                │
+│  5. DEPLOY — GitOps auto-deploy (no SSH required)       │
+│     scripts/gitops-sync.sh polls every 5 minutes.       │
+│     On drift: fetch → Supervisor check_config →         │
+│     smart reload (lovelace/automations/full restart).   │
+│     Failure: auto-rollback + mobile notification.       │
 ├─────────────────────────────────────────────────────────┤
 │  6. ITERATE — back to step 1                            │
 │     Observe behavior on real hardware.                  │
@@ -84,13 +87,13 @@ This project uses an AI-augmented development process that separates architectur
 
 **The deploy step includes validation.** `ha core check` catches YAML syntax errors and missing entity references before a restart. Visual verification on the target device (phone for mobile view, wall display for kiosk) confirms the actual rendered output matches intent.
 
-### What I'd Change at Scale
+### What's Already Here vs. What Would Scale Further
 
-This workflow is optimized for a single-maintainer project. For a team, I'd add:
+The CI pipeline and auto-deploy described in the sections below are implemented. What would additionally scale for a team:
 
-- **A CI pipeline** running `yamllint` and custom validators on PR (checking entity IDs against a known inventory, verifying theme references resolve, flagging secrets references that don't have `.example` counterparts).
-- **Automated deployment** via GitHub Actions — webhook on merge triggers `git pull` + `ha core check` + `ha core restart` on the HA VM, with rollback on check failure.
-- **Environment promotion** — a staging HA instance for testing dashboard changes before they hit the production wall display.
+- **Entity inventory validation** — a custom CI step checking entity IDs in dashboard YAML against a known-good registry snapshot, catching references to renamed or deleted entities before deployment.
+- **Environment promotion** — a staging HA instance for testing dashboard changes before they propagate to the production wall display.
+- **PR-scoped pre-deployment previews** — spinning up a temporary HA Docker container per PR to render config check output inline on the review.
 
 ## Validation Pipeline
 
@@ -212,32 +215,37 @@ Seven sections:
 
 ```
 ├── configuration.yaml        Core config: alarm, templates, frontend, Prometheus
-├── automations.yaml          UI-authored automations (HA editor target; drift expected)
-├── automations/
-│   └── meeting.yaml          Git-managed automations (pipeline-managed, PR-only)
-├── packages/
-│   └── ha_version_sync.yaml  HA Version Sync — startup dispatch to GitHub
+├── automations.yaml          UI-authored automations (alarm + door chime + GitOps poller)
+├── shell_commands.yaml       shell_command.gitops_sync → scripts/gitops-sync.sh
 ├── groups.yaml               Door and motion sensor groups
 ├── secrets.yaml.example      Documents required secrets (actual secrets gitignored)
 ├── secrets.fake.yaml         Safe dummy secrets for CI check_config validation
 ├── .ha-version               Pinned HA version for CI (matches running instance)
+├── .yamllint.yml             YAML lint rules for CI gate
+├── automations/
+│   └── meeting.yaml          Git-managed automations (PR-only; never HA UI)
+├── packages/
+│   └── ha_version_sync.yaml  HA version dispatch to GitHub on startup
+├── scripts/
+│   └── gitops-sync.sh        GitOps deploy: fetch → validate → smart reload or rollback
 ├── dashboards/
 │   ├── home.yaml             Two views: Home (mobile) + Kiosk (wall display)
-│   └── homelab-status.yaml   Homelab Status dashboard (7 sections)
+│   └── homelab-status.yaml   Homelab Status: NAS, Proxmox, coordinators, battery, printer
 ├── themes/
 │   ├── noctis_kiosk.yaml     Active theme with global card-mod state styling
 │   └── kiosk_dark.yaml       Deprecated — retained for reference
 ├── esphome/
-│   ├── konnected-56ac70.yaml Main alarm panel firmware
-│   ├── konnected-56a4fa.yaml Secondary panel (piezo) firmware
+│   ├── konnected-56ac70.yaml Main alarm panel firmware (4 doors, 2 motion, siren)
+│   ├── konnected-56a4fa.yaml Secondary panel firmware (piezo RTTTL annunciator)
 │   └── secrets.yaml.example  ESPHome secrets template
 ├── .github/workflows/
 │   ├── ha-config-check.yml   HA check_config CI gate (Card 1)
 │   ├── ha-version-sync.yml   Auto-bump .ha-version on HAOS startup (Card 2)
 │   ├── lint.yml              YAML lint gate
-│   └── claude.yml            Claude Code automation
+│   ├── claude.yml            Claude Code issue/PR automation
+│   └── claude-code-review.yml Automated PR review (bash safety, security, idempotency)
 ├── CLAUDE.md                 Project context for AI-assisted development
-└── .gitignore                Excludes runtime state, secrets, build artifacts
+└── .gitignore                Excludes runtime state, secrets, build artifacts, blueprints
 ```
 
 ## HACS Dependencies
