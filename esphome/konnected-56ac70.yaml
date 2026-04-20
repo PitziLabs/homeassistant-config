@@ -1,7 +1,7 @@
 # Konnected Alarm Panel — Main Panel
 # Board: ESP8266 (NodeMCU v2 compatible)
 # MAC: 2C:F4:32:56:AC:70
-# IP: 192.168.139.40
+# IP: (local network)
 #
 # Zone wiring:
 #   Zone 1 (GPIO5)  → Front door contact (NC)

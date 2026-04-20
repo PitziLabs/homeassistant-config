@@ -20,7 +20,7 @@ This isn't a collection of UI screenshots. It's an opinionated infrastructure pr
 
 ```
 Proxmox VE (hypervisor)
-├── Home Assistant OS VM (192.168.139.172)
+├── Home Assistant OS VM
 │   ├── ESPHome Device Builder (add-on)
 │   │   ├── Main Panel — 4 doors, 2 motion, siren (ESP8266)
 │   │   └── Secondary Panel — piezo annunciator (ESP8266)
@@ -33,8 +33,8 @@ Proxmox VE (hypervisor)
 │   │   ├── dashboards/ — Home (mobile) + Kiosk (wall display) + Homelab Status
 │   │   └── themes/noctis_kiosk.yaml — global card-mod state styling
 │   └── .storage/ — HA-managed runtime state (excluded from git)
-├── Firewalla Gold SE (192.168.139.1) — network firewall
-└── Grafana/Loki stack (LXC 192.168.139.20) — observability
+├── Firewalla Gold SE — network firewall
+└── Grafana/Loki stack (LXC) — observability
 ```
 
 ## Development Workflow

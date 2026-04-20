@@ -6,7 +6,7 @@ Custom ESPHome firmware for two Konnected ESP8266 alarm panels. Both configs are
 
 ### `konnected-56ac70.yaml` — Main Alarm Panel
 
-**Hardware:** Konnected ESP8266 (NodeMCU v2), MAC `2C:F4:32:56:AC:70`, IP `192.168.139.40`
+**Hardware:** Konnected ESP8266 (NodeMCU v2), MAC `2C:F4:32:56:AC:70`
 
 | Zone | GPIO | Assignment | Type |
 |------|------|------------|------|
@@ -22,7 +22,7 @@ Custom ESPHome firmware for two Konnected ESP8266 alarm panels. Both configs are
 
 ### `konnected-56a4fa.yaml` — Secondary Panel (Piezo Annunciator)
 
-**Hardware:** Konnected ESP8266 (NodeMCU v2), MAC `2C:F4:32:56:A4:FA`, IP `192.168.139.175`
+**Hardware:** Konnected ESP8266 (NodeMCU v2), MAC `2C:F4:32:56:A4:FA`
 
 Zone 1 (GPIO5) is repurposed as a PWM output driving a piezo buzzer. Zones 2–6 are unconnected. The panel exposes two custom ESPHome services:
 

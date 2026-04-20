@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Git-controlled Home Assistant OS deployment on Proxmox VM at `192.168.139.172`. All configuration is YAML-driven — no UI-based config where avoidable. The HA UI is used only for integration setup (ESPHome device adoption, weather, Sonos, Hue, Kasa, etc.) which HA stores in `.storage/` (excluded from git).
+Git-controlled Home Assistant OS deployment running on Proxmox. All configuration is YAML-driven — no UI-based config where avoidable. The HA UI is used only for integration setup (ESPHome device adoption, weather, Sonos, Hue, Kasa, etc.) which HA stores in `.storage/` (excluded from git).
 
 **Config directory:** `/homeassistant/` on the VM, accessible as `/config/` from the SSH add-on.
 
@@ -16,7 +16,7 @@ Git-controlled Home Assistant OS deployment on Proxmox VM at `192.168.139.172`. 
 
 Two Konnected ESP8266 alarm panels running custom ESPHome firmware (fully inlined, no remote package dependencies):
 
-**Main Panel (56ac70)** — `192.168.139.40`
+**Main Panel (56ac70)**
 - MAC: `2C:F4:32:56:AC:70`
 - ESPHome config: `/config/esphome/konnected-56ac70.yaml`
 - Zones:
@@ -28,7 +28,7 @@ Two Konnected ESP8266 alarm panels running custom ESPHome firmware (fully inline
   - GPIO3 → Family Room Motion
   - GPIO15 → Siren/Bell (ALRM terminal)
 
-**Secondary Panel (56a4fa)** — `192.168.139.175`
+**Secondary Panel (56a4fa)**
 - MAC: `2C:F4:32:56:A4:FA`
 - ESPHome config: `/config/esphome/konnected-56a4fa.yaml`
 - Zone 1 (GPIO5) → Piezo buzzer (PWM output via RTTTL)
@@ -344,9 +344,9 @@ Auto-merge is a per-PR action, not a repo-wide default — without this command
 
 ## Infrastructure Context
 
-- **Proxmox VM:** HA OS at `192.168.139.172`
-- **Firewalla Gold SE:** `192.168.139.1` — network firewall, Zeek logs, device inventory
-- **Grafana/Loki stack:** LXC `192.168.139.20` — `firewalla-grafana-stack` repo
+- **Proxmox VM:** Home Assistant OS (local network)
+- **Firewalla Gold SE** — network firewall, Zeek logs, device inventory
+- **Grafana/Loki stack:** LXC container — `firewalla-grafana-stack` repo
 - **Kiosk display:** 65-inch TCL 1080p TV, Chromium kiosk mode, pointed at `/dashboard-home/kiosk`
 - **ESPHome Device Builder:** HA add-on, compiles and flashes firmware OTA to Konnected boards
 
