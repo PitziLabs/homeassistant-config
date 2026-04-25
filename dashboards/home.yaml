@@ -574,7 +574,8 @@ views:
             cards:
 
               # --- Clock ---
-              - type: markdown
+              - type: custom:html-template-card
+                ignore_line_breaks: true
                 content: |
                   <div style="font-size:30px;font-weight:500;line-height:1;">{{ now().strftime('%-I:%M %p') }}</div>
                   <div style="font-size:11px;color:#8b949e;margin-top:4px;">{{ now().strftime('%A, %B %-d') }}</div>
@@ -594,7 +595,8 @@ views:
                     ha-markdown { padding: 0 !important; }
 
               # --- Weather + 3-day forecast ---
-              - type: markdown
+              - type: custom:html-template-card
+                ignore_line_breaks: true
                 content: |
                   <div style="display:flex;align-items:center;gap:14px;height:100%;">
                     <div>
@@ -622,7 +624,8 @@ views:
                     ha-markdown > * { height: 100%; }
 
               # --- Alarm ---
-              - type: markdown
+              - type: custom:html-template-card
+                ignore_line_breaks: true
                 content: |
                   {%- set s = states('alarm_control_panel.home_alarm') -%}
                   {%- set color = '#56d364' if s == 'disarmed' else ('#e3b341' if 'armed' in s else '#f85149') -%}
@@ -659,7 +662,8 @@ views:
               # --------------------------------------------------------
               # COLUMN 1: CLIMATE (orange accent)
               # --------------------------------------------------------
-              - type: markdown
+              - type: custom:html-template-card
+                ignore_line_breaks: true
                 content: |
                   <div style="font-size:11px;color:#8b949e;margin-bottom:10px;">Climate</div>
 
@@ -707,7 +711,8 @@ views:
               # --------------------------------------------------------
               # COLUMN 2: DOORS & MOTION (green accent)
               # --------------------------------------------------------
-              - type: markdown
+              - type: custom:html-template-card
+                ignore_line_breaks: true
                 content: |
                   {%- macro dot(entity, label) -%}
                     {%- set s = states(entity) -%}
@@ -777,7 +782,8 @@ views:
                 cards:
 
                   # --- Lights summary + per-area counts ---
-                  - type: markdown
+                  - type: custom:html-template-card
+                    ignore_line_breaks: true
                     content: |
                       {%- set total = (states.light | rejectattr('state','eq','unavailable') | list | length) -%}
                       {%- set on_count = (states.light | selectattr('state','eq','on') | list | length) -%}
@@ -829,7 +835,8 @@ views:
                         .box { display: none !important; }
 
                   # --- Doorbell event timestamps ---
-                  - type: markdown
+                  - type: custom:html-template-card
+                    ignore_line_breaks: true
                     content: |
                       {%- macro rel(ent) -%}
                         {%- set s = states(ent) -%}
@@ -860,7 +867,8 @@ views:
               # COLUMN 4: MEDIA (blue accent)
               # 3x2 uniform Sonos grid + TVs row
               # --------------------------------------------------------
-              - type: markdown
+              - type: custom:html-template-card
+                ignore_line_breaks: true
                 content: |
                   {%- macro sonos_cell(entity, label) -%}
                     {%- set s = states(entity) -%}

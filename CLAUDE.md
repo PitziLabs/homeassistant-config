@@ -161,8 +161,8 @@ Two YAML dashboards registered in `configuration.yaml`. Both are fully git-track
 
 **Kiosk view** (`/dashboard-home/kiosk`) — 65-inch 1080p wall display
 - Panel mode (`panel: true`, `type: panel`) with one root `custom:layout-card` (`height: 100vh`, no scroll)
-- Markdown-only cards with inline `card_mod`; no Mushroom, no Noctis Kiosk theme dependency
-- Non-interactive — markdown cards have no tap action
+- `custom:html-template-card` cells with inline `card_mod`; no Mushroom, no Noctis Kiosk theme dependency. (Built-in `markdown` cards strip arbitrary inline `style` attributes via DOMPurify, which collapsed our spans/divs — `html-template-card` renders the Jinja-templated HTML verbatim.)
+- Non-interactive — HTML template cards have no tap action
 - Unavailable handling lives inside Jinja macros (e.g. door dot grays out for `unavailable`); no wrapper conditionals
 - Kiosk-mode hides sidebar/header for "Kiosk" user
 - Alarm state shown in top-strip card via 3px `border-left` recolored by Jinja (green=disarmed, amber=arming/armed, red=triggered)
@@ -182,6 +182,7 @@ Each main column carries a 3px accent `border-top`:
 ### HACS Cards Used by Kiosk View
 - `layout-card` (lovelace-layout-card) — CSS Grid layout engine for panel-mode root
 - `card-mod` (lovelace-card-mod) — inline CSS for every cell
+- `html-template-card` (lovelace-html-jinja2-template-card) — renders Jinja-templated HTML verbatim, bypassing the markdown card's style sanitizer
 - `kiosk-mode` — hides sidebar/header for kiosk user
 
 The Home view additionally uses standard HA `tile`, `weather-forecast`, and `media-control` cards plus `mini-media-player` for Sonos.
@@ -311,7 +312,7 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) 
 - **Entity IDs retain original adoption names.** The siren is `switch.alarm_panel_56ac70_siren` (not `switch.main_panel_siren`) because ESPHome entity IDs are set at first adoption and don't change when the device is renamed.
 - **Sonos group awareness.** Template sensors (`binary_sensor.sonos_*_leader`) detect group coordinators on the Home view; only the coordinator's media card renders, preventing duplicate cards when speakers are grouped.
 - **Home view uses conditionals.** Light/switch tiles in the Home view are wrapped in `type: conditional` so each tile appears only when the entity is on; per-room "All off" tiles use `binary_sensor.*_lights_on` template sensors.
-- **Kiosk view styles inline.** The kiosk uses markdown cards with inline `card_mod` and Jinja state-driven colors — no theme-level state styling, no Mushroom, no `fill_container`. Unavailable handling is inside Jinja macros, not in conditional wrappers.
+- **Kiosk view styles inline.** The kiosk uses `custom:html-template-card` cells with inline `card_mod` and Jinja state-driven colors — no theme-level state styling, no Mushroom, no `fill_container`. The built-in `markdown` card sanitizes inline `style` attributes (DOMPurify) and was collapsing styled spans, so `html-template-card` is required for raw HTML+Jinja output. Unavailable handling is inside Jinja macros, not in conditional wrappers.
 - **Alarm color semantics (kiosk top strip):** green = disarmed, amber = arming/armed_home/armed_away, red = pending/triggered. Recolors the card's 3px `border-left`, the state label, and the subtitle; no animation.
 - **PR creation includes arming auto-merge.** When implementation is complete,
   open a pull request as the final step — do not stop at "pushed the branch."
