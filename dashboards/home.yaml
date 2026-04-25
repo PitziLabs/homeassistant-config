@@ -538,1277 +538,511 @@ views:
               name: Basement
 
   # =================================================================
-  # KIOSK VIEW — 65" 1080p wall display, Noctis Kiosk theme
-  # 6×7 hard-placed grid, every card via view_layout: grid-area
-  # No vertical-stack column wrappers; no auto-flow within columns
-  # URL: /dashboard-home/kiosk
+  # KIOSK VIEW — 1920×1080 home-state display
+  # 4-zone grid: Climate | Doors & Motion | Lights & Camera | Media
+  # panel: true via custom:grid-layout — root fills 100vh, no scroll
   # =================================================================
   - title: Kiosk
     path: kiosk
-    theme: Noctis Kiosk
     type: custom:grid-layout
-    icon: mdi:monitor
     layout:
-      grid-template-columns: repeat(6, 1fr)
-      grid-template-rows: auto auto 1fr 1fr 1fr 1fr auto
+      grid-template-columns: 1fr 1fr 1fr 1fr
+      grid-template-rows: 76px 1fr
       grid-template-areas: |
-        "infra     infra     weather   weather   alarm     sonos"
-        "infra     infra     weather   weather   sensors   sonos"
-        "kitchen   pipeline  pipeline  pipeline  exterior  sonos"
-        "playroom  pipeline  pipeline  pipeline  exterior  sonos"
-        "family    weight    weight    weight    exterior  sonos"
-        "office    weight    weight    weight    exterior  sonos"
-        "office    infostrip infostrip infostrip exterior  sonos"
+        "topstrip topstrip topstrip topstrip"
+        "climate  doors    lights   media"
+      height: 100vh
       margin: 0
       padding: 8px
-      grid-gap: 8px
-      height: 100vh
+      gap: 8px
     cards:
-      # ============================================================
-      # INFRA — 6 radialBar gauges, 3×2 internal grid (grid area: infra)
-      # yaxis min/max lives under apex_config.yaxis — not plotOptions.radialBar
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: infra
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Infra
-            - type: grid
-              columns: 3
-              square: false
-              cards:
-                - type: custom:apexcharts-card
-                  chart_type: radialBar
-                  header:
-                    show: true
-                    show_states: true
-                    colorize_states: true
-                  series:
-                    - entity: sensor.ugreen_nas_cpu_usage
-                      name: NAS CPU
-                      color_threshold:
-                        - value: 0
-                          color: "#4caf50"
-                        - value: 50
-                          color: "#ffc107"
-                        - value: 80
-                          color: "#f44336"
-                  apex_config:
-                    chart:
-                      background: transparent
-                      toolbar:
-                        show: false
-                      sparkline:
-                        enabled: true
-                    plotOptions:
-                      radialBar:
-                        hollow:
-                          size: "55%"
-                        track:
-                          background: "rgba(255, 255, 255, 0.08)"
-                        dataLabels:
-                          value:
-                            fontSize: "14px"
-                            formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
-                          name:
-                            fontSize: "11px"
-                    yaxis:
-                      min: 0
-                      max: 100
-                - type: custom:apexcharts-card
-                  chart_type: radialBar
-                  header:
-                    show: true
-                    show_states: true
-                    colorize_states: true
-                  series:
-                    - entity: sensor.ugreen_nas_cpu_temperature
-                      name: NAS Temp
-                      color_threshold:
-                        - value: 0
-                          color: "#4caf50"
-                        - value: 55
-                          color: "#ffc107"
-                        - value: 70
-                          color: "#f44336"
-                  apex_config:
-                    chart:
-                      background: transparent
-                      toolbar:
-                        show: false
-                      sparkline:
-                        enabled: true
-                    plotOptions:
-                      radialBar:
-                        hollow:
-                          size: "55%"
-                        track:
-                          background: "rgba(255, 255, 255, 0.08)"
-                        dataLabels:
-                          value:
-                            fontSize: "14px"
-                            formatter: "EVAL:function(val) { return Math.round(val) + '°C'; }"
-                          name:
-                            fontSize: "11px"
-                    yaxis:
-                      min: 20
-                      max: 90
-                - type: custom:apexcharts-card
-                  chart_type: radialBar
-                  header:
-                    show: true
-                    show_states: true
-                    colorize_states: true
-                  series:
-                    - entity: sensor.pve_memory_usage_percentage
-                      name: pve Mem
-                      color_threshold:
-                        - value: 0
-                          color: "#4caf50"
-                        - value: 75
-                          color: "#ffc107"
-                        - value: 90
-                          color: "#f44336"
-                  apex_config:
-                    chart:
-                      background: transparent
-                      toolbar:
-                        show: false
-                      sparkline:
-                        enabled: true
-                    plotOptions:
-                      radialBar:
-                        hollow:
-                          size: "55%"
-                        track:
-                          background: "rgba(255, 255, 255, 0.08)"
-                        dataLabels:
-                          value:
-                            fontSize: "14px"
-                            formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
-                          name:
-                            fontSize: "11px"
-                    yaxis:
-                      min: 0
-                      max: 100
-                - type: custom:apexcharts-card
-                  chart_type: radialBar
-                  header:
-                    show: true
-                    show_states: true
-                    colorize_states: true
-                  series:
-                    - entity: sensor.haos_17_1_memory_usage_percentage
-                      name: HAOS Mem
-                      color_threshold:
-                        - value: 0
-                          color: "#4caf50"
-                        - value: 70
-                          color: "#ffc107"
-                        - value: 85
-                          color: "#f44336"
-                  apex_config:
-                    chart:
-                      background: transparent
-                      toolbar:
-                        show: false
-                      sparkline:
-                        enabled: true
-                    plotOptions:
-                      radialBar:
-                        hollow:
-                          size: "55%"
-                        track:
-                          background: "rgba(255, 255, 255, 0.08)"
-                        dataLabels:
-                          value:
-                            fontSize: "14px"
-                            formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
-                          name:
-                            fontSize: "11px"
-                    yaxis:
-                      min: 0
-                      max: 100
-                - type: custom:apexcharts-card
-                  chart_type: radialBar
-                  header:
-                    show: true
-                    show_states: true
-                    colorize_states: true
-                  series:
-                    - entity: sensor.grafana_stack_memory_usage_percentage
-                      name: Grafana Mem
-                      color_threshold:
-                        - value: 0
-                          color: "#4caf50"
-                        - value: 70
-                          color: "#ffc107"
-                        - value: 85
-                          color: "#f44336"
-                  apex_config:
-                    chart:
-                      background: transparent
-                      toolbar:
-                        show: false
-                      sparkline:
-                        enabled: true
-                    plotOptions:
-                      radialBar:
-                        hollow:
-                          size: "55%"
-                        track:
-                          background: "rgba(255, 255, 255, 0.08)"
-                        dataLabels:
-                          value:
-                            fontSize: "14px"
-                            formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
-                          name:
-                            fontSize: "11px"
-                    yaxis:
-                      min: 0
-                      max: 100
-                # NAS Volume: data_generator computes used/total*100 from raw byte sensors.
-                # Returns empty series if either sensor is unavailable (gauge stays blank).
-                - type: custom:apexcharts-card
-                  chart_type: radialBar
-                  header:
-                    show: true
-                    show_states: true
-                    colorize_states: true
-                  series:
-                    - entity: sensor.ugreen_nas_pool_1_volume_1_used_size_raw
-                      name: NAS Vol
-                      color_threshold:
-                        - value: 0
-                          color: "#4caf50"
-                        - value: 70
-                          color: "#ffc107"
-                        - value: 85
-                          color: "#f44336"
-                      data_generator: |
-                        const totalSensor = hass.states['sensor.ugreen_nas_pool_1_volume_1_total_size_raw'];
-                        if (!totalSensor) return [];
-                        const used = parseFloat(entity.state);
-                        const total = parseFloat(totalSensor.state);
-                        if (!isFinite(used) || !isFinite(total) || total === 0) return [];
-                        return [[Date.now(), used / total * 100]];
-                  apex_config:
-                    chart:
-                      background: transparent
-                      toolbar:
-                        show: false
-                      sparkline:
-                        enabled: true
-                    plotOptions:
-                      radialBar:
-                        hollow:
-                          size: "55%"
-                        track:
-                          background: "rgba(255, 255, 255, 0.08)"
-                        dataLabels:
-                          value:
-                            fontSize: "14px"
-                            formatter: "EVAL:function(val) { return Math.round(val) + '%'; }"
-                          name:
-                            fontSize: "11px"
-                    yaxis:
-                      min: 0
-                      max: 100
 
       # ============================================================
-      # WEATHER — clock-weather-card (grid area: weather)
+      # TOP STRIP — clock · weather · alarm state
+      # (grid-area: topstrip, fixed 76px)
       # ============================================================
-      - type: custom:clock-weather-card
-        entity: weather.forecast_home
-        forecast_rows: 3
-        hide_clock: false
-        hide_date: true
-        hide_today_section: false
-        hide_forecast_section: false
-        weather_icon_type: line
-        animated_icon: true
-        time_format: 12
+      - type: markdown
         view_layout:
-          grid-area: weather
-
-      # ============================================================
-      # ALARM — Mushroom alarm card, glow shadow values scaled ~50%
-      # Other states, keyframes, and colors unchanged from prior impl
-      # (grid area: alarm)
-      # ============================================================
-      - type: custom:mushroom-alarm-control-panel-card
-        entity: alarm_control_panel.home_alarm
-        name: Home Alarm
-        states:
-          - armed_away
-          - armed_home
-        layout: horizontal
-        show_keypad: false
-        view_layout:
-          grid-area: alarm
-        card_mod:
-          style: |
-            ha-card {
-              {% set state = states('alarm_control_panel.home_alarm') %}
-              transition: background 0.6s ease, box-shadow 0.6s ease;
-              will-change: box-shadow, background;
-              {% if state == 'armed_home' %}
-                background: rgba(76, 175, 80, 0.06) !important;
-                animation: alarm-pulse-green 3.0s ease-in-out infinite;
-              {% elif state == 'armed_away' %}
-                background: rgba(79, 195, 247, 0.06) !important;
-                animation: alarm-pulse-blue 2.0s ease-in-out infinite;
-              {% elif state == 'arming' %}
-                background: rgba(255, 193, 7, 0.08) !important;
-                animation: alarm-pulse-amber 1.0s ease-in-out infinite;
-              {% elif state == 'pending' %}
-                background: rgba(244, 67, 54, 0.10) !important;
-                animation: alarm-pulse-red-pending 0.7s ease-in-out infinite;
-              {% elif state == 'triggered' %}
-                background: rgba(244, 67, 54, 0.14) !important;
-                animation: alarm-pulse-red-triggered 0.4s ease-in-out infinite;
+          grid-area: topstrip
+        content: >
+          <div style="display:grid;grid-template-columns:1.1fr 1.4fr 1fr;height:76px;align-items:center;box-sizing:border-box;padding:0 4px;">
+            <div style="padding:0 12px;">
+              <div style="font-size:30px;font-weight:500;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ now().strftime('%-I:%M %p') }}</div>
+              <div style="font-size:11px;color:#8b949e;margin-top:2px;white-space:nowrap;">{{ now().strftime('%A, %B %-d') }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px;padding:0 12px;overflow:hidden;">
+              <div style="flex-shrink:0;">
+                <div style="font-size:24px;font-weight:500;color:#e6edf3;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
+                <div style="font-size:11px;color:#8b949e;text-transform:capitalize;white-space:nowrap;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
+              </div>
+              {% set fc = state_attr('weather.forecast_home','forecast') %}
+              {% if fc and fc | length > 0 %}
+                {% for d in fc[:3] %}
+                <div style="text-align:center;flex-shrink:0;min-width:32px;">
+                  <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
+                  <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
+                  <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
+                </div>
+                {% endfor %}
               {% endif %}
-            }
-            @keyframes alarm-pulse-green {
-              0%, 100% { box-shadow: 0 0 4px rgba(76, 175, 80, 0.3); }
-              50% { box-shadow: 0 0 16px rgba(76, 175, 80, 0.9); }
-            }
-            @keyframes alarm-pulse-blue {
-              0%, 100% { box-shadow: 0 0 4px rgba(79, 195, 247, 0.3); }
-              50% { box-shadow: 0 0 20px rgba(79, 195, 247, 0.9); }
-            }
-            @keyframes alarm-pulse-amber {
-              0%, 100% { box-shadow: 0 0 4px rgba(255, 193, 7, 0.3); }
-              50% { box-shadow: 0 0 16px rgba(255, 193, 7, 0.9); }
-            }
-            @keyframes alarm-pulse-red-pending {
-              0%, 100% { box-shadow: 0 0 4px rgba(244, 67, 54, 0.3); }
-              50% { box-shadow: 0 0 24px rgba(244, 67, 54, 0.9); }
-            }
-            @keyframes alarm-pulse-red-triggered {
-              0%, 100% { box-shadow: 0 0 4px rgba(244, 67, 54, 0.3); }
-              50% { box-shadow: 0 0 30px rgba(244, 67, 54, 0.9); }
-            }
-
-      # ============================================================
-      # SENSORS — Chips bar, alarm chip without pulse (grid area: sensors)
-      # ============================================================
-      - type: custom:mushroom-chips-card
-        alignment: center
-        view_layout:
-          grid-area: sensors
-        chips:
-          - type: alarm-control-panel
-            entity: alarm_control_panel.home_alarm
-          - type: entity
-            entity: binary_sensor.main_panel_front_door
-            icon: mdi:door
-            name: Front
-            content_info: name
-            use_entity_picture: false
-          - type: entity
-            entity: binary_sensor.main_panel_garage_door
-            icon: mdi:garage
-            name: Garage
-            content_info: name
-          - type: entity
-            entity: binary_sensor.main_panel_basement_door
-            icon: mdi:door
-            name: Basement
-            content_info: name
-          - type: entity
-            entity: binary_sensor.main_panel_sliding_door
-            icon: mdi:door-sliding
-            name: Sliding
-            content_info: name
-          - type: entity
-            entity: binary_sensor.main_panel_office_motion
-            icon: mdi:motion-sensor
-            name: Office
-            content_info: name
-          - type: entity
-            entity: binary_sensor.main_panel_family_room_motion
-            icon: mdi:motion-sensor
-            name: Family
-            content_info: name
-          - type: template
-            content: >-
-              {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
-              {% set has_system = is_state('update.home_assistant_core_update', 'on')
-                               or is_state('update.home_assistant_operating_system_update', 'on')
-                               or is_state('update.home_assistant_supervisor_update', 'on') %}
-              {% if n == 0 %}All up to date
-              {% elif has_system %}{{ n }} update{% if n != 1 %}s{% endif %} · system
-              {% else %}{{ n }} update{% if n != 1 %}s{% endif %}
-              {% endif %}
-            icon: >-
-              {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
-              {% set has_system = is_state('update.home_assistant_core_update', 'on')
-                               or is_state('update.home_assistant_operating_system_update', 'on')
-                               or is_state('update.home_assistant_supervisor_update', 'on') %}
-              {% if n == 0 %}mdi:check-circle
-              {% elif has_system %}mdi:shield-refresh
-              {% else %}mdi:package-up
-              {% endif %}
-            icon_color: >-
-              {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
-              {% set has_system = is_state('update.home_assistant_core_update', 'on')
-                               or is_state('update.home_assistant_operating_system_update', 'on')
-                               or is_state('update.home_assistant_supervisor_update', 'on') %}
-              {% if n == 0 %}green
-              {% elif has_system %}var(--primary-color)
-              {% elif n >= 3 %}amber
-              {% else %}var(--secondary-text-color)
-              {% endif %}
-            tap_action:
-              action: none
-            hold_action:
-              action: none
-
-      # ============================================================
-      # KITCHEN — 4 lights, 2-col internal grid (grid area: kitchen)
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: kitchen
+            </div>
+            {% set st = states('alarm_control_panel.home_alarm') %}
+            {% if st == 'disarmed' %}{% set col = '#56d364' %}{% set lbl = 'Disarmed' %}{% set sub = 'all sensors clear' %}
+            {% elif st == 'armed_home' %}{% set col = '#e3b341' %}{% set lbl = 'Armed Home' %}{% set sub = '' %}
+            {% elif st == 'armed_away' %}{% set col = '#f85149' %}{% set lbl = 'Armed Away' %}{% set sub = '' %}
+            {% elif st == 'arming' %}{% set col = '#e3b341' %}{% set lbl = 'Arming…' %}{% set sub = '' %}
+            {% elif st in ['pending','triggered'] %}{% set col = '#f85149' %}{% set lbl = 'ALARM' %}{% set sub = '' %}
+            {% else %}{% set col = '#6e7681' %}{% set lbl = st | title %}{% set sub = '' %}{% endif %}
+            <div style="padding:0 12px 0 16px;border-left:3px solid {{ col }};align-self:stretch;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
+              <div style="font-size:18px;font-weight:500;color:{{ col }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ lbl }}</div>
+              {% if sub %}<div style="font-size:11px;color:#8b949e;margin-top:2px;">{{ sub }}</div>{% endif %}
+            </div>
+          </div>
         card_mod:
           style: |
             ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
+              height: 76px;
+              overflow: hidden;
+              background: #161b22;
+              border: 1px solid #30363d;
+              border-radius: 12px;
+              padding: 0 !important;
+              box-shadow: none;
+            }
+            ha-card > * { padding: 0 !important; margin: 0 !important; }
+            ha-markdown { padding: 0 !important; height: 76px !important; display: block !important; overflow: hidden; }
+
+      # ============================================================
+      # CLIMATE COLUMN (grid-area: climate)
+      # Orange accent · outdoor + upstairs + downstairs + heater
+      # ============================================================
+      - type: markdown
+        view_layout:
+          grid-area: climate
+        content: >
+          <div style="height:calc(100vh - 100px);display:flex;flex-direction:column;padding:12px;gap:8px;box-sizing:border-box;overflow:hidden;">
+            <div style="font-size:11px;font-weight:600;color:#f0883e;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Climate</div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
+              <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Outdoor</div>
+              <div style="font-size:26px;font-weight:500;color:#f0883e;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
+              <div style="font-size:11px;color:#8b949e;text-transform:capitalize;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
+              <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Upstairs</div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.upstairs','current_temperature') }}°</div>
+                <div style="font-size:11px;color:#8b949e;">{{ states('sensor.upstairs_humidity') | int(0) }}% RH</div>
+              </div>
+              <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ state_attr('climate.upstairs','temperature') }}°
+              · {{ state_attr('climate.upstairs','hvac_action') | default('') | replace('_',' ') }}</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
+              <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Downstairs</div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.downstairs','current_temperature') }}°</div>
+                <div style="font-size:11px;color:#8b949e;">{{ states('sensor.downstairs_humidity') | int(0) }}% RH</div>
+              </div>
+              <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ state_attr('climate.downstairs','temperature') }}°
+              · {{ state_attr('climate.downstairs','hvac_action') | default('') | replace('_',' ') }}</div>
+            </div>
+            {% set hs = states('climate.heatstorm_infrared_heater') %}
+            <div style="height:44px;flex-shrink:0;display:flex;align-items:center;padding:0 12px;background:#1a1f27;border-radius:8px;overflow:hidden;">
+              <div style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Office Heater</div>
+              <div style="font-size:11px;font-weight:500;flex-shrink:0;margin-left:8px;color:{% if hs == 'heat' %}#f0883e{% else %}#6e7681{% endif %};">{{ hs | replace('_',' ') | title }}</div>
+            </div>
+          </div>
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              overflow: hidden;
+              background: #161b22;
+              border: 1px solid #30363d;
+              border-top: 3px solid #f0883e;
+              border-radius: 12px;
+              padding: 0 !important;
+              box-shadow: none;
+            }
+            ha-card > * { padding: 0 !important; margin: 0 !important; }
+            ha-markdown { padding: 0 !important; display: block !important; }
+
+      # ============================================================
+      # DOORS & MOTION COLUMN (grid-area: doors)
+      # Green accent · 6 contact dots · garage covers · motion
+      # Unavailable renders as gray ○, distinct from open red ●
+      # ============================================================
+      - type: markdown
+        view_layout:
+          grid-area: doors
+        content: >
+          <div style="height:calc(100vh - 100px);display:flex;flex-direction:column;padding:12px;gap:8px;box-sizing:border-box;overflow:hidden;">
+            <div style="font-size:11px;font-weight:600;color:#56d364;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Doors &amp; Motion</div>
+            <div style="flex:1;background:#1a1f27;border-radius:8px;padding:10px 12px;min-height:0;overflow:hidden;">
+              <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Contact Sensors</div>
+              {% set doors = [
+                ('binary_sensor.main_panel_front_door','Front'),
+                ('binary_sensor.basement_kitchen_door','Basement'),
+                ('binary_sensor.main_panel_sliding_door','Sliding'),
+                ('binary_sensor.main_panel_garage_door','Garage'),
+                ('binary_sensor.z_wave_door_window_sensor',"Hannah's Room"),
+                ('binary_sensor.z_wave_door_window_sensor_2',"Jacob's Room")
+              ] %}
+              {% for eid, label in doors %}
+                {% set s = states(eid) %}
+                {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
+                {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
+                {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
+                <div style="display:flex;align-items:center;gap:6px;padding:5px 0;{% if not loop.last %}border-bottom:1px solid rgba(48,54,61,0.5);{% endif %}">
+                  <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
+                  <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">{{ label }}</span>
+                  {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
+                </div>
+              {% endfor %}
+            </div>
+            <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
+              <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Garage Doors</div>
+              {% set g1 = states('cover.garage_door_1_door') %}
+              {% set g2 = states('cover.garage_door_2_door') %}
+              <div style="display:flex;gap:20px;overflow:hidden;">
+                <div style="font-size:12px;white-space:nowrap;color:{% if g1 == 'open' %}#f85149{% elif g1 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 1 · {{ g1 | title }}</div>
+                <div style="font-size:12px;white-space:nowrap;color:{% if g2 == 'open' %}#f85149{% elif g2 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 2 · {{ g2 | title }}</div>
+              </div>
+            </div>
+            <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
+              <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Motion</div>
+              {% set fm = states('binary_sensor.main_panel_family_room_motion') %}
+              {% set om = states('binary_sensor.main_panel_office_motion') %}
+              <div style="display:flex;gap:20px;overflow:hidden;">
+                <div style="font-size:12px;white-space:nowrap;font-weight:{% if fm == 'on' %}600{% else %}400{% endif %};color:{% if fm == 'on' %}#f85149{% else %}#6e7681{% endif %};">Family Rm</div>
+                <div style="font-size:12px;white-space:nowrap;font-weight:{% if om == 'on' %}600{% else %}400{% endif %};color:{% if om == 'on' %}#f85149{% else %}#6e7681{% endif %};">Office</div>
+              </div>
+            </div>
+          </div>
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              overflow: hidden;
+              background: #161b22;
+              border: 1px solid #30363d;
+              border-top: 3px solid #56d364;
+              border-radius: 12px;
+              padding: 0 !important;
+              box-shadow: none;
+            }
+            ha-card > * { padding: 0 !important; margin: 0 !important; }
+            ha-markdown { padding: 0 !important; display: block !important; }
+
+      # ============================================================
+      # LIGHTS & DOORBELL COLUMN (grid-area: lights)
+      # Amber accent · per-area counts · camera snapshot · doorbell events
+      # Camera height is fixed; text sections are compact/fixed
+      # ============================================================
+      - type: custom:mod-card
+        view_layout:
+          grid-area: lights
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              overflow: hidden;
+              background: #161b22;
+              border: 1px solid #30363d;
+              border-top: 3px solid #e3b341;
+              border-radius: 12px;
+              padding: 0 !important;
               box-shadow: none;
             }
         card:
           type: vertical-stack
           cards:
-            - type: custom:mushroom-title-card
-              title: Kitchen
-            - type: grid
-              columns: 2
-              square: false
-              cards:
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.kitchen_main
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.kitchen_main
-                    name: Main
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.kitchen_island
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.kitchen_island
-                    name: Island
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.kitchen_table
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.kitchen_table
-                    name: Table
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.kitchen_sink
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.kitchen_sink
-                    name: Sink
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
 
-      # ============================================================
-      # PLAYROOM — 5 lights, 2-col internal grid (grid area: playroom)
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: playroom
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Play Room
-            - type: grid
-              columns: 2
-              square: false
-              cards:
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.play_room
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.play_room
-                    name: Main
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.play_room_1
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.play_room_1
-                    name: Light 1
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.play_room_2
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.play_room_2
-                    name: Light 2
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.play_room_3
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.play_room_3
-                    name: Light 3
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.play_room_4
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.play_room_4
-                    name: Light 4
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
+            - type: markdown
+              content: >
+                {% set o = states('sensor.lights_on_office_count') | int(0) %}
+                {% set f = states('sensor.lights_on_family_room_count') | int(0) %}
+                {% set k = states('sensor.lights_on_kitchen_count') | int(0) %}
+                {% set d = states('sensor.lights_on_outdoor_count') | int(0) %}
+                {% set h = states('sensor.lights_on_hallway_count') | int(0) %}
+                {% set total = o + f + k + d + h %}
+                <div style="padding:12px;background:#161b22;">
+                  <div style="font-size:11px;font-weight:600;color:#e3b341;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;margin-bottom:8px;">Lights</div>
+                  <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
+                    <span style="font-size:24px;font-weight:500;color:#e3b341;">{{ total }}</span>
+                    <span style="font-size:11px;color:#8b949e;">of 22 on</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:5px;">
+                    {% for row in [('Office', o, 8),('Family Rm', f, 3),('Kitchen', k, 3),('Outdoor', d, 6),('Hallway', h, 2)] %}
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                      <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row[0] }}</span>
+                      <span style="font-size:11px;font-weight:500;color:{% if row[1] > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ row[1] }}/{{ row[2] }}</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              card_mod:
+                style: |
+                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                  ha-card > * { padding: 0 !important; margin: 0 !important; }
+                  ha-markdown { padding: 0 !important; }
 
-      # ============================================================
-      # FAMILY ROOM — 2 lights + floor lamp composite (grid area: family)
-      # light.floor_lamp_composite wraps switch.family_room_outlets + light.floor_lamp
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: family
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Family Room
-            - type: grid
-              columns: 2
-              square: false
-              cards:
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.family_room
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.family_room
-                    name: Main
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.family_room_2
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.family_room_2
-                    name: Light 2
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.floor_lamp_composite
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.floor_lamp_composite
-                    name: Floor Lamp
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-
-      # ============================================================
-      # OFFICE — 7 lights, 2-col internal grid, double-row (grid area: office)
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: office
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Office
-            - type: grid
-              columns: 2
-              square: false
-              cards:
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.office
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.office
-                    name: Main
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.office_lamp
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.office_lamp
-                    name: Lamp
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.office_bookcase
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.office_bookcase
-                    name: Bookcase
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.office_corner
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.office_corner
-                    name: Corner
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.office_door
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.office_door
-                    name: Door
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.desk_lamp
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.desk_lamp
-                    name: Desk Lamp
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.desk_lamp_2
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.desk_lamp_2
-                    name: Desk Lamp 2
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-
-      # ============================================================
-      # EXTERIOR — 12 entities, 2-col × 6-row internal grid (grid area: exterior)
-      # Merged Outdoor + Entry & Upstairs; all conditional on availability
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: exterior
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Exterior
-            - type: grid
-              columns: 2
-              square: false
-              cards:
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.front_door
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.front_door
-                    name: Front Door
-                    icon: mdi:coach-lamp
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.front_lantern
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.front_lantern
-                    name: Lantern
-                    icon: mdi:lamp-outline
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.garage_front
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.garage_front
-                    name: Garage Fr
-                    icon: mdi:garage
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.garage_side
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.garage_side
-                    name: Garage Sd
-                    icon: mdi:garage
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.shed
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.shed
-                    name: Shed
-                    icon: mdi:shed
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: switch.back_porch
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-entity-card
-                    entity: switch.back_porch
-                    name: Porch
-                    icon: mdi:outdoor-lamp
-                    layout: horizontal
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: switch.garden
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-entity-card
-                    entity: switch.garden
-                    name: Garden
-                    icon: mdi:flower
-                    layout: horizontal
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.entry_1
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.entry_1
-                    name: Entry 1
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.entry_2
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.entry_2
-                    name: Entry 2
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.downstairs_hallway
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.downstairs_hallway
-                    name: Downstairs Hall
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.upstairs_hallway_light
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.upstairs_hallway_light
-                    name: Upstairs Hall
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-                - type: conditional
-                  conditions:
-                    - condition: state
-                      entity: light.meeting_light
-                      state_not: unavailable
-                  card:
-                    type: custom:mushroom-light-card
-                    entity: light.meeting_light
-                    name: Meeting Light
-                    layout: horizontal
-                    use_light_color: true
-                    show_brightness_control: false
-                    fill_container: true
-
-      # ============================================================
-      # PIPELINE — GitHub activity placeholder, Phase 3 reserved (grid area: pipeline)
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: pipeline
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: GitHub Activity
-              subtitle: Pipeline visualization coming
-            - type: custom:mushroom-template-card
-              primary: Latest Commit
-              secondary: "{{ states('sensor.cpitzi_prompts_latest_commit') }}"
-              icon: mdi:source-commit
+            - type: picture-glance
+              entity: camera.front_door
+              camera_view: auto
+              entities: []
               tap_action:
                 action: none
               hold_action:
                 action: none
-              layout: horizontal
-              fill_container: true
+              double_tap_action:
+                action: none
+              card_mod:
+                style: |
+                  ha-card {
+                    border: none;
+                    border-radius: 0;
+                    box-shadow: none;
+                    height: 620px;
+                    overflow: hidden;
+                  }
+
+            - type: markdown
+              content: >
+                {% set chime_ts = states('event.front_door_chime') %}
+                {% set motion_ts = states('event.front_door_motion') %}
+                {% macro rel(ts) %}{% if ts in ['unknown','unavailable',''] %}—{% else %}{{ relative_time(as_datetime(ts)) }}{% endif %}{% endmacro %}
+                <div style="padding:8px 12px;border-top:1px solid #30363d;background:#161b22;">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Chime</span>
+                    <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(chime_ts) }}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;">
+                    <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Motion</span>
+                    <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(motion_ts) }}</span>
+                  </div>
+                </div>
+              card_mod:
+                style: |
+                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                  ha-card > * { padding: 0 !important; margin: 0 !important; }
+                  ha-markdown { padding: 0 !important; }
+
+      # ============================================================
+      # MEDIA COLUMN (grid-area: media)
+      # Blue accent · 6 Sonos rooms in 2-col grid · TV states row
+      # Cells have fixed 230px height — no height change on state change
+      # Track titles use ellipsis truncation
+      # ============================================================
+      - type: custom:mod-card
+        view_layout:
+          grid-area: media
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              overflow: hidden;
+              background: #161b22;
+              border: 1px solid #30363d;
+              border-top: 3px solid #58a6ff;
+              border-radius: 12px;
+              padding: 0 !important;
+              box-shadow: none;
+            }
+        card:
+          type: vertical-stack
+          cards:
+
+            - type: markdown
+              content: |
+                <div style="padding:10px 12px 8px;font-size:11px;font-weight:600;color:#58a6ff;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #30363d;">Media</div>
+              card_mod:
+                style: |
+                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                  ha-card > * { padding: 0 !important; margin: 0 !important; }
+                  ha-markdown { padding: 0 !important; }
+
             - type: grid
-              columns: 3
+              columns: 2
               square: false
+              card_mod:
+                style: |
+                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 4px; }
               cards:
-                - type: custom:mushroom-entity-card
-                  entity: sensor.cpitzi_prompts_issues
-                  name: Issues
-                  icon: mdi:alert-circle-outline
-                  layout: horizontal
-                  fill_container: true
-                - type: custom:mushroom-entity-card
-                  entity: sensor.cpitzi_prompts_pull_requests
-                  name: Open PRs
-                  icon: mdi:source-pull
-                  layout: horizontal
-                  fill_container: true
-                - type: custom:mushroom-entity-card
-                  entity: sensor.cpitzi_prompts_stars
-                  name: Stars
-                  icon: mdi:star
-                  layout: horizontal
-                  fill_container: true
 
-      # ============================================================
-      # WEIGHT — 30-day weight chart, moved from deprecated metrics row
-      # (grid area: weight)
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: weight
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-template-card
-              primary: >-
-                {{ states('sensor.withings_weight') | float | round(1) }} lbs
-              secondary: >-
-                {% set w = states('sensor.withings_weight') | float %}
-                {% set g = states('sensor.withings_weight_goal') | float %}
-                {% set delta = (w - g) | round(1) %}
-                {%- if delta <= 0 -%}At goal{%- else -%}{{ delta }} lbs to go{%- endif %}
-              icon: mdi:scale-bathroom
-              icon_color: >-
-                {% set w = states('sensor.withings_weight') | float %}
-                {% set g = states('sensor.withings_weight_goal') | float %}
-                {%- if w <= g -%}green{%- elif (w - g) < 5 -%}amber{%- else -%}red{%- endif %}
-              tap_action:
-                action: none
-              hold_action:
-                action: none
-              layout: horizontal
-              fill_container: true
-            - type: custom:apexcharts-card
-              graph_span: 30d
-              header:
-                show: false
-              apex_config:
-                chart:
-                  background: transparent
-                  height: 130
-                  toolbar:
-                    show: false
-                stroke:
-                  curve: smooth
-                  width:
-                    - 2
-                    - 1
-                fill:
-                  type: gradient
-                  gradient:
-                    opacityFrom: 0.3
-                    opacityTo: 0.05
-                markers:
-                  size: 0
-                xaxis:
-                  labels:
-                    datetimeFormatter:
-                      day: "d MMM"
-                      month: MMM
-                yaxis:
-                  forceNiceScale: true
-                annotations:
-                  yaxis:
-                    - y: 168.0
-                      y2: 172.0
-                      fillColor: "rgba(76, 175, 80, 0.15)"
-                      borderColor: transparent
-                      label:
-                        text: ""
-                    - y: 170.0
-                      borderColor: "rgba(76, 175, 80, 0.5)"
-                      strokeDashArray: 4
-                      label:
-                        text: Goal
-                        position: left
-                        offsetX: 30
-                        style:
-                          color: "rgba(76, 175, 80, 0.8)"
-                          background: transparent
-                          fontSize: "10px"
-              series:
-                - entity: sensor.withings_weight
-                  name: Weight
-                  color: var(--primary-color)
-                  type: area
-                  statistics:
-                    type: mean
-                    period: day
-                - entity: sensor.withings_weight_goal
-                  name: Goal
-                  color: "rgba(76, 175, 80, 0.6)"
-                  type: line
-                  statistics:
-                    type: mean
-                    period: day
-                  show:
-                    legend_value: false
-                    in_header: false
+                - type: custom:mini-media-player
+                  entity: media_player.master_bedroom
+                  artwork: cover
+                  hide:
+                    power: true
+                    source: true
+                    controls: true
+                    volume: true
+                    icon: false
+                    name: false
+                    info: false
+                  info: scroll
+                  tap_action:
+                    action: none
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 230px;
+                        overflow: hidden;
+                        background: {{ '#14283f' if is_state('media_player.master_bedroom','playing') else '#1a1f27' }};
+                        border: none;
+                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.master_bedroom','playing') else 'transparent' }};
+                        border-radius: 8px;
+                      }
+                      .mmp-player__core { overflow: hidden; }
+                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-      # ============================================================
-      # SONOS — 6 mini-media-player cards, album art, controls hidden
-      # (grid area: sonos)
-      # ============================================================
-      - type: custom:mod-card
-        view_layout:
-          grid-area: sonos
-        card_mod:
-          style: |
-            ha-card {
-              border: 1px solid var(--divider-color);
-              border-radius: 16px;
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.015);
-              box-shadow: none;
-            }
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Sonos
-            - type: custom:mini-media-player
-              entity: media_player.office
-              artwork: cover
-              hide:
-                power: true
-                source: true
-                controls: true
-                volume: true
-                icon: true
-                name: false
-                info: false
-              info: scroll
-              tap_action:
-                action: none
-            - type: custom:mini-media-player
-              entity: media_player.kitchen
-              artwork: cover
-              hide:
-                power: true
-                source: true
-                controls: true
-                volume: true
-                icon: true
-                name: false
-                info: false
-              info: scroll
-              tap_action:
-                action: none
-            - type: custom:mini-media-player
-              entity: media_player.dining_room
-              artwork: cover
-              hide:
-                power: true
-                source: true
-                controls: true
-                volume: true
-                icon: true
-                name: false
-                info: false
-              info: scroll
-              tap_action:
-                action: none
-            - type: custom:mini-media-player
-              entity: media_player.master_bedroom
-              artwork: cover
-              hide:
-                power: true
-                source: true
-                controls: true
-                volume: true
-                icon: true
-                name: false
-                info: false
-              info: scroll
-              tap_action:
-                action: none
-            - type: custom:mini-media-player
-              entity: media_player.basement
-              artwork: cover
-              hide:
-                power: true
-                source: true
-                controls: true
-                volume: true
-                icon: true
-                name: false
-                info: false
-              info: scroll
-              tap_action:
-                action: none
-            - type: custom:mini-media-player
-              entity: media_player.roam_2
-              artwork: cover
-              hide:
-                power: true
-                source: true
-                controls: true
-                volume: true
-                icon: true
-                name: false
-                info: false
-              info: scroll
-              tap_action:
-                action: none
+                - type: custom:mini-media-player
+                  entity: media_player.basement
+                  artwork: cover
+                  hide:
+                    power: true
+                    source: true
+                    controls: true
+                    volume: true
+                    icon: false
+                    name: false
+                    info: false
+                  info: scroll
+                  tap_action:
+                    action: none
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 230px;
+                        overflow: hidden;
+                        background: {{ '#14283f' if is_state('media_player.basement','playing') else '#1a1f27' }};
+                        border: none;
+                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.basement','playing') else 'transparent' }};
+                        border-radius: 8px;
+                      }
+                      .mmp-player__core { overflow: hidden; }
+                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-      # ============================================================
-      # INFOSTRIP — HA Core version + GitHub commit status (grid area: infostrip)
-      # Total height budget ~60px; sensors for uptime/GitOps deferred
-      # ============================================================
-      - type: custom:mushroom-chips-card
-        alignment: start
-        view_layout:
-          grid-area: infostrip
-        chips:
-          - type: template
-            content: "HA {{ states('sensor.ha_core_version') }}"
-            icon: mdi:home-assistant
-            icon_color: var(--primary-color)
-            tap_action:
-              action: none
-            hold_action:
-              action: none
-          - type: template
-            content: >-
-              {% set latest = states('sensor.cpitzi_prompts_latest_commit') %}
-              {% if latest not in ['unavailable', 'unknown', ''] and latest[:10] == now().date() | string %}
-                1+ commits today
-              {% else %}
-                no commits today
-              {% endif %}
-            icon: mdi:source-commit
-            icon_color: >-
-              {% set latest = states('sensor.cpitzi_prompts_latest_commit') %}
-              {% if latest not in ['unavailable', 'unknown', ''] and latest[:10] == now().date() | string %}
-                green
-              {% else %}
-                var(--secondary-text-color)
-              {% endif %}
-            tap_action:
-              action: none
-            hold_action:
-              action: none
+                - type: custom:mini-media-player
+                  entity: media_player.office
+                  artwork: cover
+                  hide:
+                    power: true
+                    source: true
+                    controls: true
+                    volume: true
+                    icon: false
+                    name: false
+                    info: false
+                  info: scroll
+                  tap_action:
+                    action: none
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 230px;
+                        overflow: hidden;
+                        background: {{ '#14283f' if is_state('media_player.office','playing') else '#1a1f27' }};
+                        border: none;
+                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.office','playing') else 'transparent' }};
+                        border-radius: 8px;
+                      }
+                      .mmp-player__core { overflow: hidden; }
+                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+
+                - type: custom:mini-media-player
+                  entity: media_player.kitchen
+                  artwork: cover
+                  hide:
+                    power: true
+                    source: true
+                    controls: true
+                    volume: true
+                    icon: false
+                    name: false
+                    info: false
+                  info: scroll
+                  tap_action:
+                    action: none
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 230px;
+                        overflow: hidden;
+                        background: {{ '#14283f' if is_state('media_player.kitchen','playing') else '#1a1f27' }};
+                        border: none;
+                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.kitchen','playing') else 'transparent' }};
+                        border-radius: 8px;
+                      }
+                      .mmp-player__core { overflow: hidden; }
+                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+
+                - type: custom:mini-media-player
+                  entity: media_player.dining_room
+                  artwork: cover
+                  hide:
+                    power: true
+                    source: true
+                    controls: true
+                    volume: true
+                    icon: false
+                    name: false
+                    info: false
+                  info: scroll
+                  tap_action:
+                    action: none
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 230px;
+                        overflow: hidden;
+                        background: {{ '#14283f' if is_state('media_player.dining_room','playing') else '#1a1f27' }};
+                        border: none;
+                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.dining_room','playing') else 'transparent' }};
+                        border-radius: 8px;
+                      }
+                      .mmp-player__core { overflow: hidden; }
+                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+
+                - type: custom:mini-media-player
+                  entity: media_player.roam_2
+                  artwork: cover
+                  hide:
+                    power: true
+                    source: true
+                    controls: true
+                    volume: true
+                    icon: false
+                    name: false
+                    info: false
+                  info: scroll
+                  tap_action:
+                    action: none
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 230px;
+                        overflow: hidden;
+                        background: {{ '#14283f' if is_state('media_player.roam_2','playing') else '#1a1f27' }};
+                        border: none;
+                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.roam_2','playing') else 'transparent' }};
+                        border-radius: 8px;
+                      }
+                      .mmp-player__core { overflow: hidden; }
+                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+
+            - type: markdown
+              content: >
+                {% set bt = states('media_player.basement_tv') %}
+                {% set ot = states('media_player.office_tv') %}
+                {% set pt = states('media_player.play_room_tv') %}
+                <div style="padding:8px 12px;border-top:1px solid #30363d;display:flex;gap:16px;white-space:nowrap;overflow:hidden;">
+                  <span style="font-size:11px;color:{% if bt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Basement TV</span>
+                  <span style="font-size:11px;color:{% if ot not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Office TV</span>
+                  <span style="font-size:11px;color:{% if pt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Play Room TV</span>
+                </div>
+              card_mod:
+                style: |
+                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                  ha-card > * { padding: 0 !important; margin: 0 !important; }
+                  ha-markdown { padding: 0 !important; }
