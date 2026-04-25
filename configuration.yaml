@@ -201,3 +201,42 @@ template:
         state: >
           {{ is_state('switch.family_room_outlets', 'on') and is_state('light.floor_lamp', 'on') }}
         level: "{{ state_attr('light.floor_lamp', 'brightness') | int(0) }}"
+
+  - sensor:
+      - name: "Lights On Office Count"
+        unique_id: lights_on_office_count
+        state: >
+          {{ ['light.office','light.office_bookcase','light.office_corner',
+              'light.office_door','light.office_lamp','light.meeting_light',
+              'light.desk_lamp','light.desk_lamp_2']
+             | select('is_state','on') | list | count }}
+        icon: mdi:lightbulb-group
+
+      - name: "Lights On Family Room Count"
+        unique_id: lights_on_family_room_count
+        state: >
+          {{ ['light.family_room','light.family_room_2','light.floor_lamp_composite']
+             | select('is_state','on') | list | count }}
+        icon: mdi:lightbulb-group
+
+      - name: "Lights On Kitchen Count"
+        unique_id: lights_on_kitchen_count
+        state: >
+          {{ ['light.kitchen_island','light.kitchen_main','light.kitchen_table']
+             | select('is_state','on') | list | count }}
+        icon: mdi:lightbulb-group
+
+      - name: "Lights On Outdoor Count"
+        unique_id: lights_on_outdoor_count
+        state: >
+          {{ ['light.front_lantern','light.front_door','light.garage_front',
+              'light.garage_side','light.shed','switch.back_porch']
+             | select('is_state','on') | list | count }}
+        icon: mdi:lightbulb-group-outline
+
+      - name: "Lights On Hallway Count"
+        unique_id: lights_on_hallway_count
+        state: >
+          {{ ['light.downstairs_hallway','light.upstairs_hallway_light']
+             | select('is_state','on') | list | count }}
+        icon: mdi:lightbulb-group
