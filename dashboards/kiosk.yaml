@@ -2,7 +2,7 @@
 # KIOSK DASHBOARD
 # Dedicated 1920x1080 home-state display for pve2 -> TCL TV.
 #
-# URL: http://<ha-host>:8123/kiosk/home
+# URL: http://<ha-host>:8123/dashboard-kiosk/home
 # Launched via /usr/local/bin/dashboard-kiosk.sh on pve2
 #
 # Layout: top strip (clock | weather+forecast | alarm) + 4-column
