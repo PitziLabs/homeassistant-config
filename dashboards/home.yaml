@@ -539,566 +539,382 @@ views:
 
   # =================================================================
   # KIOSK VIEW — 1920×1080 home-state display
-  # 4-zone grid: Climate | Doors & Motion | Lights & Camera | Media
-  # panel: true via custom:grid-layout — root fills 100vh, no scroll
-  # Fix: custom:mod-card replaced with vertical-stack + card_mod
-  # Fix: Jinja for-loops inlined — HTML at base indent, no 4-space code blocks
+  # Fixed-height panel-mode layout: top strip + 4-column main grid
+  # Columns: Climate | Doors & Motion | Lights & Doorbell | Media
+  # Non-interactive (markdown-only); height: 100vh, no scroll.
   # =================================================================
   - title: Kiosk
     path: kiosk
-    type: custom:grid-layout
-    layout:
-      grid-template-columns: 1fr 1fr 1fr 1fr
-      grid-template-rows: 76px 1fr
-      grid-template-areas: |
-        "topstrip topstrip topstrip topstrip"
-        "climate  doors    lights   media"
-      height: 100vh
-      margin: 0
-      padding: 8px
-      gap: 8px
+    icon: mdi:monitor-dashboard
+    panel: true
+    type: panel
     cards:
-
-      # ============================================================
-      # TOP STRIP — clock · weather · alarm state (grid-area: topstrip)
-      # Forecast days inlined — HTML at base indent (10 spaces)
-      # ============================================================
-      - type: markdown
-        view_layout:
-          grid-area: topstrip
-        content: >
-          {% set fc = state_attr('weather.forecast_home','forecast') %}
-          <div style="display:grid;grid-template-columns:1.1fr 1.4fr 1fr;height:76px;align-items:center;box-sizing:border-box;padding:0 4px;">
-          <div style="padding:0 12px;">
-          <div style="font-size:30px;font-weight:500;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ now().strftime('%-I:%M %p') }}</div>
-          <div style="font-size:11px;color:#8b949e;margin-top:2px;white-space:nowrap;">{{ now().strftime('%A, %B %-d') }}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:20px;padding:0 12px;overflow:hidden;">
-          <div style="flex-shrink:0;">
-          <div style="font-size:24px;font-weight:500;color:#e6edf3;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
-          <div style="font-size:11px;color:#8b949e;text-transform:capitalize;white-space:nowrap;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
-          </div>
-          {% if fc and fc | length > 0 %}{% set d = fc[0] %}
-          <div style="text-align:center;flex-shrink:0;min-width:32px;">
-          <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
-          <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
-          <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
-          </div>
-          {% endif %}
-          {% if fc and fc | length > 1 %}{% set d = fc[1] %}
-          <div style="text-align:center;flex-shrink:0;min-width:32px;">
-          <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
-          <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
-          <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
-          </div>
-          {% endif %}
-          {% if fc and fc | length > 2 %}{% set d = fc[2] %}
-          <div style="text-align:center;flex-shrink:0;min-width:32px;">
-          <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
-          <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
-          <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
-          </div>
-          {% endif %}
-          </div>
-          {% set st = states('alarm_control_panel.home_alarm') %}
-          {% if st == 'disarmed' %}{% set col = '#56d364' %}{% set lbl = 'Disarmed' %}{% set sub = 'all sensors clear' %}
-          {% elif st == 'armed_home' %}{% set col = '#e3b341' %}{% set lbl = 'Armed Home' %}{% set sub = '' %}
-          {% elif st == 'armed_away' %}{% set col = '#f85149' %}{% set lbl = 'Armed Away' %}{% set sub = '' %}
-          {% elif st == 'arming' %}{% set col = '#e3b341' %}{% set lbl = 'Arming…' %}{% set sub = '' %}
-          {% elif st in ['pending','triggered'] %}{% set col = '#f85149' %}{% set lbl = 'ALARM' %}{% set sub = '' %}
-          {% else %}{% set col = '#6e7681' %}{% set lbl = st | title %}{% set sub = '' %}{% endif %}
-          <div style="padding:0 12px 0 16px;border-left:3px solid {{ col }};align-self:stretch;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
-          <div style="font-size:18px;font-weight:500;color:{{ col }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ lbl }}</div>
-          {% if sub %}<div style="font-size:11px;color:#8b949e;margin-top:2px;">{{ sub }}</div>{% endif %}
-          </div>
-          </div>
-        card_mod:
-          style: |
-            ha-card {
-              height: 76px;
-              overflow: hidden;
-              background: #161b22;
-              border: 1px solid #30363d;
-              border-radius: 12px;
-              padding: 0 !important;
-              box-shadow: none;
-            }
-            ha-card > * { padding: 0 !important; margin: 0 !important; }
-            ha-markdown { padding: 0 !important; height: 76px !important; display: block !important; overflow: hidden; }
-
-      # ============================================================
-      # CLIMATE COLUMN (grid-area: climate)
-      # Orange accent · outdoor + upstairs + downstairs + heater
-      # ============================================================
-      - type: markdown
-        view_layout:
-          grid-area: climate
-        content: >
-          <div style="height:calc(100vh - 100px);display:flex;flex-direction:column;padding:12px;gap:8px;box-sizing:border-box;overflow:hidden;">
-          <div style="font-size:11px;font-weight:600;color:#f0883e;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Climate</div>
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
-          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Outdoor</div>
-          <div style="font-size:26px;font-weight:500;color:#f0883e;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
-          <div style="font-size:11px;color:#8b949e;text-transform:capitalize;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
-          </div>
-          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
-          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Upstairs</div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;">
-          <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.upstairs','current_temperature') }}°</div>
-          <div style="font-size:11px;color:#8b949e;">{{ states('sensor.upstairs_humidity') | int(0) }}% RH</div>
-          </div>
-          {% set _t = state_attr('climate.upstairs','temperature') %}{% set _a = state_attr('climate.upstairs','hvac_action') | default('') %}
-          <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ _t }}° · {{ _a | replace('_',' ') }}</div>
-          </div>
-          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
-          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Downstairs</div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;">
-          <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.downstairs','current_temperature') }}°</div>
-          <div style="font-size:11px;color:#8b949e;">{{ states('sensor.downstairs_humidity') | int(0) }}% RH</div>
-          </div>
-          {% set _t = state_attr('climate.downstairs','temperature') %}{% set _a = state_attr('climate.downstairs','hvac_action') | default('') %}
-          <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ _t }}° · {{ _a | replace('_',' ') }}</div>
-          </div>
-          {% set hs = states('climate.heatstorm_infrared_heater') %}
-          <div style="height:44px;flex-shrink:0;display:flex;align-items:center;padding:0 12px;background:#1a1f27;border-radius:8px;overflow:hidden;">
-          <div style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Office Heater</div>
-          <div style="font-size:11px;font-weight:500;flex-shrink:0;margin-left:8px;color:{% if hs == 'heat' %}#f0883e{% else %}#6e7681{% endif %};">{{ hs | replace('_',' ') | title }}</div>
-          </div>
-          </div>
-        card_mod:
-          style: |
-            ha-card {
-              height: 100%;
-              overflow: hidden;
-              background: #161b22;
-              border: 1px solid #30363d;
-              border-top: 3px solid #f0883e;
-              border-radius: 12px;
-              padding: 0 !important;
-              box-shadow: none;
-            }
-            ha-card > * { padding: 0 !important; margin: 0 !important; }
-            ha-markdown { padding: 0 !important; display: block !important; }
-
-      # ============================================================
-      # DOORS & MOTION COLUMN (grid-area: doors)
-      # Green accent · 6 contact sensors inlined · garage covers · motion
-      # For-loop replaced with 6 inline blocks — HTML at base indent (10 spaces)
-      # ============================================================
-      - type: markdown
-        view_layout:
-          grid-area: doors
-        content: >
-          <div style="height:calc(100vh - 100px);display:flex;flex-direction:column;padding:12px;gap:8px;box-sizing:border-box;overflow:hidden;">
-          <div style="font-size:11px;font-weight:600;color:#56d364;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Doors &amp; Motion</div>
-          <div style="flex:1;background:#1a1f27;border-radius:8px;padding:10px 12px;min-height:0;overflow:hidden;">
-          <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Contact Sensors</div>
-          {% set s = states('binary_sensor.main_panel_front_door') %}
-          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
-          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
-          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
-          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
-          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Front</span>
-          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
-          </div>
-          {% set s = states('binary_sensor.basement_kitchen_door') %}
-          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
-          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
-          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
-          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
-          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Basement</span>
-          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
-          </div>
-          {% set s = states('binary_sensor.main_panel_sliding_door') %}
-          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
-          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
-          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
-          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
-          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Sliding</span>
-          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
-          </div>
-          {% set s = states('binary_sensor.main_panel_garage_door') %}
-          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
-          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
-          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
-          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
-          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Garage</span>
-          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
-          </div>
-          {% set s = states('binary_sensor.z_wave_door_window_sensor') %}
-          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
-          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
-          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
-          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
-          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Hannah's Room</span>
-          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
-          </div>
-          {% set s = states('binary_sensor.z_wave_door_window_sensor_2') %}
-          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
-          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
-          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;">
-          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
-          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Jacob's Room</span>
-          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
-          </div>
-          </div>
-          <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
-          <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Garage Doors</div>
-          {% set g1 = states('cover.garage_door_1_door') %}{% set g2 = states('cover.garage_door_2_door') %}
-          <div style="display:flex;gap:20px;overflow:hidden;">
-          <div style="font-size:12px;white-space:nowrap;color:{% if g1 == 'open' %}#f85149{% elif g1 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 1 · {{ g1 | title }}</div>
-          <div style="font-size:12px;white-space:nowrap;color:{% if g2 == 'open' %}#f85149{% elif g2 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 2 · {{ g2 | title }}</div>
-          </div>
-          </div>
-          <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
-          <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Motion</div>
-          {% set fm = states('binary_sensor.main_panel_family_room_motion') %}{% set om = states('binary_sensor.main_panel_office_motion') %}
-          <div style="display:flex;gap:20px;overflow:hidden;">
-          <div style="font-size:12px;white-space:nowrap;font-weight:{% if fm == 'on' %}600{% else %}400{% endif %};color:{% if fm == 'on' %}#f85149{% else %}#6e7681{% endif %};">Family Rm</div>
-          <div style="font-size:12px;white-space:nowrap;font-weight:{% if om == 'on' %}600{% else %}400{% endif %};color:{% if om == 'on' %}#f85149{% else %}#6e7681{% endif %};">Office</div>
-          </div>
-          </div>
-          </div>
-        card_mod:
-          style: |
-            ha-card {
-              height: 100%;
-              overflow: hidden;
-              background: #161b22;
-              border: 1px solid #30363d;
-              border-top: 3px solid #56d364;
-              border-radius: 12px;
-              padding: 0 !important;
-              box-shadow: none;
-            }
-            ha-card > * { padding: 0 !important; margin: 0 !important; }
-            ha-markdown { padding: 0 !important; display: block !important; }
-
-      # ============================================================
-      # LIGHTS & DOORBELL COLUMN (grid-area: lights)
-      # Amber accent · per-area counts · camera snapshot · doorbell events
-      # vertical-stack + card_mod replaces custom:mod-card
-      # Per-area rows inlined — HTML at base indent (14 spaces)
-      # ============================================================
-      - type: vertical-stack
-        view_layout:
-          grid-area: lights
-        card_mod:
-          style: |
-            ha-card {
-              height: 100%;
-              overflow: hidden;
-              background: #161b22;
-              border: 1px solid #30363d;
-              border-top: 3px solid #e3b341;
-              border-radius: 12px;
-              padding: 0 !important;
-              box-shadow: none;
-            }
+      - type: custom:layout-card
+        layout_type: custom:grid-layout
+        layout:
+          grid-template-columns: 1fr
+          grid-template-rows: 76px 1fr
+          grid-gap: 10px
+          height: 100vh
+          padding: 14px
+          background: '#0e1117'
+          box-sizing: border-box
         cards:
 
-          - type: markdown
-            content: >
-              {% set o = states('sensor.lights_on_office_count') | int(0) %}
-              {% set f = states('sensor.lights_on_family_room_count') | int(0) %}
-              {% set k = states('sensor.lights_on_kitchen_count') | int(0) %}
-              {% set d = states('sensor.lights_on_outdoor_count') | int(0) %}
-              {% set h = states('sensor.lights_on_hallway_count') | int(0) %}
-              {% set total = o + f + k + d + h %}
-              <div style="padding:12px;">
-              <div style="font-size:11px;font-weight:600;color:#e3b341;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;margin-bottom:8px;">Lights</div>
-              <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
-              <span style="font-size:24px;font-weight:500;color:#e3b341;">{{ total }}</span>
-              <span style="font-size:11px;color:#8b949e;">of 22 on</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:5px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:11px;color:#8b949e;">Office</span>
-              <span style="font-size:11px;font-weight:500;color:{% if o > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ o }}/8</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:11px;color:#8b949e;">Family Rm</span>
-              <span style="font-size:11px;font-weight:500;color:{% if f > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ f }}/3</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:11px;color:#8b949e;">Kitchen</span>
-              <span style="font-size:11px;font-weight:500;color:{% if k > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ k }}/3</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:11px;color:#8b949e;">Outdoor</span>
-              <span style="font-size:11px;font-weight:500;color:{% if d > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ d }}/6</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:11px;color:#8b949e;">Hallway</span>
-              <span style="font-size:11px;font-weight:500;color:{% if h > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ h }}/2</span>
-              </div>
-              </div>
-              </div>
-            card_mod:
-              style: |
-                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                ha-card > * { padding: 0 !important; margin: 0 !important; }
-                ha-markdown { padding: 0 !important; }
-
-          - type: picture-glance
-            entity: camera.front_door
-            camera_view: auto
-            entities: []
-            tap_action:
-              action: none
-            hold_action:
-              action: none
-            double_tap_action:
-              action: none
-            card_mod:
-              style: |
-                ha-card {
-                  border: none;
-                  border-radius: 0;
-                  box-shadow: none;
-                  overflow: hidden;
-                }
-
-          - type: markdown
-            content: >
-              {% set chime_ts = states('event.front_door_chime') %}
-              {% set motion_ts = states('event.front_door_motion') %}
-              {% macro rel(ts) %}{% if ts in ['unknown','unavailable',''] %}—{% else %}{{ relative_time(as_datetime(ts)) }}{% endif %}{% endmacro %}
-              <div style="padding:8px 12px;border-top:1px solid #30363d;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-              <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Chime</span>
-              <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(chime_ts) }}</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;">
-              <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Motion</span>
-              <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(motion_ts) }}</span>
-              </div>
-              </div>
-            card_mod:
-              style: |
-                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                ha-card > * { padding: 0 !important; margin: 0 !important; }
-                ha-markdown { padding: 0 !important; }
-
-      # ============================================================
-      # MEDIA COLUMN (grid-area: media)
-      # Blue accent · 6 Sonos rooms in 2-col grid · TV states row
-      # vertical-stack + card_mod replaces custom:mod-card
-      # ============================================================
-      - type: vertical-stack
-        view_layout:
-          grid-area: media
-        card_mod:
-          style: |
-            ha-card {
-              height: 100%;
-              overflow: hidden;
-              background: #161b22;
-              border: 1px solid #30363d;
-              border-top: 3px solid #58a6ff;
-              border-radius: 12px;
-              padding: 0 !important;
-              box-shadow: none;
-            }
-        cards:
-
-          - type: markdown
-            content: |
-              <div style="padding:10px 12px 8px;font-size:11px;font-weight:600;color:#58a6ff;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #30363d;">Media</div>
-            card_mod:
-              style: |
-                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                ha-card > * { padding: 0 !important; margin: 0 !important; }
-                ha-markdown { padding: 0 !important; }
-
-          - type: grid
-            columns: 2
-            square: false
-            card_mod:
-              style: |
-                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 4px; }
+          # ============================================================
+          # TOP STRIP: clock | weather + 3-day forecast | alarm
+          # Fixed height: 76px
+          # ============================================================
+          - type: custom:layout-card
+            layout_type: custom:grid-layout
+            layout:
+              grid-template-columns: 1.1fr 1.4fr 1fr
+              grid-gap: 10px
+              height: 76px
             cards:
 
-              - type: custom:mini-media-player
-                entity: media_player.master_bedroom
-                artwork: cover
-                hide:
-                  power: true
-                  source: true
-                  controls: true
-                  volume: true
-                  icon: false
-                  name: false
-                  info: false
-                info: scroll
-                tap_action:
-                  action: none
+              # --- Clock ---
+              - type: markdown
+                content: |
+                  <div style="font-size:30px;font-weight:500;line-height:1;">{{ now().strftime('%-I:%M %p') }}</div>
+                  <div style="font-size:11px;color:#8b949e;margin-top:4px;">{{ now().strftime('%A, %B %-d') }}</div>
                 card_mod:
                   style: |
                     ha-card {
-                      height: 230px;
-                      overflow: hidden;
-                      background: {{ '#14283f' if is_state('media_player.master_bedroom','playing') else '#1a1f27' }};
+                      background: #161b22;
+                      border-radius: 10px;
                       border: none;
-                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.master_bedroom','playing') else 'transparent' }};
-                      border-radius: 8px;
+                      padding: 12px 14px;
+                      height: 76px;
+                      box-sizing: border-box;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: center;
                     }
-                    .mmp-player__core { overflow: hidden; }
-                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+                    ha-markdown { padding: 0 !important; }
 
-              - type: custom:mini-media-player
-                entity: media_player.basement
-                artwork: cover
-                hide:
-                  power: true
-                  source: true
-                  controls: true
-                  volume: true
-                  icon: false
-                  name: false
-                  info: false
-                info: scroll
-                tap_action:
-                  action: none
+              # --- Weather + 3-day forecast ---
+              - type: markdown
+                content: |
+                  <div style="display:flex;align-items:center;gap:14px;height:100%;">
+                    <div>
+                      <div style="font-size:24px;font-weight:500;line-height:1;">{{ state_attr('weather.forecast_home','temperature') | round }}°</div>
+                      <div style="font-size:11px;color:#8b949e;margin-top:2px;text-transform:capitalize;">{{ states('weather.forecast_home') | replace('-',' ') }}</div>
+                    </div>
+                    <div style="flex:1;font-size:11px;color:#8b949e;line-height:1.5;">
+                      {%- set forecasts = state_attr('weather.forecast_home','forecast') or [] -%}
+                      {%- for f in forecasts[:3] -%}
+                      <div>{{ as_timestamp(f.datetime) | timestamp_custom('%a') }} &nbsp; {{ f.templow | round }}° / {{ f.temperature | round }}°</div>
+                      {%- endfor -%}
+                    </div>
+                  </div>
                 card_mod:
                   style: |
                     ha-card {
-                      height: 230px;
-                      overflow: hidden;
-                      background: {{ '#14283f' if is_state('media_player.basement','playing') else '#1a1f27' }};
+                      background: #161b22;
+                      border-radius: 10px;
                       border: none;
-                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.basement','playing') else 'transparent' }};
-                      border-radius: 8px;
+                      padding: 10px 14px;
+                      height: 76px;
+                      box-sizing: border-box;
                     }
-                    .mmp-player__core { overflow: hidden; }
-                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+                    ha-markdown { padding: 0 !important; height: 100%; }
+                    ha-markdown > * { height: 100%; }
 
-              - type: custom:mini-media-player
-                entity: media_player.office
-                artwork: cover
-                hide:
-                  power: true
-                  source: true
-                  controls: true
-                  volume: true
-                  icon: false
-                  name: false
-                  info: false
-                info: scroll
-                tap_action:
-                  action: none
+              # --- Alarm ---
+              - type: markdown
+                content: |
+                  {%- set s = states('alarm_control_panel.home_alarm') -%}
+                  {%- set color = '#56d364' if s == 'disarmed' else ('#e3b341' if 'armed' in s else '#f85149') -%}
+                  {%- set sub = 'all sensors clear' if s == 'disarmed' else ('armed' if 'armed' in s else 'triggered') -%}
+                  <div style="font-size:10px;color:#8b949e;">Alarm</div>
+                  <div style="font-size:20px;font-weight:500;color:{{ color }};line-height:1.1;text-transform:capitalize;">{{ s | replace('_',' ') }}</div>
+                  <div style="font-size:10px;color:#8b949e;margin-top:2px;">{{ sub }}</div>
                 card_mod:
                   style: |
                     ha-card {
-                      height: 230px;
-                      overflow: hidden;
-                      background: {{ '#14283f' if is_state('media_player.office','playing') else '#1a1f27' }};
+                      background: #0f2419;
+                      border-radius: 10px;
                       border: none;
-                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.office','playing') else 'transparent' }};
-                      border-radius: 8px;
+                      border-left: 3px solid #2ea043;
+                      padding: 12px 14px;
+                      height: 76px;
+                      box-sizing: border-box;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: center;
                     }
-                    .mmp-player__core { overflow: hidden; }
-                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+                    ha-markdown { padding: 0 !important; }
 
-              - type: custom:mini-media-player
-                entity: media_player.kitchen
-                artwork: cover
-                hide:
-                  power: true
-                  source: true
-                  controls: true
-                  volume: true
-                  icon: false
-                  name: false
-                  info: false
-                info: scroll
-                tap_action:
-                  action: none
+          # ============================================================
+          # MAIN GRID: 4 equal columns, fills remaining viewport height
+          # ============================================================
+          - type: custom:layout-card
+            layout_type: custom:grid-layout
+            layout:
+              grid-template-columns: 1fr 1fr 1fr 1fr
+              grid-gap: 10px
+            cards:
+
+              # --------------------------------------------------------
+              # COLUMN 1: CLIMATE (orange accent)
+              # --------------------------------------------------------
+              - type: markdown
+                content: |
+                  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;">Climate</div>
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:10px;margin-bottom:8px;">
+                    <div style="font-size:10px;color:#8b949e;">Outdoor</div>
+                    <div style="font-size:26px;font-weight:500;color:#f0883e;line-height:1.1;">{{ state_attr('weather.forecast_home','temperature') | round }}°</div>
+                    <div style="font-size:10px;color:#8b949e;text-transform:capitalize;">{{ states('weather.forecast_home') | replace('-',' ') }}</div>
+                  </div>
+
+                  {%- set t_up = state_attr('climate.upstairs','current_temperature') | round(1) -%}
+                  {%- set h_up = states('sensor.upstairs_humidity') -%}
+                  {%- set t_dn = state_attr('climate.downstairs','current_temperature') | round(1) -%}
+                  {%- set h_dn = states('sensor.downstairs_humidity') -%}
+                  {%- set heat = states('climate.heatstorm_infrared_heater') -%}
+                  {%- set heat_col = '#f0883e' if heat in ['heat','heat_cool'] else '#6e7681' -%}
+                  {%- set hum_span = '<span style="font-size:11px;color:#8b949e;margin-left:6px;font-weight:400;">' -%}
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:10px;margin-bottom:8px;">
+                    <div style="font-size:10px;color:#8b949e;">Upstairs</div>
+                    <div style="font-size:22px;font-weight:500;line-height:1.1;">{{ t_up }}°{{ hum_span }}{{ h_up }}%</span></div>
+                  </div>
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:10px;margin-bottom:8px;">
+                    <div style="font-size:10px;color:#8b949e;">Downstairs</div>
+                    <div style="font-size:22px;font-weight:500;line-height:1.1;">{{ t_dn }}°{{ hum_span }}{{ h_dn }}%</span></div>
+                  </div>
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:11px;color:#8b949e;">Office heater</span>
+                    <span style="font-size:12px;font-weight:500;color:{{ heat_col }};text-transform:capitalize;">{{ heat }}</span>
+                  </div>
                 card_mod:
                   style: |
                     ha-card {
-                      height: 230px;
-                      overflow: hidden;
-                      background: {{ '#14283f' if is_state('media_player.kitchen','playing') else '#1a1f27' }};
+                      background: #161b22;
+                      border-radius: 10px;
                       border: none;
-                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.kitchen','playing') else 'transparent' }};
-                      border-radius: 8px;
+                      border-top: 3px solid #f0883e;
+                      padding: 12px;
+                      height: 100%;
+                      box-sizing: border-box;
                     }
-                    .mmp-player__core { overflow: hidden; }
-                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+                    ha-markdown { padding: 0 !important; }
 
-              - type: custom:mini-media-player
-                entity: media_player.dining_room
-                artwork: cover
-                hide:
-                  power: true
-                  source: true
-                  controls: true
-                  volume: true
-                  icon: false
-                  name: false
-                  info: false
-                info: scroll
-                tap_action:
-                  action: none
+              # --------------------------------------------------------
+              # COLUMN 2: DOORS & MOTION (green accent)
+              # --------------------------------------------------------
+              - type: markdown
+                content: |
+                  {%- macro dot(entity, label) -%}
+                    {%- set s = states(entity) -%}
+                    {%- if s in ['unavailable','unknown'] -%}
+                      <div style="display:flex;justify-content:space-between;"><span>{{ label }}</span><span style="color:#6e7681;">○</span></div>
+                    {%- elif s == 'on' -%}
+                      <div style="display:flex;justify-content:space-between;"><span>{{ label }}</span><span style="color:#f85149;">●</span></div>
+                    {%- else -%}
+                      <div style="display:flex;justify-content:space-between;"><span>{{ label }}</span><span style="color:#56d364;">●</span></div>
+                    {%- endif -%}
+                  {%- endmacro -%}
+
+                  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;">Doors &amp; motion</div>
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:10px;margin-bottom:8px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:12px;">
+                      {{ dot('binary_sensor.main_panel_front_door','Front') }}
+                      {{ dot('binary_sensor.basement_kitchen_door','Basement') }}
+                      {{ dot('binary_sensor.main_panel_sliding_door','Sliding') }}
+                      {{ dot('binary_sensor.main_panel_garage_door','Garage') }}
+                      {{ dot('binary_sensor.z_wave_door_window_sensor','Hannah') }}
+                      {{ dot('binary_sensor.z_wave_door_window_sensor_2','Jacob') }}
+                    </div>
+                  </div>
+
+                  {%- set g1 = states('cover.garage_door_1_door') -%}
+                  {%- set g2 = states('cover.garage_door_2_door') -%}
+                  {%- set g1_col = '#56d364' if g1 == 'closed' else '#f85149' -%}
+                  {%- set g2_col = '#56d364' if g2 == 'closed' else '#f85149' -%}
+                  {%- set fr = states('binary_sensor.main_panel_family_room_motion') -%}
+                  {%- set of = states('binary_sensor.main_panel_office_motion') -%}
+                  {%- set fr_col = '#f85149' if fr == 'on' else '#6e7681' -%}
+                  {%- set of_col = '#f85149' if of == 'on' else '#6e7681' -%}
+                  {%- set fr_lbl = 'detected' if fr == 'on' else 'clear' -%}
+                  {%- set of_lbl = 'detected' if of == 'on' else 'clear' -%}
+                  {%- set row = '<div style="font-size:12px;display:flex;justify-content:space-between;">' -%}
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:10px;margin-bottom:8px;">
+                    <div style="font-size:10px;color:#8b949e;margin-bottom:4px;">Garage doors</div>
+                    {{ row }}<span>Door 1</span><span style="color:{{ g1_col }};">{{ g1 }}</span></div>
+                    {{ row }}<span>Door 2</span><span style="color:{{ g2_col }};">{{ g2 }}</span></div>
+                  </div>
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:10px;">
+                    <div style="font-size:10px;color:#8b949e;margin-bottom:4px;">Motion</div>
+                    {{ row }}<span>Family room</span><span style="color:{{ fr_col }};">{{ fr_lbl }}</span></div>
+                    {{ row }}<span>Office</span><span style="color:{{ of_col }};">{{ of_lbl }}</span></div>
+                  </div>
                 card_mod:
                   style: |
                     ha-card {
-                      height: 230px;
-                      overflow: hidden;
-                      background: {{ '#14283f' if is_state('media_player.dining_room','playing') else '#1a1f27' }};
+                      background: #161b22;
+                      border-radius: 10px;
                       border: none;
-                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.dining_room','playing') else 'transparent' }};
-                      border-radius: 8px;
+                      border-top: 3px solid #56d364;
+                      padding: 12px;
+                      height: 100%;
+                      box-sizing: border-box;
                     }
-                    .mmp-player__core { overflow: hidden; }
-                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+                    ha-markdown { padding: 0 !important; }
 
-              - type: custom:mini-media-player
-                entity: media_player.roam_2
-                artwork: cover
-                hide:
-                  power: true
-                  source: true
-                  controls: true
-                  volume: true
-                  icon: false
-                  name: false
-                  info: false
-                info: scroll
-                tap_action:
-                  action: none
+              # --------------------------------------------------------
+              # COLUMN 3: LIGHTS & DOORBELL (amber accent)
+              # vertical-stack: lights summary + camera + event timestamps
+              # --------------------------------------------------------
+              - type: vertical-stack
+                cards:
+
+                  # --- Lights summary + per-area counts ---
+                  - type: markdown
+                    content: |
+                      {%- set total = (states.light | rejectattr('state','eq','unavailable') | list | length) -%}
+                      {%- set on_count = (states.light | selectattr('state','eq','on') | list | length) -%}
+                      <div style="font-size:11px;color:#8b949e;margin-bottom:10px;">Lights &amp; doorbell</div>
+
+                      <div style="background:#1a1f27;border-radius:8px;padding:10px;">
+                        <div style="font-size:24px;font-weight:500;line-height:1;color:#e3b341;">{{ on_count }}<span style="font-size:11px;color:#8b949e;margin-left:6px;font-weight:400;">of {{ total }} on</span></div>
+                        <div style="font-size:11px;line-height:1.7;margin-top:8px;">
+                          {%- set rooms = [
+                            ('Office','sensor.lights_on_office_count'),
+                            ('Family room','sensor.lights_on_family_room_count'),
+                            ('Outdoor','sensor.lights_on_outdoor_count'),
+                            ('Kitchen','sensor.lights_on_kitchen_count'),
+                            ('Hallway','sensor.lights_on_hallway_count')
+                          ] -%}
+                          {%- for label, ent in rooms -%}
+                          {%- set v = states(ent) | int(0) -%}
+                          <div style="display:flex;justify-content:space-between;{% if v == 0 %}color:#6e7681;{% endif %}"><span>{{ label }}</span><span{% if v > 0 %} style="color:#e3b341;"{% endif %}>{{ v }}</span></div>
+                          {%- endfor -%}
+                        </div>
+                      </div>
+                    card_mod:
+                      style: |
+                        ha-card { background: transparent; border: none; box-shadow: none; padding: 0; margin: 0; }
+                        ha-markdown { padding: 0 !important; }
+
+                  # --- Front door camera (snapshot mode) ---
+                  - type: picture-glance
+                    title: ''
+                    camera_image: camera.front_door
+                    camera_view: auto
+                    show_state: false
+                    entities:
+                      - camera.front_door
+                    tap_action:
+                      action: none
+                    hold_action:
+                      action: none
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: #1a1f27;
+                          border-radius: 8px;
+                          border: none;
+                          margin-top: 8px;
+                          overflow: hidden;
+                          height: 140px;
+                        }
+                        .box { display: none !important; }
+
+                  # --- Doorbell event timestamps ---
+                  - type: markdown
+                    content: |
+                      {%- macro rel(ent) -%}
+                        {%- set s = states(ent) -%}
+                        {%- if s in ['unknown','unavailable',None] -%}—
+                        {%- else -%}{{ relative_time(as_datetime(s)) }} ago{%- endif -%}
+                      {%- endmacro -%}
+                      <div style="display:flex;justify-content:space-between;font-size:10px;color:#8b949e;padding:0 4px;">
+                        <span>Chime · {{ rel('event.front_door_chime') }}</span>
+                        <span>Motion · {{ rel('event.front_door_motion') }}</span>
+                      </div>
+                    card_mod:
+                      style: |
+                        ha-card { background: transparent; border: none; box-shadow: none; padding: 0; margin: 6px 0 0 0; }
+                        ha-markdown { padding: 0 !important; }
+
+                card_mod:
+                  style: |
+                    #root {
+                      background: #161b22;
+                      border-radius: 10px;
+                      border-top: 3px solid #e3b341;
+                      padding: 12px;
+                      height: 100%;
+                      box-sizing: border-box;
+                    }
+
+              # --------------------------------------------------------
+              # COLUMN 4: MEDIA (blue accent)
+              # 3x2 uniform Sonos grid + TVs row
+              # --------------------------------------------------------
+              - type: markdown
+                content: |
+                  {%- macro sonos_cell(entity, label) -%}
+                    {%- set s = states(entity) -%}
+                    {%- if s == 'playing' -%}
+                      {%- set title = state_attr(entity,'media_title') or '' -%}
+                      {%- set artist = state_attr(entity,'media_artist') or '' -%}
+                      <div style="background:#14283f;border-radius:6px;padding:6px 8px;border-left:2px solid #58a6ff;display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;">
+                        <div style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ label }}</div>
+                        <div style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ title }}</div>
+                        <div style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ artist }}</div>
+                      </div>
+                    {%- else -%}
+                      <div style="background:#1a1f27;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;">
+                        <div style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ label }}</div>
+                        <div style="font-size:11px;color:#6e7681;">{{ s }}</div>
+                      </div>
+                    {%- endif -%}
+                  {%- endmacro -%}
+
+                  {%- macro tv_status(entity, label) -%}
+                    {%- set s = states(entity) -%}
+                    {%- set color = '#58a6ff' if s not in ['off','unavailable','unknown'] else '#6e7681' -%}
+                    <span style="color:{{ color }};">{{ label }} · {{ s }}</span>
+                  {%- endmacro -%}
+
+                  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;">Media</div>
+
+                  <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3, minmax(0, 1fr));gap:6px;height:calc(100% - 90px);">
+                    {{ sonos_cell('media_player.master_bedroom','Master Bedroom') }}
+                    {{ sonos_cell('media_player.basement','Basement') }}
+                    {{ sonos_cell('media_player.office','Office') }}
+                    {{ sonos_cell('media_player.kitchen','Kitchen') }}
+                    {{ sonos_cell('media_player.dining_room','Dining Room') }}
+                    {{ sonos_cell('media_player.roam_2','Roam 2') }}
+                  </div>
+
+                  <div style="background:#1a1f27;border-radius:8px;padding:10px;margin-top:10px;height:70px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
+                    <div style="font-size:10px;color:#8b949e;margin-bottom:4px;">TVs</div>
+                    <div style="font-size:11px;display:flex;justify-content:space-between;">
+                      {{ tv_status('media_player.office_tv','Office') }}
+                      {{ tv_status('media_player.basement_tv','Basement') }}
+                      {{ tv_status('media_player.play_room_tv','Play') }}
+                    </div>
+                  </div>
                 card_mod:
                   style: |
                     ha-card {
-                      height: 230px;
-                      overflow: hidden;
-                      background: {{ '#14283f' if is_state('media_player.roam_2','playing') else '#1a1f27' }};
+                      background: #161b22;
+                      border-radius: 10px;
                       border: none;
-                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.roam_2','playing') else 'transparent' }};
-                      border-radius: 8px;
+                      border-top: 3px solid #58a6ff;
+                      padding: 12px;
+                      height: 100%;
+                      box-sizing: border-box;
                     }
-                    .mmp-player__core { overflow: hidden; }
-                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-
-          - type: markdown
-            content: >
-              {% set bt = states('media_player.basement_tv') %}
-              {% set ot = states('media_player.office_tv') %}
-              {% set pt = states('media_player.play_room_tv') %}
-              <div style="padding:8px 12px;border-top:1px solid #30363d;display:flex;gap:16px;white-space:nowrap;overflow:hidden;">
-              <span style="font-size:11px;color:{% if bt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Basement TV</span>
-              <span style="font-size:11px;color:{% if ot not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Office TV</span>
-              <span style="font-size:11px;color:{% if pt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Play Room TV</span>
-              </div>
-            card_mod:
-              style: |
-                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                ha-card > * { padding: 0 !important; margin: 0 !important; }
-                ha-markdown { padding: 0 !important; }
+                    ha-markdown { padding: 0 !important; height: 100%; }
+                    ha-markdown > * { height: 100%; display: flex; flex-direction: column; }
