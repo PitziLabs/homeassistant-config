@@ -604,7 +604,7 @@ views:
                       <div style="font-size:11px;color:#8b949e;margin-top:2px;text-transform:capitalize;">{{ states('weather.forecast_home') | replace('-',' ') }}</div>
                     </div>
                     <div style="flex:1;font-size:11px;color:#8b949e;line-height:1.5;">
-                      {%- set forecasts = state_attr('weather.forecast_home','forecast') or [] -%}
+                      {%- set forecasts = state_attr('sensor.weather_forecast_daily','forecast') or [] -%}
                       {%- for f in forecasts[:3] -%}
                       <div>{{ as_timestamp(f.datetime) | timestamp_custom('%a') }} &nbsp; {{ f.templow | round }}° / {{ f.temperature | round }}°</div>
                       {%- endfor -%}
@@ -657,6 +657,7 @@ views:
             layout:
               grid-template-columns: 1fr 1fr 1fr 1fr
               grid-gap: 10px
+              height: 100%
             cards:
 
               # --------------------------------------------------------
@@ -697,6 +698,7 @@ views:
                   </div>
                 card_mod:
                   style: |
+                    :host { display: block; height: 100%; }
                     ha-card {
                       background: #161b22;
                       border-radius: 10px;
@@ -763,6 +765,7 @@ views:
                   </div>
                 card_mod:
                   style: |
+                    :host { display: block; height: 100%; }
                     ha-card {
                       background: #161b22;
                       border-radius: 10px;
@@ -854,6 +857,7 @@ views:
 
                 card_mod:
                   style: |
+                    :host { display: block; height: 100%; }
                     #root {
                       background: #161b22;
                       border-radius: 10px;
@@ -915,6 +919,7 @@ views:
                   </div>
                 card_mod:
                   style: |
+                    :host { display: block; height: 100%; }
                     ha-card {
                       background: #161b22;
                       border-radius: 10px;
