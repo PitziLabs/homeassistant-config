@@ -64,6 +64,12 @@ lovelace:
       title: Homelab Status
       icon: mdi:server-network
       show_in_sidebar: true
+    kiosk:
+      mode: yaml
+      title: Kiosk
+      icon: mdi:monitor-dashboard
+      show_in_sidebar: false
+      filename: dashboards/kiosk.yaml
 
 # Prometheus
 prometheus:

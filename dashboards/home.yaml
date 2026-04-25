@@ -1,12 +1,3 @@
-kiosk_mode:
-  non_admin_settings:
-    hide_header: true
-    hide_sidebar: true
-  user_settings:
-    - users:
-        - "Kiosk"
-      kiosk: true
-
 views:
   # =================================================================
   # HOME VIEW — mobile/tablet control dashboard (masonry)
