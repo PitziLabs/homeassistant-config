@@ -160,45 +160,36 @@ Two YAML dashboards registered in `configuration.yaml`. Both are fully git-track
 - Activity-driven: lights/switches appear when on, vanish when off
 
 **Kiosk view** (`/dashboard-home/kiosk`) — 65-inch 1080p wall display
-- CSS Grid layout via `layout-card` with `grid-template-areas` and `height: 100vh`
-- Theme: `Noctis Kiosk` (custom theme extending Noctis with card-mod overrides)
-- No scrolling — everything fits 1080p
-- Always-visible: alarm card, sensor chips, all lights by room, weather
-- Conditional: Sonos at bottom of Column 4, unavailable entities hidden
+- Panel mode (`panel: true`, `type: panel`) with one root `custom:layout-card` (`height: 100vh`, no scroll)
+- Markdown-only cards with inline `card_mod`; no Mushroom, no Noctis Kiosk theme dependency
+- Non-interactive — markdown cards have no tap action
+- Unavailable handling lives inside Jinja macros (e.g. door dot grays out for `unavailable`); no wrapper conditionals
 - Kiosk-mode hides sidebar/header for "Kiosk" user
-- Alarm chip animation: pulsing glow based on alarm state (blue=armed_away, green=armed_home, red=triggered, amber=arming)
+- Alarm state shown in top-strip card via 3px `border-left` recolored by Jinja (green=disarmed, amber=arming/armed, red=triggered)
 
 ### Grid Layout (Kiosk)
+Top strip (76px): `clock | weather + 3-day forecast | alarm`
+Main grid (fills viewport):
 ```
-"alarm alarm alarm alarm"
-"sensors sensors sensors sensors"
-"col1 col2 col3 col4"
+"climate doors lights media"
 ```
-- Row 1: Mushroom alarm card (compact, no keypad, `show_keypad: false`)
-- Row 2: Mushroom chips bar (alarm status + door/motion sensors)
-- Row 3: Four columns:
-  - Col1: Kitchen + Play Room
-  - Col2: Office
-  - Col3: Family Room + Entry/Upstairs + Switches
-  - Col4: clock-weather-card + Outdoor + conditional Sonos
+Each main column carries a 3px accent `border-top`:
+- **Climate** (orange) — outdoor temp/condition, upstairs + downstairs temp/humidity, Heatstorm office heater state
+- **Doors & motion** (green) — 6 door contacts as colored dots (front, basement-kitchen, sliding, garage, Hannah, Jacob), 2 garage cover states, 2 motion sensors
+- **Lights & doorbell** (amber) — total on/off counts, per-room counts (`sensor.lights_on_*_count`), front-door camera snapshot, last chime/motion timestamps
+- **Media** (blue) — 3×2 Sonos cell grid (master bedroom, basement, office, kitchen, dining room, roam 2; active cells highlighted with title/artist), TV status row (office, basement, play room)
 
-### HACS Cards Installed
-- `mushroom` (lovelace-mushroom) — light cards, entity cards, chips, alarm card, title cards
-- `clock-weather-card` — animated weather with clock and forecast
-- `mini-media-player` — compact Sonos display with album art
-- `layout-card` (lovelace-layout-card) — CSS Grid layout engine
-- `card-mod` (lovelace-card-mod) — CSS styling and Jinja2 templates
+### HACS Cards Used by Kiosk View
+- `layout-card` (lovelace-layout-card) — CSS Grid layout engine for panel-mode root
+- `card-mod` (lovelace-card-mod) — inline CSS for every cell
 - `kiosk-mode` — hides sidebar/header for kiosk user
 
+The Home view additionally uses standard HA `tile`, `weather-forecast`, and `media-control` cards plus `mini-media-player` for Sonos.
+
 ### Theme Files
-- `/config/themes/noctis_kiosk.yaml` — Custom theme: Noctis colors + global card-mod
-  - Lights ON: warm amber background `rgba(255, 180, 50, 0.20)`
-  - Switches ON: cool blue background `rgba(72, 130, 194, 0.20)`
-  - OFF: fades to `var(--card-background-color)`
-  - 0.4s CSS transition between states
-  - Applied globally via `card-mod-card` — no per-card styling needed
-- `/config/themes/kiosk_dark.yaml` — Original custom dark theme (deprecated, replaced by Noctis Kiosk)
-- Noctis base theme installed via HACS
+- `/config/themes/noctis_kiosk.yaml` — Active theme. Originally provided global state-based backgrounds for Mushroom cards on the kiosk; the kiosk view no longer relies on it (state styling moved inline). Still loaded as the project's default dark theme.
+- `/config/themes/kiosk_dark.yaml` — Deprecated custom theme (retained for reference).
+- Noctis base theme installed via HACS.
 
 ### `dashboards/homelab-status.yaml` — Homelab Status
 
@@ -318,11 +309,10 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) 
 - **Secrets pattern:** Real values in `secrets.yaml` (gitignored), documented keys in `secrets.yaml.example` (committed). Same pattern in `esphome/` directory.
 - **ESPHome configs are fully inlined.** No `github://` remote package references. Every pin, sensor, and setting is explicit in the local YAML.
 - **Entity IDs retain original adoption names.** The siren is `switch.alarm_panel_56ac70_siren` (not `switch.main_panel_siren`) because ESPHome entity IDs are set at first adoption and don't change when the device is renamed.
-- **Conditional cards filter unavailable.** Every Mushroom card in the Kiosk view is wrapped in `type: conditional` with `state_not: unavailable` so offline devices silently disappear.
-- **Sonos group awareness.** Template sensors detect group coordinators. Only the coordinator's media card is shown — prevents duplicate cards when speakers are grouped.
-- **Global styling via theme.** The `noctis_kiosk.yaml` theme uses `card-mod-card` with `config.type` checks to automatically apply state-based backgrounds to all Mushroom cards. No per-card `card_mod` blocks in the dashboard YAML.
-- **fill_container: true** on all Mushroom cards in the Kiosk view for full grid-cell color coverage.
-- **Alarm animation** is on the Mushroom alarm chip in the sensor bar, using card-mod CSS `@keyframes` with Jinja2 state checks. Blue=armed_away, green=armed_home, amber=arming, red=pending/triggered.
+- **Sonos group awareness.** Template sensors (`binary_sensor.sonos_*_leader`) detect group coordinators on the Home view; only the coordinator's media card renders, preventing duplicate cards when speakers are grouped.
+- **Home view uses conditionals.** Light/switch tiles in the Home view are wrapped in `type: conditional` so each tile appears only when the entity is on; per-room "All off" tiles use `binary_sensor.*_lights_on` template sensors.
+- **Kiosk view styles inline.** The kiosk uses markdown cards with inline `card_mod` and Jinja state-driven colors — no theme-level state styling, no Mushroom, no `fill_container`. Unavailable handling is inside Jinja macros, not in conditional wrappers.
+- **Alarm color semantics (kiosk top strip):** green = disarmed, amber = arming/armed_home/armed_away, red = pending/triggered. Recolors the card's 3px `border-left`, the state label, and the subtitle; no animation.
 - **PR creation includes arming auto-merge.** When implementation is complete,
   open a pull request as the final step — do not stop at "pushed the branch."
   PR title should match or clearly refine the issue title. PR body must include

@@ -20,25 +20,26 @@ Mobile-first control interface. Design principle: show only what's active.
 
 Fixed 1080p wall display on a 65-inch TCL TV running Chromium in kiosk mode.
 
-- **CSS Grid layout** via `layout-card` with `grid-template-areas`; `height: 100vh` — no scrolling at any content state
-- **Theme:** `Noctis Kiosk` (see `themes/`) applies state-based backgrounds to all cards globally — no per-card styling in this file
-- **`fill_container: true`** on all Mushroom cards so background color fills the grid cell
-- **Unavailable filtering** — every card is wrapped in `type: conditional` with `state_not: unavailable`; offline devices disappear silently
-- **Alarm chip animation** — card-mod CSS `@keyframes` with Jinja2 state checks: blue = armed_away, green = armed_home, amber = arming/pending, red = triggered
+- **Panel mode** (`panel: true`, `type: panel`) hosts a single root `custom:layout-card` with `height: 100vh` — no scrolling at any content state
+- **Markdown-only cards** — every cell is a `type: markdown` card with inline `card_mod` styles. No Mushroom, no theme dependency, no per-state class toggling. State drives color via Jinja2 inside the markdown.
+- **Non-interactive** — markdown cards have no tap action by default; the wall display ignores touch.
+- **Unavailable handling** — handled inside each Jinja macro (e.g. door dot turns gray for `unavailable`/`unknown`, green for closed, red for open), not via wrapper conditionals.
+- **Accent borders** — each column carries a 3px `border-top` in its column color: orange (Climate), green (Doors & motion), amber (Lights & doorbell), blue (Media). Alarm uses a 3px `border-left` that recolors with state.
 
 **Grid structure:**
 ```
-"alarm   alarm   alarm   alarm"
-"sensors sensors sensors sensors"
-"col1    col2    col3    col4"
+top strip (76px):  "clock  weather+forecast  alarm"
+main grid:         "climate  doors  lights  media"
 ```
 
 | Column | Contents |
 |--------|----------|
-| Col 1 | Kitchen + Play Room lights |
-| Col 2 | Office lights |
-| Col 3 | Family Room + Entry/Upstairs + Switches |
-| Col 4 | clock-weather-card + Outdoor + conditional Sonos |
+| Col 1 | Climate — outdoor temp/condition, upstairs/downstairs temp+humidity, office heater state |
+| Col 2 | Doors & motion — 6 door contacts as colored dots, 2 garage cover states, 2 motion sensors |
+| Col 3 | Lights & doorbell — on/total counts and per-room counts, front-door camera snapshot, last chime/motion timestamps |
+| Col 4 | Media — 3×2 Sonos cell grid (active cells highlighted blue with title/artist), TV status row |
+
+The `lights_on_*_count` template sensors backing Col 3 are defined in `configuration.yaml`.
 
 ### Kiosk Mode
 
