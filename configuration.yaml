@@ -1,4 +1,4 @@
-# Core config for Home Assistant
+# Core config for Home Assistant.
 homeassistant:
   auth_providers:
     - type: homeassistant
