@@ -1,4 +1,4 @@
-# Core config for Home Assistant
+# Core config for Home Assistant.
 homeassistant:
   auth_providers:
     - type: homeassistant
@@ -64,7 +64,7 @@ lovelace:
       title: Homelab Status
       icon: mdi:server-network
       show_in_sidebar: true
-    kiosk:
+    dashboard-kiosk:
       mode: yaml
       title: Kiosk
       icon: mdi:monitor-dashboard
