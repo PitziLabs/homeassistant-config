@@ -541,6 +541,8 @@ views:
   # KIOSK VIEW — 1920×1080 home-state display
   # 4-zone grid: Climate | Doors & Motion | Lights & Camera | Media
   # panel: true via custom:grid-layout — root fills 100vh, no scroll
+  # Fix: custom:mod-card replaced with vertical-stack + card_mod
+  # Fix: Jinja for-loops inlined — HTML at base indent, no 4-space code blocks
   # =================================================================
   - title: Kiosk
     path: kiosk
@@ -558,45 +560,57 @@ views:
     cards:
 
       # ============================================================
-      # TOP STRIP — clock · weather · alarm state
-      # (grid-area: topstrip, fixed 76px)
+      # TOP STRIP — clock · weather · alarm state (grid-area: topstrip)
+      # Forecast days inlined — HTML at base indent (10 spaces)
       # ============================================================
       - type: markdown
         view_layout:
           grid-area: topstrip
         content: >
+          {% set fc = state_attr('weather.forecast_home','forecast') %}
           <div style="display:grid;grid-template-columns:1.1fr 1.4fr 1fr;height:76px;align-items:center;box-sizing:border-box;padding:0 4px;">
-            <div style="padding:0 12px;">
-              <div style="font-size:30px;font-weight:500;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ now().strftime('%-I:%M %p') }}</div>
-              <div style="font-size:11px;color:#8b949e;margin-top:2px;white-space:nowrap;">{{ now().strftime('%A, %B %-d') }}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:20px;padding:0 12px;overflow:hidden;">
-              <div style="flex-shrink:0;">
-                <div style="font-size:24px;font-weight:500;color:#e6edf3;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
-                <div style="font-size:11px;color:#8b949e;text-transform:capitalize;white-space:nowrap;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
-              </div>
-              {% set fc = state_attr('weather.forecast_home','forecast') %}
-              {% if fc and fc | length > 0 %}
-                {% for d in fc[:3] %}
-                <div style="text-align:center;flex-shrink:0;min-width:32px;">
-                  <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
-                  <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
-                  <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
-                </div>
-                {% endfor %}
-              {% endif %}
-            </div>
-            {% set st = states('alarm_control_panel.home_alarm') %}
-            {% if st == 'disarmed' %}{% set col = '#56d364' %}{% set lbl = 'Disarmed' %}{% set sub = 'all sensors clear' %}
-            {% elif st == 'armed_home' %}{% set col = '#e3b341' %}{% set lbl = 'Armed Home' %}{% set sub = '' %}
-            {% elif st == 'armed_away' %}{% set col = '#f85149' %}{% set lbl = 'Armed Away' %}{% set sub = '' %}
-            {% elif st == 'arming' %}{% set col = '#e3b341' %}{% set lbl = 'Arming…' %}{% set sub = '' %}
-            {% elif st in ['pending','triggered'] %}{% set col = '#f85149' %}{% set lbl = 'ALARM' %}{% set sub = '' %}
-            {% else %}{% set col = '#6e7681' %}{% set lbl = st | title %}{% set sub = '' %}{% endif %}
-            <div style="padding:0 12px 0 16px;border-left:3px solid {{ col }};align-self:stretch;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
-              <div style="font-size:18px;font-weight:500;color:{{ col }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ lbl }}</div>
-              {% if sub %}<div style="font-size:11px;color:#8b949e;margin-top:2px;">{{ sub }}</div>{% endif %}
-            </div>
+          <div style="padding:0 12px;">
+          <div style="font-size:30px;font-weight:500;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ now().strftime('%-I:%M %p') }}</div>
+          <div style="font-size:11px;color:#8b949e;margin-top:2px;white-space:nowrap;">{{ now().strftime('%A, %B %-d') }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:20px;padding:0 12px;overflow:hidden;">
+          <div style="flex-shrink:0;">
+          <div style="font-size:24px;font-weight:500;color:#e6edf3;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
+          <div style="font-size:11px;color:#8b949e;text-transform:capitalize;white-space:nowrap;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
+          </div>
+          {% if fc and fc | length > 0 %}{% set d = fc[0] %}
+          <div style="text-align:center;flex-shrink:0;min-width:32px;">
+          <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
+          <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
+          <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
+          </div>
+          {% endif %}
+          {% if fc and fc | length > 1 %}{% set d = fc[1] %}
+          <div style="text-align:center;flex-shrink:0;min-width:32px;">
+          <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
+          <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
+          <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
+          </div>
+          {% endif %}
+          {% if fc and fc | length > 2 %}{% set d = fc[2] %}
+          <div style="text-align:center;flex-shrink:0;min-width:32px;">
+          <div style="font-size:10px;color:#8b949e;">{{ as_timestamp(d.datetime) | timestamp_custom('%a') }}</div>
+          <div style="font-size:13px;font-weight:500;color:#e6edf3;">{{ d.temperature | round(0) | int }}°</div>
+          <div style="font-size:10px;color:#6e7681;">{{ d.templow | default(d.temperature) | round(0) | int }}°</div>
+          </div>
+          {% endif %}
+          </div>
+          {% set st = states('alarm_control_panel.home_alarm') %}
+          {% if st == 'disarmed' %}{% set col = '#56d364' %}{% set lbl = 'Disarmed' %}{% set sub = 'all sensors clear' %}
+          {% elif st == 'armed_home' %}{% set col = '#e3b341' %}{% set lbl = 'Armed Home' %}{% set sub = '' %}
+          {% elif st == 'armed_away' %}{% set col = '#f85149' %}{% set lbl = 'Armed Away' %}{% set sub = '' %}
+          {% elif st == 'arming' %}{% set col = '#e3b341' %}{% set lbl = 'Arming…' %}{% set sub = '' %}
+          {% elif st in ['pending','triggered'] %}{% set col = '#f85149' %}{% set lbl = 'ALARM' %}{% set sub = '' %}
+          {% else %}{% set col = '#6e7681' %}{% set lbl = st | title %}{% set sub = '' %}{% endif %}
+          <div style="padding:0 12px 0 16px;border-left:3px solid {{ col }};align-self:stretch;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
+          <div style="font-size:18px;font-weight:500;color:{{ col }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ lbl }}</div>
+          {% if sub %}<div style="font-size:11px;color:#8b949e;margin-top:2px;">{{ sub }}</div>{% endif %}
+          </div>
           </div>
         card_mod:
           style: |
@@ -621,35 +635,35 @@ views:
           grid-area: climate
         content: >
           <div style="height:calc(100vh - 100px);display:flex;flex-direction:column;padding:12px;gap:8px;box-sizing:border-box;overflow:hidden;">
-            <div style="font-size:11px;font-weight:600;color:#f0883e;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Climate</div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
-              <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Outdoor</div>
-              <div style="font-size:26px;font-weight:500;color:#f0883e;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
-              <div style="font-size:11px;color:#8b949e;text-transform:capitalize;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
-              <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Upstairs</div>
-              <div style="display:flex;justify-content:space-between;align-items:baseline;">
-                <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.upstairs','current_temperature') }}°</div>
-                <div style="font-size:11px;color:#8b949e;">{{ states('sensor.upstairs_humidity') | int(0) }}% RH</div>
-              </div>
-              <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ state_attr('climate.upstairs','temperature') }}°
-              · {{ state_attr('climate.upstairs','hvac_action') | default('') | replace('_',' ') }}</div>
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
-              <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Downstairs</div>
-              <div style="display:flex;justify-content:space-between;align-items:baseline;">
-                <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.downstairs','current_temperature') }}°</div>
-                <div style="font-size:11px;color:#8b949e;">{{ states('sensor.downstairs_humidity') | int(0) }}% RH</div>
-              </div>
-              <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ state_attr('climate.downstairs','temperature') }}°
-              · {{ state_attr('climate.downstairs','hvac_action') | default('') | replace('_',' ') }}</div>
-            </div>
-            {% set hs = states('climate.heatstorm_infrared_heater') %}
-            <div style="height:44px;flex-shrink:0;display:flex;align-items:center;padding:0 12px;background:#1a1f27;border-radius:8px;overflow:hidden;">
-              <div style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Office Heater</div>
-              <div style="font-size:11px;font-weight:500;flex-shrink:0;margin-left:8px;color:{% if hs == 'heat' %}#f0883e{% else %}#6e7681{% endif %};">{{ hs | replace('_',' ') | title }}</div>
-            </div>
+          <div style="font-size:11px;font-weight:600;color:#f0883e;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Climate</div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Outdoor</div>
+          <div style="font-size:26px;font-weight:500;color:#f0883e;">{{ state_attr('weather.forecast_home','temperature') | round(0) | int }}°</div>
+          <div style="font-size:11px;color:#8b949e;text-transform:capitalize;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">{{ states('weather.forecast_home') | replace('_',' ') }}</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Upstairs</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.upstairs','current_temperature') }}°</div>
+          <div style="font-size:11px;color:#8b949e;">{{ states('sensor.upstairs_humidity') | int(0) }}% RH</div>
+          </div>
+          {% set _t = state_attr('climate.upstairs','temperature') %}{% set _a = state_attr('climate.upstairs','hvac_action') | default('') %}
+          <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ _t }}° · {{ _a | replace('_',' ') }}</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1a1f27;border-radius:8px;padding:12px;min-height:0;overflow:hidden;">
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Downstairs</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div style="font-size:22px;font-weight:500;color:#e6edf3;">{{ state_attr('climate.downstairs','current_temperature') }}°</div>
+          <div style="font-size:11px;color:#8b949e;">{{ states('sensor.downstairs_humidity') | int(0) }}% RH</div>
+          </div>
+          {% set _t = state_attr('climate.downstairs','temperature') %}{% set _a = state_attr('climate.downstairs','hvac_action') | default('') %}
+          <div style="font-size:11px;color:#6e7681;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Set {{ _t }}° · {{ _a | replace('_',' ') }}</div>
+          </div>
+          {% set hs = states('climate.heatstorm_infrared_heater') %}
+          <div style="height:44px;flex-shrink:0;display:flex;align-items:center;padding:0 12px;background:#1a1f27;border-radius:8px;overflow:hidden;">
+          <div style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Office Heater</div>
+          <div style="font-size:11px;font-weight:500;flex-shrink:0;margin-left:8px;color:{% if hs == 'heat' %}#f0883e{% else %}#6e7681{% endif %};">{{ hs | replace('_',' ') | title }}</div>
+          </div>
           </div>
         card_mod:
           style: |
@@ -668,55 +682,88 @@ views:
 
       # ============================================================
       # DOORS & MOTION COLUMN (grid-area: doors)
-      # Green accent · 6 contact dots · garage covers · motion
-      # Unavailable renders as gray ○, distinct from open red ●
+      # Green accent · 6 contact sensors inlined · garage covers · motion
+      # For-loop replaced with 6 inline blocks — HTML at base indent (10 spaces)
       # ============================================================
       - type: markdown
         view_layout:
           grid-area: doors
         content: >
           <div style="height:calc(100vh - 100px);display:flex;flex-direction:column;padding:12px;gap:8px;box-sizing:border-box;overflow:hidden;">
-            <div style="font-size:11px;font-weight:600;color:#56d364;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Doors &amp; Motion</div>
-            <div style="flex:1;background:#1a1f27;border-radius:8px;padding:10px 12px;min-height:0;overflow:hidden;">
-              <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Contact Sensors</div>
-              {% set doors = [
-                ('binary_sensor.main_panel_front_door','Front'),
-                ('binary_sensor.basement_kitchen_door','Basement'),
-                ('binary_sensor.main_panel_sliding_door','Sliding'),
-                ('binary_sensor.main_panel_garage_door','Garage'),
-                ('binary_sensor.z_wave_door_window_sensor',"Hannah's Room"),
-                ('binary_sensor.z_wave_door_window_sensor_2',"Jacob's Room")
-              ] %}
-              {% for eid, label in doors %}
-                {% set s = states(eid) %}
-                {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
-                {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
-                {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
-                <div style="display:flex;align-items:center;gap:6px;padding:5px 0;{% if not loop.last %}border-bottom:1px solid rgba(48,54,61,0.5);{% endif %}">
-                  <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
-                  <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">{{ label }}</span>
-                  {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
-                </div>
-              {% endfor %}
-            </div>
-            <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
-              <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Garage Doors</div>
-              {% set g1 = states('cover.garage_door_1_door') %}
-              {% set g2 = states('cover.garage_door_2_door') %}
-              <div style="display:flex;gap:20px;overflow:hidden;">
-                <div style="font-size:12px;white-space:nowrap;color:{% if g1 == 'open' %}#f85149{% elif g1 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 1 · {{ g1 | title }}</div>
-                <div style="font-size:12px;white-space:nowrap;color:{% if g2 == 'open' %}#f85149{% elif g2 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 2 · {{ g2 | title }}</div>
-              </div>
-            </div>
-            <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
-              <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Motion</div>
-              {% set fm = states('binary_sensor.main_panel_family_room_motion') %}
-              {% set om = states('binary_sensor.main_panel_office_motion') %}
-              <div style="display:flex;gap:20px;overflow:hidden;">
-                <div style="font-size:12px;white-space:nowrap;font-weight:{% if fm == 'on' %}600{% else %}400{% endif %};color:{% if fm == 'on' %}#f85149{% else %}#6e7681{% endif %};">Family Rm</div>
-                <div style="font-size:12px;white-space:nowrap;font-weight:{% if om == 'on' %}600{% else %}400{% endif %};color:{% if om == 'on' %}#f85149{% else %}#6e7681{% endif %};">Office</div>
-              </div>
-            </div>
+          <div style="font-size:11px;font-weight:600;color:#56d364;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;flex-shrink:0;">Doors &amp; Motion</div>
+          <div style="flex:1;background:#1a1f27;border-radius:8px;padding:10px 12px;min-height:0;overflow:hidden;">
+          <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Contact Sensors</div>
+          {% set s = states('binary_sensor.main_panel_front_door') %}
+          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
+          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
+          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
+          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
+          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Front</span>
+          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
+          </div>
+          {% set s = states('binary_sensor.basement_kitchen_door') %}
+          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
+          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
+          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
+          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
+          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Basement</span>
+          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
+          </div>
+          {% set s = states('binary_sensor.main_panel_sliding_door') %}
+          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
+          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
+          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
+          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
+          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Sliding</span>
+          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
+          </div>
+          {% set s = states('binary_sensor.main_panel_garage_door') %}
+          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
+          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
+          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
+          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
+          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Garage</span>
+          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
+          </div>
+          {% set s = states('binary_sensor.z_wave_door_window_sensor') %}
+          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
+          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
+          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
+          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
+          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Hannah's Room</span>
+          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
+          </div>
+          {% set s = states('binary_sensor.z_wave_door_window_sensor_2') %}
+          {% if s == 'off' %}{% set col = '#56d364' %}{% set sym = '&#9679;' %}{% set badge = '' %}
+          {% elif s == 'on' %}{% set col = '#f85149' %}{% set sym = '&#9679;' %}{% set badge = 'open' %}
+          {% else %}{% set col = '#6e7681' %}{% set sym = '&#9675;' %}{% set badge = 'unavail' %}{% endif %}
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 0;">
+          <span style="font-size:13px;color:{{ col }};flex-shrink:0;">{{ sym }}</span>
+          <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">Jacob's Room</span>
+          {% if badge %}<span style="font-size:10px;color:{{ col }};flex-shrink:0;">{{ badge }}</span>{% endif %}
+          </div>
+          </div>
+          <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
+          <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Garage Doors</div>
+          {% set g1 = states('cover.garage_door_1_door') %}{% set g2 = states('cover.garage_door_2_door') %}
+          <div style="display:flex;gap:20px;overflow:hidden;">
+          <div style="font-size:12px;white-space:nowrap;color:{% if g1 == 'open' %}#f85149{% elif g1 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 1 · {{ g1 | title }}</div>
+          <div style="font-size:12px;white-space:nowrap;color:{% if g2 == 'open' %}#f85149{% elif g2 == 'closed' %}#56d364{% else %}#6e7681{% endif %};">Bay 2 · {{ g2 | title }}</div>
+          </div>
+          </div>
+          <div style="background:#1a1f27;border-radius:8px;padding:10px 12px;flex-shrink:0;">
+          <div style="font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Motion</div>
+          {% set fm = states('binary_sensor.main_panel_family_room_motion') %}{% set om = states('binary_sensor.main_panel_office_motion') %}
+          <div style="display:flex;gap:20px;overflow:hidden;">
+          <div style="font-size:12px;white-space:nowrap;font-weight:{% if fm == 'on' %}600{% else %}400{% endif %};color:{% if fm == 'on' %}#f85149{% else %}#6e7681{% endif %};">Family Rm</div>
+          <div style="font-size:12px;white-space:nowrap;font-weight:{% if om == 'on' %}600{% else %}400{% endif %};color:{% if om == 'on' %}#f85149{% else %}#6e7681{% endif %};">Office</div>
+          </div>
+          </div>
           </div>
         card_mod:
           style: |
@@ -736,9 +783,10 @@ views:
       # ============================================================
       # LIGHTS & DOORBELL COLUMN (grid-area: lights)
       # Amber accent · per-area counts · camera snapshot · doorbell events
-      # Camera height is fixed; text sections are compact/fixed
+      # vertical-stack + card_mod replaces custom:mod-card
+      # Per-area rows inlined — HTML at base indent (14 spaces)
       # ============================================================
-      - type: custom:mod-card
+      - type: vertical-stack
         view_layout:
           grid-area: lights
         card_mod:
@@ -753,87 +801,97 @@ views:
               padding: 0 !important;
               box-shadow: none;
             }
-        card:
-          type: vertical-stack
-          cards:
+        cards:
 
-            - type: markdown
-              content: >
-                {% set o = states('sensor.lights_on_office_count') | int(0) %}
-                {% set f = states('sensor.lights_on_family_room_count') | int(0) %}
-                {% set k = states('sensor.lights_on_kitchen_count') | int(0) %}
-                {% set d = states('sensor.lights_on_outdoor_count') | int(0) %}
-                {% set h = states('sensor.lights_on_hallway_count') | int(0) %}
-                {% set total = o + f + k + d + h %}
-                <div style="padding:12px;background:#161b22;">
-                  <div style="font-size:11px;font-weight:600;color:#e3b341;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;margin-bottom:8px;">Lights</div>
-                  <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
-                    <span style="font-size:24px;font-weight:500;color:#e3b341;">{{ total }}</span>
-                    <span style="font-size:11px;color:#8b949e;">of 22 on</span>
-                  </div>
-                  <div style="display:flex;flex-direction:column;gap:5px;">
-                    {% for row in [('Office', o, 8),('Family Rm', f, 3),('Kitchen', k, 3),('Outdoor', d, 6),('Hallway', h, 2)] %}
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                      <span style="font-size:11px;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row[0] }}</span>
-                      <span style="font-size:11px;font-weight:500;color:{% if row[1] > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ row[1] }}/{{ row[2] }}</span>
-                    </div>
-                    {% endfor %}
-                  </div>
-                </div>
-              card_mod:
-                style: |
-                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                  ha-card > * { padding: 0 !important; margin: 0 !important; }
-                  ha-markdown { padding: 0 !important; }
+          - type: markdown
+            content: >
+              {% set o = states('sensor.lights_on_office_count') | int(0) %}
+              {% set f = states('sensor.lights_on_family_room_count') | int(0) %}
+              {% set k = states('sensor.lights_on_kitchen_count') | int(0) %}
+              {% set d = states('sensor.lights_on_outdoor_count') | int(0) %}
+              {% set h = states('sensor.lights_on_hallway_count') | int(0) %}
+              {% set total = o + f + k + d + h %}
+              <div style="padding:12px;">
+              <div style="font-size:11px;font-weight:600;color:#e3b341;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid #30363d;margin-bottom:8px;">Lights</div>
+              <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
+              <span style="font-size:24px;font-weight:500;color:#e3b341;">{{ total }}</span>
+              <span style="font-size:11px;color:#8b949e;">of 22 on</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:#8b949e;">Office</span>
+              <span style="font-size:11px;font-weight:500;color:{% if o > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ o }}/8</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:#8b949e;">Family Rm</span>
+              <span style="font-size:11px;font-weight:500;color:{% if f > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ f }}/3</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:#8b949e;">Kitchen</span>
+              <span style="font-size:11px;font-weight:500;color:{% if k > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ k }}/3</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:#8b949e;">Outdoor</span>
+              <span style="font-size:11px;font-weight:500;color:{% if d > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ d }}/6</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:#8b949e;">Hallway</span>
+              <span style="font-size:11px;font-weight:500;color:{% if h > 0 %}#e3b341{% else %}#6e7681{% endif %};">{{ h }}/2</span>
+              </div>
+              </div>
+              </div>
+            card_mod:
+              style: |
+                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                ha-card > * { padding: 0 !important; margin: 0 !important; }
+                ha-markdown { padding: 0 !important; }
 
-            - type: picture-glance
-              entity: camera.front_door
-              camera_view: auto
-              entities: []
-              tap_action:
-                action: none
-              hold_action:
-                action: none
-              double_tap_action:
-                action: none
-              card_mod:
-                style: |
-                  ha-card {
-                    border: none;
-                    border-radius: 0;
-                    box-shadow: none;
-                    height: 620px;
-                    overflow: hidden;
-                  }
+          - type: picture-glance
+            entity: camera.front_door
+            camera_view: auto
+            entities: []
+            tap_action:
+              action: none
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
+            card_mod:
+              style: |
+                ha-card {
+                  border: none;
+                  border-radius: 0;
+                  box-shadow: none;
+                  overflow: hidden;
+                }
 
-            - type: markdown
-              content: >
-                {% set chime_ts = states('event.front_door_chime') %}
-                {% set motion_ts = states('event.front_door_motion') %}
-                {% macro rel(ts) %}{% if ts in ['unknown','unavailable',''] %}—{% else %}{{ relative_time(as_datetime(ts)) }}{% endif %}{% endmacro %}
-                <div style="padding:8px 12px;border-top:1px solid #30363d;background:#161b22;">
-                  <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-                    <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Chime</span>
-                    <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(chime_ts) }}</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between;">
-                    <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Motion</span>
-                    <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(motion_ts) }}</span>
-                  </div>
-                </div>
-              card_mod:
-                style: |
-                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                  ha-card > * { padding: 0 !important; margin: 0 !important; }
-                  ha-markdown { padding: 0 !important; }
+          - type: markdown
+            content: >
+              {% set chime_ts = states('event.front_door_chime') %}
+              {% set motion_ts = states('event.front_door_motion') %}
+              {% macro rel(ts) %}{% if ts in ['unknown','unavailable',''] %}—{% else %}{{ relative_time(as_datetime(ts)) }}{% endif %}{% endmacro %}
+              <div style="padding:8px 12px;border-top:1px solid #30363d;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Chime</span>
+              <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(chime_ts) }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:10px;color:#6e7681;white-space:nowrap;">Motion</span>
+              <span style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;">{{ rel(motion_ts) }}</span>
+              </div>
+              </div>
+            card_mod:
+              style: |
+                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                ha-card > * { padding: 0 !important; margin: 0 !important; }
+                ha-markdown { padding: 0 !important; }
 
       # ============================================================
       # MEDIA COLUMN (grid-area: media)
       # Blue accent · 6 Sonos rooms in 2-col grid · TV states row
-      # Cells have fixed 230px height — no height change on state change
-      # Track titles use ellipsis truncation
+      # vertical-stack + card_mod replaces custom:mod-card
       # ============================================================
-      - type: custom:mod-card
+      - type: vertical-stack
         view_layout:
           grid-area: media
         card_mod:
@@ -848,201 +906,199 @@ views:
               padding: 0 !important;
               box-shadow: none;
             }
-        card:
-          type: vertical-stack
-          cards:
+        cards:
 
-            - type: markdown
-              content: |
-                <div style="padding:10px 12px 8px;font-size:11px;font-weight:600;color:#58a6ff;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #30363d;">Media</div>
-              card_mod:
-                style: |
-                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                  ha-card > * { padding: 0 !important; margin: 0 !important; }
-                  ha-markdown { padding: 0 !important; }
+          - type: markdown
+            content: |
+              <div style="padding:10px 12px 8px;font-size:11px;font-weight:600;color:#58a6ff;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #30363d;">Media</div>
+            card_mod:
+              style: |
+                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                ha-card > * { padding: 0 !important; margin: 0 !important; }
+                ha-markdown { padding: 0 !important; }
 
-            - type: grid
-              columns: 2
-              square: false
-              card_mod:
-                style: |
-                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 4px; }
-              cards:
+          - type: grid
+            columns: 2
+            square: false
+            card_mod:
+              style: |
+                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 4px; }
+            cards:
 
-                - type: custom:mini-media-player
-                  entity: media_player.master_bedroom
-                  artwork: cover
-                  hide:
-                    power: true
-                    source: true
-                    controls: true
-                    volume: true
-                    icon: false
-                    name: false
-                    info: false
-                  info: scroll
-                  tap_action:
-                    action: none
-                  card_mod:
-                    style: |
-                      ha-card {
-                        height: 230px;
-                        overflow: hidden;
-                        background: {{ '#14283f' if is_state('media_player.master_bedroom','playing') else '#1a1f27' }};
-                        border: none;
-                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.master_bedroom','playing') else 'transparent' }};
-                        border-radius: 8px;
-                      }
-                      .mmp-player__core { overflow: hidden; }
-                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+              - type: custom:mini-media-player
+                entity: media_player.master_bedroom
+                artwork: cover
+                hide:
+                  power: true
+                  source: true
+                  controls: true
+                  volume: true
+                  icon: false
+                  name: false
+                  info: false
+                info: scroll
+                tap_action:
+                  action: none
+                card_mod:
+                  style: |
+                    ha-card {
+                      height: 230px;
+                      overflow: hidden;
+                      background: {{ '#14283f' if is_state('media_player.master_bedroom','playing') else '#1a1f27' }};
+                      border: none;
+                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.master_bedroom','playing') else 'transparent' }};
+                      border-radius: 8px;
+                    }
+                    .mmp-player__core { overflow: hidden; }
+                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-                - type: custom:mini-media-player
-                  entity: media_player.basement
-                  artwork: cover
-                  hide:
-                    power: true
-                    source: true
-                    controls: true
-                    volume: true
-                    icon: false
-                    name: false
-                    info: false
-                  info: scroll
-                  tap_action:
-                    action: none
-                  card_mod:
-                    style: |
-                      ha-card {
-                        height: 230px;
-                        overflow: hidden;
-                        background: {{ '#14283f' if is_state('media_player.basement','playing') else '#1a1f27' }};
-                        border: none;
-                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.basement','playing') else 'transparent' }};
-                        border-radius: 8px;
-                      }
-                      .mmp-player__core { overflow: hidden; }
-                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+              - type: custom:mini-media-player
+                entity: media_player.basement
+                artwork: cover
+                hide:
+                  power: true
+                  source: true
+                  controls: true
+                  volume: true
+                  icon: false
+                  name: false
+                  info: false
+                info: scroll
+                tap_action:
+                  action: none
+                card_mod:
+                  style: |
+                    ha-card {
+                      height: 230px;
+                      overflow: hidden;
+                      background: {{ '#14283f' if is_state('media_player.basement','playing') else '#1a1f27' }};
+                      border: none;
+                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.basement','playing') else 'transparent' }};
+                      border-radius: 8px;
+                    }
+                    .mmp-player__core { overflow: hidden; }
+                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-                - type: custom:mini-media-player
-                  entity: media_player.office
-                  artwork: cover
-                  hide:
-                    power: true
-                    source: true
-                    controls: true
-                    volume: true
-                    icon: false
-                    name: false
-                    info: false
-                  info: scroll
-                  tap_action:
-                    action: none
-                  card_mod:
-                    style: |
-                      ha-card {
-                        height: 230px;
-                        overflow: hidden;
-                        background: {{ '#14283f' if is_state('media_player.office','playing') else '#1a1f27' }};
-                        border: none;
-                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.office','playing') else 'transparent' }};
-                        border-radius: 8px;
-                      }
-                      .mmp-player__core { overflow: hidden; }
-                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+              - type: custom:mini-media-player
+                entity: media_player.office
+                artwork: cover
+                hide:
+                  power: true
+                  source: true
+                  controls: true
+                  volume: true
+                  icon: false
+                  name: false
+                  info: false
+                info: scroll
+                tap_action:
+                  action: none
+                card_mod:
+                  style: |
+                    ha-card {
+                      height: 230px;
+                      overflow: hidden;
+                      background: {{ '#14283f' if is_state('media_player.office','playing') else '#1a1f27' }};
+                      border: none;
+                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.office','playing') else 'transparent' }};
+                      border-radius: 8px;
+                    }
+                    .mmp-player__core { overflow: hidden; }
+                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-                - type: custom:mini-media-player
-                  entity: media_player.kitchen
-                  artwork: cover
-                  hide:
-                    power: true
-                    source: true
-                    controls: true
-                    volume: true
-                    icon: false
-                    name: false
-                    info: false
-                  info: scroll
-                  tap_action:
-                    action: none
-                  card_mod:
-                    style: |
-                      ha-card {
-                        height: 230px;
-                        overflow: hidden;
-                        background: {{ '#14283f' if is_state('media_player.kitchen','playing') else '#1a1f27' }};
-                        border: none;
-                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.kitchen','playing') else 'transparent' }};
-                        border-radius: 8px;
-                      }
-                      .mmp-player__core { overflow: hidden; }
-                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+              - type: custom:mini-media-player
+                entity: media_player.kitchen
+                artwork: cover
+                hide:
+                  power: true
+                  source: true
+                  controls: true
+                  volume: true
+                  icon: false
+                  name: false
+                  info: false
+                info: scroll
+                tap_action:
+                  action: none
+                card_mod:
+                  style: |
+                    ha-card {
+                      height: 230px;
+                      overflow: hidden;
+                      background: {{ '#14283f' if is_state('media_player.kitchen','playing') else '#1a1f27' }};
+                      border: none;
+                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.kitchen','playing') else 'transparent' }};
+                      border-radius: 8px;
+                    }
+                    .mmp-player__core { overflow: hidden; }
+                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-                - type: custom:mini-media-player
-                  entity: media_player.dining_room
-                  artwork: cover
-                  hide:
-                    power: true
-                    source: true
-                    controls: true
-                    volume: true
-                    icon: false
-                    name: false
-                    info: false
-                  info: scroll
-                  tap_action:
-                    action: none
-                  card_mod:
-                    style: |
-                      ha-card {
-                        height: 230px;
-                        overflow: hidden;
-                        background: {{ '#14283f' if is_state('media_player.dining_room','playing') else '#1a1f27' }};
-                        border: none;
-                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.dining_room','playing') else 'transparent' }};
-                        border-radius: 8px;
-                      }
-                      .mmp-player__core { overflow: hidden; }
-                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+              - type: custom:mini-media-player
+                entity: media_player.dining_room
+                artwork: cover
+                hide:
+                  power: true
+                  source: true
+                  controls: true
+                  volume: true
+                  icon: false
+                  name: false
+                  info: false
+                info: scroll
+                tap_action:
+                  action: none
+                card_mod:
+                  style: |
+                    ha-card {
+                      height: 230px;
+                      overflow: hidden;
+                      background: {{ '#14283f' if is_state('media_player.dining_room','playing') else '#1a1f27' }};
+                      border: none;
+                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.dining_room','playing') else 'transparent' }};
+                      border-radius: 8px;
+                    }
+                    .mmp-player__core { overflow: hidden; }
+                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-                - type: custom:mini-media-player
-                  entity: media_player.roam_2
-                  artwork: cover
-                  hide:
-                    power: true
-                    source: true
-                    controls: true
-                    volume: true
-                    icon: false
-                    name: false
-                    info: false
-                  info: scroll
-                  tap_action:
-                    action: none
-                  card_mod:
-                    style: |
-                      ha-card {
-                        height: 230px;
-                        overflow: hidden;
-                        background: {{ '#14283f' if is_state('media_player.roam_2','playing') else '#1a1f27' }};
-                        border: none;
-                        border-left: 2px solid {{ '#58a6ff' if is_state('media_player.roam_2','playing') else 'transparent' }};
-                        border-radius: 8px;
-                      }
-                      .mmp-player__core { overflow: hidden; }
-                      .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+              - type: custom:mini-media-player
+                entity: media_player.roam_2
+                artwork: cover
+                hide:
+                  power: true
+                  source: true
+                  controls: true
+                  volume: true
+                  icon: false
+                  name: false
+                  info: false
+                info: scroll
+                tap_action:
+                  action: none
+                card_mod:
+                  style: |
+                    ha-card {
+                      height: 230px;
+                      overflow: hidden;
+                      background: {{ '#14283f' if is_state('media_player.roam_2','playing') else '#1a1f27' }};
+                      border: none;
+                      border-left: 2px solid {{ '#58a6ff' if is_state('media_player.roam_2','playing') else 'transparent' }};
+                      border-radius: 8px;
+                    }
+                    .mmp-player__core { overflow: hidden; }
+                    .mmp__name, .mmp-player__media-title { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 
-            - type: markdown
-              content: >
-                {% set bt = states('media_player.basement_tv') %}
-                {% set ot = states('media_player.office_tv') %}
-                {% set pt = states('media_player.play_room_tv') %}
-                <div style="padding:8px 12px;border-top:1px solid #30363d;display:flex;gap:16px;white-space:nowrap;overflow:hidden;">
-                  <span style="font-size:11px;color:{% if bt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Basement TV</span>
-                  <span style="font-size:11px;color:{% if ot not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Office TV</span>
-                  <span style="font-size:11px;color:{% if pt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Play Room TV</span>
-                </div>
-              card_mod:
-                style: |
-                  ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-                  ha-card > * { padding: 0 !important; margin: 0 !important; }
-                  ha-markdown { padding: 0 !important; }
+          - type: markdown
+            content: >
+              {% set bt = states('media_player.basement_tv') %}
+              {% set ot = states('media_player.office_tv') %}
+              {% set pt = states('media_player.play_room_tv') %}
+              <div style="padding:8px 12px;border-top:1px solid #30363d;display:flex;gap:16px;white-space:nowrap;overflow:hidden;">
+              <span style="font-size:11px;color:{% if bt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Basement TV</span>
+              <span style="font-size:11px;color:{% if ot not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Office TV</span>
+              <span style="font-size:11px;color:{% if pt not in ['off','unavailable','standby'] %}#58a6ff{% else %}#6e7681{% endif %};">Play Room TV</span>
+              </div>
+            card_mod:
+              style: |
+                ha-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0; }
+                ha-card > * { padding: 0 !important; margin: 0 !important; }
+                ha-markdown { padding: 0 !important; }
