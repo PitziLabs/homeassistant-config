@@ -1,3 +1,9 @@
+# ============================================================================
+# Claude Code — Interactive @claude Responder
+# ============================================================================
+# Thin wrapper around PitziLabs/shared-workflows/claude-responder.yml.
+# ============================================================================
+
 name: Claude Code
 
 on:
@@ -14,43 +20,10 @@ on:
 
 jobs:
   claude:
-    if: |
-      github.actor != 'github-actions[bot]' &&
-      (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
-      )
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-      id-token: write
-      actions: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Claude Code
-        id: claude
-        uses: anthropics/claude-code-action@v1
-        env:
-          CLAUDE_CODE_MAX_OUTPUT_TOKENS: "64000"
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          allowed_bots: "github-actions"
-          claude_args: |
-            --verbose
-            --output-format stream-json
-            --model ${{
-              (contains(github.event.issue.labels.*.name, 'model:opus') ||
-               contains(github.event.pull_request.labels.*.name, 'model:opus')) && 'opus' ||
-              (contains(github.event.issue.labels.*.name, 'model:haiku') ||
-               contains(github.event.pull_request.labels.*.name, 'model:haiku')) && 'haiku' ||
-              'sonnet'
-            }}
-            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+    uses: PitziLabs/shared-workflows/.github/workflows/claude-responder.yml@main
+    secrets: inherit
+    with:
+      allowed_tools: '"Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"'
+      extra_args: |
+        --verbose
+        --output-format stream-json
