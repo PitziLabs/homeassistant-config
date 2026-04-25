@@ -240,3 +240,22 @@ template:
           {{ ['light.downstairs_hallway','light.upstairs_hallway_light']
              | select('is_state','on') | list | count }}
         icon: mdi:lightbulb-group
+
+  - trigger:
+      - platform: time_pattern
+        minutes: "/30"
+      - platform: homeassistant
+        event: start
+    action:
+      - service: weather.get_forecasts
+        data:
+          type: daily
+        target:
+          entity_id: weather.forecast_home
+        response_variable: forecast_data
+    sensor:
+      - name: "Weather Forecast Daily"
+        unique_id: weather_forecast_daily
+        state: "{{ forecast_data['weather.forecast_home'].forecast | length }}"
+        attributes:
+          forecast: "{{ forecast_data['weather.forecast_home'].forecast }}"
