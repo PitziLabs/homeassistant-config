@@ -1,13 +1,19 @@
 # =================================================================
-# KIOSK DASHBOARD
+# KIOSK DASHBOARD — V2 (foundation rebuild)
 # Dedicated 1920x1080 home-state display for pve2 -> TCL TV.
 #
-# URL: http://<ha-host>:8123/dashboard-kiosk/home
-# Launched via /usr/local/bin/dashboard-kiosk.sh on pve2
+# URL: http://<ha-host>:8123/kiosk/home
 #
-# Layout: top strip (clock | weather+forecast | alarm) + 4-column
-#         main grid (Climate | Doors & Motion | Lights | Media)
-# Panel mode at 100vh, no scroll, fixed-height invariants enforced.
+# Architecture (research-driven rebuild):
+#   - View type: custom:grid-layout (NOT panel:true wrapper)
+#   - Cell wrappers: custom:mod-card for ha-card host + height: 100% cascade
+#   - Typed cards per panel (no html-template-card):
+#       Climate  -> custom:better-thermostat-ui-card (HACS install required)
+#       Sensors  -> custom:button-card with state blocks
+#       Lights   -> custom:mushroom-light-card grid (one per light)
+#       Media    -> custom:mini-media-player with artwork: full-cover-fit
+#       Weather  -> custom:clock-weather-card
+#       Alarm    -> custom:button-card hero with pulse animation
 # =================================================================
 
 kiosk_mode:
@@ -23,434 +29,732 @@ views:
   - title: Home
     path: home
     icon: mdi:monitor-dashboard
-    panel: true
-    type: panel
+    type: custom:grid-layout
+    layout:
+      height: 100vh
+      margin: 0
+      padding: 8px
+      grid-gap: 8px
+      grid-template-columns: 1fr 1fr 1.4fr 1fr
+      grid-template-rows: 130px 1fr
+      grid-template-areas: |
+        "weather weather alarm   alarm"
+        "climate sensors lights  media"
     cards:
-      - type: custom:layout-card
-        layout_type: custom:grid-layout
-        layout:
-          grid-template-columns: 1fr
-          grid-template-rows: 76px 1fr
-          grid-gap: 10px
-          height: 100vh
-          padding: 14px
-          background: '#0e1117'
-          box-sizing: border-box
-        cards:
 
-          # ============================================================
-          # TOP STRIP: clock | weather + 3-day forecast | alarm
-          # ============================================================
-          - type: custom:layout-card
-            layout_type: custom:grid-layout
-            layout:
-              grid-template-columns: 1.1fr 1.4fr 1fr
-              grid-gap: 10px
-              height: 76px
-            cards:
+      # ============================================================
+      # WEATHER + CLOCK (top-left, spans 2 cols)
+      # ============================================================
+      - type: custom:clock-weather-card
+        view_layout: { grid-area: weather }
+        entity: weather.forecast_home
+        forecast_rows: 4
+        time_format: 12
+        date_pattern: "EEEE, MMM d"
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              border-radius: 10px;
+              border: none;
+              background: linear-gradient(135deg, #1e3a5f 0%, #0f1f3a 100%);
+            }
 
-              - type: custom:html-template-card
-                ignore_line_breaks: true
-                content: |
-                  <div style="font-size:30px;font-weight:500;line-height:1;">{{ now().strftime('%-I:%M %p') }}</div>
-                  <div style="font-size:11px;color:#8b949e;margin-top:4px;">{{ now().strftime('%A, %B %-d') }}</div>
-                card_mod:
-                  style: |
-                    ha-card {
-                      background: #161b22;
-                      border-radius: 10px;
-                      border: none;
-                      padding: 12px 14px;
-                      height: 76px;
-                      box-sizing: border-box;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                    }
-                    ha-markdown { padding: 0 !important; }
+      # ============================================================
+      # ALARM HERO (top-right, spans 2 cols)
+      # ============================================================
+      - type: custom:button-card
+        view_layout: { grid-area: alarm }
+        entity: alarm_control_panel.home_alarm
+        name: Home Alarm
+        show_name: true
+        show_state: true
+        show_icon: true
+        size: 35%
+        layout: icon_name_state
+        tap_action: { action: none }
+        hold_action: { action: none }
+        state:
+          - value: disarmed
+            icon: mdi:shield-check
+            color: '#56d364'
+            styles:
+              card:
+                - background-color: 'rgba(86, 211, 100, 0.15)'
+                - border-left: '4px solid #56d364'
+              state: [{ color: '#56d364' }]
+          - value: arming
+            icon: mdi:shield-half-full
+            color: '#e3b341'
+            styles:
+              card:
+                - background-color: 'rgba(227, 179, 65, 0.15)'
+                - border-left: '4px solid #e3b341'
+              state: [{ color: '#e3b341' }]
+          - operator: regex
+            value: '^armed.*'
+            icon: mdi:shield-lock
+            color: '#e3b341'
+            styles:
+              card:
+                - background-color: 'rgba(227, 179, 65, 0.15)'
+                - border-left: '4px solid #e3b341'
+              state: [{ color: '#e3b341' }]
+          - operator: regex
+            value: '^(pending|triggered)$'
+            icon: mdi:alarm-light
+            color: '#f85149'
+            styles:
+              card:
+                - background-color: 'rgba(248, 81, 73, 0.20)'
+                - border-left: '4px solid #f85149'
+                - animation: 'pulse 1.2s infinite'
+              state: [{ color: '#f85149' }]
+        styles:
+          card:
+            - height: '100%'
+            - border-radius: '10px'
+            - border: 'none'
+            - padding: '20px 28px'
+            - background: '#161b22'
+          name:
+            - font-size: '20px'
+            - font-weight: '500'
+            - color: '#8b949e'
+            - justify-self: start
+          state:
+            - font-size: '38px'
+            - font-weight: '600'
+            - text-transform: 'uppercase'
+            - letter-spacing: '2px'
+            - justify-self: start
+          grid:
+            - grid-template-areas: '"i n" "i s"'
+            - grid-template-columns: 'min-content 1fr'
+            - grid-template-rows: 'min-content min-content'
+            - column-gap: '24px'
+            - row-gap: '4px'
+            - align-items: 'center'
+        extra_styles: |
+          @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.99); }
+          }
 
-              - type: custom:html-template-card
-                ignore_line_breaks: true
-                content: |
-                  <div style="display:flex;align-items:center;gap:14px;height:100%;">
-                    <div>
-                      <div style="font-size:24px;font-weight:500;line-height:1;">{{ state_attr('weather.forecast_home','temperature') | round }}°</div>
-                      <div style="font-size:11px;color:#8b949e;margin-top:2px;text-transform:capitalize;">{{ states('weather.forecast_home') | replace('-',' ') }}</div>
-                    </div>
-                    <div style="flex:1;font-size:11px;color:#8b949e;line-height:1.5;">
-                      {%- set forecasts = state_attr('sensor.weather_forecast_daily','forecast') or [] -%}
-                      {%- for f in forecasts[:3] -%}
-                      <div>{{ as_timestamp(f.datetime) | timestamp_custom('%a') }} &nbsp; {{ f.templow | round }}° / {{ f.temperature | round }}°</div>
-                      {%- endfor -%}
-                    </div>
-                  </div>
-                card_mod:
-                  style: |
-                    ha-card {
-                      background: #161b22;
-                      border-radius: 10px;
-                      border: none;
-                      padding: 10px 14px;
-                      height: 76px;
-                      box-sizing: border-box;
-                    }
-                    ha-markdown { padding: 0 !important; height: 100%; }
-                    ha-markdown > * { height: 100%; }
+      # ============================================================
+      # CLIMATE COLUMN
+      # ============================================================
+      - type: custom:mod-card
+        view_layout: { grid-area: climate }
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              border-radius: 10px;
+              border: none;
+              border-top: 3px solid #f0883e;
+              padding: 8px;
+              background: #161b22;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+            }
+            ha-card > * { flex: 1 1 auto; min-height: 0; }
+            ha-card > *:last-child { flex: 0 0 70px; }
+        card:
+          type: vertical-stack
+          cards:
+            - type: custom:better-thermostat-ui-card
+              entity: climate.upstairs
+              name: Upstairs
+              humidity: sensor.upstairs_humidity
+              disable_buttons: true
+              disable_menu: true
+              card_mod:
+                style: |
+                  ha-card { height: 100%; background: #1a1f27; border-radius: 8px; border: none; }
 
-              - type: custom:html-template-card
-                ignore_line_breaks: true
-                content: |
-                  {%- set s = states('alarm_control_panel.home_alarm') -%}
-                  {%- set color = '#56d364' if s == 'disarmed' else ('#e3b341' if 'armed' in s else '#f85149') -%}
-                  {%- set sub = 'all sensors clear' if s == 'disarmed' else ('armed' if 'armed' in s else 'triggered') -%}
-                  <div style="font-size:10px;color:#8b949e;">Alarm</div>
-                  <div style="font-size:20px;font-weight:500;color:{{ color }};line-height:1.1;text-transform:capitalize;">{{ s | replace('_',' ') }}</div>
-                  <div style="font-size:10px;color:#8b949e;margin-top:2px;">{{ sub }}</div>
-                card_mod:
-                  style: |
-                    ha-card {
-                      background: #0f2419;
-                      border-radius: 10px;
-                      border: none;
-                      border-left: 3px solid #2ea043;
-                      padding: 12px 14px;
-                      height: 76px;
-                      box-sizing: border-box;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                    }
-                    ha-markdown { padding: 0 !important; }
+            - type: custom:better-thermostat-ui-card
+              entity: climate.downstairs
+              name: Downstairs
+              humidity: sensor.downstairs_humidity
+              disable_buttons: true
+              disable_menu: true
+              card_mod:
+                style: |
+                  ha-card { height: 100%; background: #1a1f27; border-radius: 8px; border: none; }
 
-          # ============================================================
-          # MAIN GRID: 4 equal columns, fills remaining viewport height
-          # ============================================================
-          - type: custom:layout-card
-            layout_type: custom:grid-layout
-            layout:
-              grid-template-columns: 1fr 1fr 1fr 1fr
-              grid-gap: 10px
-              height: 100%
-            cards:
+            - type: custom:button-card
+              entity: climate.heatstorm_infrared_heater
+              name: Office Heater
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 30%
+              layout: icon_name_state
+              tap_action: { action: none }
+              state:
+                - value: 'off'
+                  icon: mdi:radiator-off
+                  color: '#6e7681'
+                - value: 'heat'
+                  icon: mdi:radiator
+                  color: '#f0883e'
+                  styles:
+                    card: [{ background-color: 'rgba(240, 136, 62, 0.12)' }]
+              styles:
+                card:
+                  - height: '70px'
+                  - background: '#1a1f27'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '8px 14px'
+                name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                state: [{ font-size: '14px' }, { font-weight: '500' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
+                grid:
+                  - grid-template-areas: '"i n" "i s"'
+                  - grid-template-columns: 'min-content 1fr'
+                  - column-gap: '12px'
 
-              # --------------------------------------------------------
-              # COLUMN 1: CLIMATE (orange accent)
-              # Weighted flex: outdoor 1.4, upstairs 1, downstairs 1, heater 0.5
-              # --------------------------------------------------------
-              - type: custom:html-template-card
-                ignore_line_breaks: true
-                content: |
-                  {%- set t_up = state_attr('climate.upstairs','current_temperature') | round(1) -%}
-                  {%- set h_up = states('sensor.upstairs_humidity') -%}
-                  {%- set t_dn = state_attr('climate.downstairs','current_temperature') | round(1) -%}
-                  {%- set h_dn = states('sensor.downstairs_humidity') -%}
-                  {%- set heat = states('climate.heatstorm_infrared_heater') -%}
-                  {%- set heat_col = '#f0883e' if heat in ['heat','heat_cool'] else '#6e7681' -%}
+      # ============================================================
+      # SENSORS COLUMN — 10 sensors in 2x5 grid
+      # ============================================================
+      - type: custom:mod-card
+        view_layout: { grid-area: sensors }
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              border-radius: 10px;
+              border: none;
+              border-top: 3px solid #56d364;
+              padding: 8px;
+              background: #161b22;
+            }
+        card:
+          type: custom:grid-layout
+          layout:
+            grid-template-columns: 1fr 1fr
+            grid-template-rows: repeat(5, 1fr)
+            grid-gap: 6px
+            height: 100%
+          cards:
+            # === Door sensors (binary_sensor; on=open=red, off=closed=green) ===
+            - type: custom:button-card
+              entity: binary_sensor.main_panel_front_door
+              name: Front
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:door-open
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'off'
+                  icon: mdi:door-closed
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'unavailable'
+                  icon: mdi:door
+                  color: '#6e7681'
+                - value: 'unknown'
+                  icon: mdi:door
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                  <div style="display:flex;flex-direction:column;height:100%;gap:8px;">
-                    <div style="font-size:11px;color:#8b949e;flex:0 0 auto;">Climate</div>
+            - type: custom:button-card
+              entity: binary_sensor.main_panel_sliding_door
+              name: Sliding
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:door-sliding-open
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'off'
+                  icon: mdi:door-sliding
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'unavailable'
+                  icon: mdi:door-sliding
+                  color: '#6e7681'
+                - value: 'unknown'
+                  icon: mdi:door-sliding
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;flex:1.4;display:flex;flex-direction:column;justify-content:center;">
-                      <div style="font-size:10px;color:#8b949e;">Outdoor</div>
-                      <div style="font-size:32px;font-weight:500;color:#f0883e;line-height:1.1;">{{ state_attr('weather.forecast_home','temperature') | round }}°</div>
-                      <div style="font-size:11px;color:#8b949e;text-transform:capitalize;">{{ states('weather.forecast_home') | replace('-',' ') }}</div>
-                    </div>
+            - type: custom:button-card
+              entity: binary_sensor.main_panel_garage_door
+              name: Garage Entry
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:door-open
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'off'
+                  icon: mdi:door-closed
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'unavailable'
+                  icon: mdi:door
+                  color: '#6e7681'
+                - value: 'unknown'
+                  icon: mdi:door
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
-                      <div style="font-size:10px;color:#8b949e;">Upstairs</div>
-                      <div style="font-size:22px;font-weight:500;line-height:1.1;">{{ t_up }}°<span style="font-size:11px;color:#8b949e;margin-left:6px;font-weight:400;">{{ h_up }}%</span></div>
-                    </div>
+            - type: custom:button-card
+              entity: binary_sensor.basement_kitchen_door
+              name: Basement
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:door-open
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'off'
+                  icon: mdi:door-closed
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'unavailable'
+                  icon: mdi:door
+                  color: '#6e7681'
+                - value: 'unknown'
+                  icon: mdi:door
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
-                      <div style="font-size:10px;color:#8b949e;">Downstairs</div>
-                      <div style="font-size:22px;font-weight:500;line-height:1.1;">{{ t_dn }}°<span style="font-size:11px;color:#8b949e;margin-left:6px;font-weight:400;">{{ h_dn }}%</span></div>
-                    </div>
+            - type: custom:button-card
+              entity: binary_sensor.z_wave_door_window_sensor
+              name: Hannah
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:door-open
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'off'
+                  icon: mdi:door-closed
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'unavailable'
+                  icon: mdi:door
+                  color: '#6e7681'
+                - value: 'unknown'
+                  icon: mdi:door
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:8px 10px;flex:0.5;display:flex;justify-content:space-between;align-items:center;">
-                      <span style="font-size:11px;color:#8b949e;">Office heater</span>
-                      <span style="font-size:12px;font-weight:500;color:{{ heat_col }};text-transform:capitalize;">{{ heat }}</span>
-                    </div>
-                  </div>
-                card_mod:
-                  style: |
-                    :host { display: block; height: 100%; }
-                    ha-card {
-                      background: #161b22;
-                      border-radius: 10px;
-                      border: none;
-                      border-top: 3px solid #f0883e;
-                      padding: 12px;
-                      height: 100%;
-                      box-sizing: border-box;
-                    }
-                    ha-markdown { padding: 0 !important; height: 100%; }
-                    ha-markdown > * { height: 100%; }
+            - type: custom:button-card
+              entity: binary_sensor.z_wave_door_window_sensor_2
+              name: Jacob
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:door-open
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'off'
+                  icon: mdi:door-closed
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'unavailable'
+                  icon: mdi:door
+                  color: '#6e7681'
+                - value: 'unknown'
+                  icon: mdi:door
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-              # --------------------------------------------------------
-              # COLUMN 2: DOORS & MOTION (green accent)
-              # Weighted flex: contacts 1.6, garage 1, motion 1, last activity 0.8
-              # --------------------------------------------------------
-              - type: custom:html-template-card
-                ignore_line_breaks: true
-                content: |
-                  {%- macro dot(entity, label) -%}
-                    {%- set s = states(entity) -%}
-                    {%- if s in ['unavailable','unknown'] -%}
-                      <div style="display:flex;justify-content:space-between;"><span>{{ label }}</span><span style="color:#6e7681;">○</span></div>
-                    {%- elif s == 'on' -%}
-                      <div style="display:flex;justify-content:space-between;"><span>{{ label }}</span><span style="color:#f85149;">●</span></div>
-                    {%- else -%}
-                      <div style="display:flex;justify-content:space-between;"><span>{{ label }}</span><span style="color:#56d364;">●</span></div>
-                    {%- endif -%}
-                  {%- endmacro -%}
+            # === Garage door covers (state: closed/open) ===
+            - type: custom:button-card
+              entity: cover.garage_door_1_door
+              name: Garage 1
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'closed'
+                  icon: mdi:garage
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'open'
+                  icon: mdi:garage-open-variant
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'opening'
+                  icon: mdi:garage-alert-variant
+                  color: '#e3b341'
+                  styles:
+                    card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
+                - value: 'closing'
+                  icon: mdi:garage-alert-variant
+                  color: '#e3b341'
+                  styles:
+                    card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                  {%- set g1 = states('cover.garage_door_1_door') -%}
-                  {%- set g2 = states('cover.garage_door_2_door') -%}
-                  {%- set g1_col = '#56d364' if g1 == 'closed' else '#f85149' -%}
-                  {%- set g2_col = '#56d364' if g2 == 'closed' else '#f85149' -%}
-                  {%- set fr = states('binary_sensor.main_panel_family_room_motion') -%}
-                  {%- set of = states('binary_sensor.main_panel_office_motion') -%}
-                  {%- set fr_col = '#f85149' if fr == 'on' else '#6e7681' -%}
-                  {%- set of_col = '#f85149' if of == 'on' else '#6e7681' -%}
-                  {%- set fr_lbl = 'detected' if fr == 'on' else 'clear' -%}
-                  {%- set of_lbl = 'detected' if of == 'on' else 'clear' -%}
+            - type: custom:button-card
+              entity: cover.garage_door_2_door
+              name: Garage 2
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'closed'
+                  icon: mdi:garage
+                  color: '#56d364'
+                  styles:
+                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                - value: 'open'
+                  icon: mdi:garage-open-variant
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                - value: 'opening'
+                  icon: mdi:garage-alert-variant
+                  color: '#e3b341'
+                  styles:
+                    card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
+                - value: 'closing'
+                  icon: mdi:garage-alert-variant
+                  color: '#e3b341'
+                  styles:
+                    card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                  {# Last activity: most-recently-changed entity from watchlist #}
-                  {%- set watchlist = [
-                    ('Front door', 'binary_sensor.main_panel_front_door'),
-                    ('Basement door', 'binary_sensor.basement_kitchen_door'),
-                    ('Sliding door', 'binary_sensor.main_panel_sliding_door'),
-                    ('Garage door', 'binary_sensor.main_panel_garage_door'),
-                    ("Hannah's door", 'binary_sensor.z_wave_door_window_sensor'),
-                    ("Jacob's door", 'binary_sensor.z_wave_door_window_sensor_2'),
-                    ('Garage 1', 'cover.garage_door_1_door'),
-                    ('Garage 2', 'cover.garage_door_2_door'),
-                    ('Family motion', 'binary_sensor.main_panel_family_room_motion'),
-                    ('Office motion', 'binary_sensor.main_panel_office_motion')
-                  ] -%}
-                  {%- set ns = namespace(name='', dt=none, state='') -%}
-                  {%- for label, ent in watchlist -%}
-                    {%- set domain = ent.split('.')[0] -%}
-                    {%- set obj_id = ent.split('.')[1] -%}
-                    {%- if states[domain] is defined and states[domain][obj_id] is defined -%}
-                      {%- set lc = states[domain][obj_id].last_changed -%}
-                      {%- set st = states(ent) -%}
-                      {%- if st not in ['unknown','unavailable'] and (ns.dt is none or lc > ns.dt) -%}
-                        {%- set ns.dt = lc -%}
-                        {%- set ns.name = label -%}
-                        {%- set ns.state = st -%}
-                      {%- endif -%}
-                    {%- endif -%}
-                  {%- endfor -%}
+            # === Motion sensors (binary_sensor; on=detected=red pulse, off=clear=gray) ===
+            - type: custom:button-card
+              entity: binary_sensor.main_panel_family_room_motion
+              name: Family
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:motion-sensor
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.20)' }, { animation: 'pulse 1s infinite' }]
+                - value: 'off'
+                  icon: mdi:motion-sensor-off
+                  color: '#6e7681'
+                - value: 'unavailable'
+                  icon: mdi:motion-sensor-off
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                  <div style="display:flex;flex-direction:column;height:100%;gap:8px;">
-                    <div style="font-size:11px;color:#8b949e;flex:0 0 auto;">Doors &amp; motion</div>
+            - type: custom:button-card
+              entity: binary_sensor.main_panel_office_motion
+              name: Office
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 50%
+              tap_action: { action: none }
+              state:
+                - value: 'on'
+                  icon: mdi:motion-sensor
+                  color: '#f85149'
+                  styles:
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.20)' }, { animation: 'pulse 1s infinite' }]
+                - value: 'off'
+                  icon: mdi:motion-sensor-off
+                  color: '#6e7681'
+                - value: 'unavailable'
+                  icon: mdi:motion-sensor-off
+                  color: '#6e7681'
+              styles:
+                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;flex:1.6;display:flex;flex-direction:column;justify-content:center;">
-                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:13px;">
-                        {{ dot('binary_sensor.main_panel_front_door','Front') }}
-                        {{ dot('binary_sensor.basement_kitchen_door','Basement') }}
-                        {{ dot('binary_sensor.main_panel_sliding_door','Sliding') }}
-                        {{ dot('binary_sensor.main_panel_garage_door','Garage') }}
-                        {{ dot('binary_sensor.z_wave_door_window_sensor','Hannah') }}
-                        {{ dot('binary_sensor.z_wave_door_window_sensor_2','Jacob') }}
-                      </div>
-                    </div>
+      # ============================================================
+      # LIGHTS COLUMN — 21 lights in 3x7 grid
+      # ============================================================
+      - type: custom:mod-card
+        view_layout: { grid-area: lights }
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              border-radius: 10px;
+              border: none;
+              border-top: 3px solid #e3b341;
+              padding: 8px;
+              background: #161b22;
+            }
+        card:
+          type: custom:grid-layout
+          layout:
+            grid-template-columns: 1fr 1fr 1fr
+            grid-template-rows: repeat(7, 1fr)
+            grid-gap: 4px
+            height: 100%
+          cards:
+            - { type: 'custom:mushroom-light-card', entity: light.family_room, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.floor_lamp_composite, name: Floor Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.kitchen_island, name: Island, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.kitchen_main, name: Kitchen, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.kitchen_table, name: Table, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.office, name: Office, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.office_bookcase, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.office_corner, name: Corner, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.office_door, name: Door, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.office_lamp, name: Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.meeting_light, name: Meeting, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.desk_lamp, name: Desk, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.front_door, name: Front, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.front_lantern, name: Lantern, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.garage_front, name: Garage Fr, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.garage_side, name: Garage Sd, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.shed, name: Shed, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.downstairs_hallway, name: Down Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            - { type: 'custom:mushroom-light-card', entity: light.upstairs_hallway_light, name: Up Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
-                      <div style="font-size:10px;color:#8b949e;margin-bottom:6px;">Garage doors</div>
-                      <div style="font-size:13px;display:flex;justify-content:space-between;line-height:1.6;"><span>Door 1</span><span style="color:{{ g1_col }};">{{ g1 }}</span></div>
-                      <div style="font-size:13px;display:flex;justify-content:space-between;line-height:1.6;"><span>Door 2</span><span style="color:{{ g2_col }};">{{ g2 }}</span></div>
-                    </div>
+      # ============================================================
+      # MEDIA COLUMN — 6 Sonos cells (2x3) + TV row (60px)
+      # ============================================================
+      - type: custom:mod-card
+        view_layout: { grid-area: media }
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              border-radius: 10px;
+              border: none;
+              border-top: 3px solid #58a6ff;
+              padding: 8px;
+              background: #161b22;
+            }
+        card:
+          type: custom:grid-layout
+          layout:
+            grid-template-columns: 1fr 1fr
+            grid-template-rows: 1fr 1fr 1fr 70px
+            grid-gap: 6px
+            height: 100%
+          cards:
+            - type: custom:mini-media-player
+              entity: media_player.master_bedroom
+              name: Master Bedroom
+              artwork: full-cover-fit
+              info: scroll
+              hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+              tap_action: { action: none }
+              card_mod:
+                style: |
+                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
-                      <div style="font-size:10px;color:#8b949e;margin-bottom:6px;">Motion</div>
-                      <div style="font-size:13px;display:flex;justify-content:space-between;line-height:1.6;"><span>Family room</span><span style="color:{{ fr_col }};">{{ fr_lbl }}</span></div>
-                      <div style="font-size:13px;display:flex;justify-content:space-between;line-height:1.6;"><span>Office</span><span style="color:{{ of_col }};">{{ of_lbl }}</span></div>
-                    </div>
+            - type: custom:mini-media-player
+              entity: media_player.basement
+              name: Basement
+              artwork: full-cover-fit
+              info: scroll
+              hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+              tap_action: { action: none }
+              card_mod:
+                style: |
+                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
 
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;flex:0.8;display:flex;flex-direction:column;justify-content:center;">
-                      <div style="font-size:10px;color:#8b949e;margin-bottom:4px;">Last activity</div>
-                      {%- if ns.name -%}
-                      <div style="font-size:12px;display:flex;justify-content:space-between;"><span>{{ ns.name }}</span><span style="color:#8b949e;">{{ relative_time(ns.dt) }} ago</span></div>
-                      {%- else -%}
-                      <div style="font-size:12px;color:#6e7681;">No recent activity</div>
-                      {%- endif -%}
-                    </div>
-                  </div>
-                card_mod:
-                  style: |
-                    :host { display: block; height: 100%; }
-                    ha-card {
-                      background: #161b22;
-                      border-radius: 10px;
-                      border: none;
-                      border-top: 3px solid #56d364;
-                      padding: 12px;
-                      height: 100%;
-                      box-sizing: border-box;
-                    }
-                    ha-markdown { padding: 0 !important; height: 100%; }
-                    ha-markdown > * { height: 100%; }
+            - type: custom:mini-media-player
+              entity: media_player.office
+              name: Office
+              artwork: full-cover-fit
+              info: scroll
+              hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+              tap_action: { action: none }
+              card_mod:
+                style: |
+                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
 
-              # --------------------------------------------------------
-              # COLUMN 3: LIGHTS & DOORBELL (amber accent)
-              # No camera (Blink offline; will return when cams come back)
-              # vertical-stack: lights tile fills column, doorbell row footer
-              # --------------------------------------------------------
-              - type: vertical-stack
-                cards:
+            - type: custom:mini-media-player
+              entity: media_player.kitchen
+              name: Kitchen
+              artwork: full-cover-fit
+              info: scroll
+              hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+              tap_action: { action: none }
+              card_mod:
+                style: |
+                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
 
-                  # --- Lights summary + per-area counts (fills column) ---
-                  - type: custom:html-template-card
-                    ignore_line_breaks: true
-                    content: |
-                      {%- set total = (states.light | rejectattr('state','eq','unavailable') | list | length) -%}
-                      {%- set on_count = (states.light | selectattr('state','eq','on') | list | length) -%}
-                      <div style="font-size:11px;color:#8b949e;margin-bottom:10px;">Lights &amp; doorbell</div>
+            - type: custom:mini-media-player
+              entity: media_player.dining_room
+              name: Dining Room
+              artwork: full-cover-fit
+              info: scroll
+              hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+              tap_action: { action: none }
+              card_mod:
+                style: |
+                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
 
-                      <div style="background:#1a1f27;border-radius:8px;padding:18px;height:calc(100% - 24px);display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
-                        <div style="font-size:42px;font-weight:500;line-height:1;color:#e3b341;">{{ on_count }}<span style="font-size:14px;color:#8b949e;margin-left:10px;font-weight:400;">of {{ total }} on</span></div>
-                        <div style="font-size:14px;line-height:2.2;margin-top:18px;">
-                          {%- set rooms = [
-                            ('Office','sensor.lights_on_office_count'),
-                            ('Family room','sensor.lights_on_family_room_count'),
-                            ('Outdoor','sensor.lights_on_outdoor_count'),
-                            ('Kitchen','sensor.lights_on_kitchen_count'),
-                            ('Hallway','sensor.lights_on_hallway_count')
-                          ] -%}
-                          {%- for label, ent in rooms -%}
-                          {%- set v = states(ent) | int(0) -%}
-                          <div style="display:flex;justify-content:space-between;{% if v == 0 %}color:#6e7681;{% endif %}"><span>{{ label }}</span><span{% if v > 0 %} style="color:#e3b341;font-weight:500;"{% endif %}>{{ v }}</span></div>
-                          {%- endfor -%}
-                        </div>
-                      </div>
-                    card_mod:
-                      style: |
-                        :host { display: block; height: 100%; }
-                        ha-card { background: transparent; border: none; box-shadow: none; padding: 0; margin: 0; height: 100%; }
-                        ha-markdown { padding: 0 !important; height: 100%; }
-                        ha-markdown > * { height: 100%; }
+            - type: custom:mini-media-player
+              entity: media_player.roam_2
+              name: Roam 2
+              artwork: full-cover-fit
+              info: scroll
+              hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+              tap_action: { action: none }
+              card_mod:
+                style: |
+                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
 
-                  # --- Doorbell event timestamps (small footer) ---
-                  - type: custom:html-template-card
-                    ignore_line_breaks: true
-                    content: |
-                      {%- macro rel(ent) -%}
-                        {%- set s = states(ent) -%}
-                        {%- if s in ['unknown','unavailable',None] -%}—
-                        {%- else -%}{{ relative_time(as_datetime(s)) }} ago{%- endif -%}
-                      {%- endmacro -%}
-                      <div style="display:flex;justify-content:space-between;font-size:11px;color:#8b949e;padding:0 4px;height:100%;align-items:center;">
-                        <span>Chime · {{ rel('event.front_door_chime') }}</span>
-                        <span>Motion · {{ rel('event.front_door_motion') }}</span>
-                      </div>
-                    card_mod:
-                      style: |
-                        :host { display: block; height: 100%; }
-                        ha-card { background: transparent; border: none; box-shadow: none; padding: 0; margin: 0; height: 100%; }
-                        ha-markdown { padding: 0 !important; height: 100%; }
-                        ha-markdown > * { height: 100%; }
+            # --- TVs row (spans both cols) ---
+            - type: horizontal-stack
+              view_layout: { grid-column-start: 1, grid-column-end: 3 }
+              cards:
+                - type: custom:button-card
+                  entity: media_player.office_tv
+                  name: Office
+                  show_name: true
+                  show_state: true
+                  show_icon: true
+                  size: 30%
+                  layout: icon_name_state
+                  tap_action: { action: none }
+                  state:
+                    - value: 'off'
+                      icon: mdi:television-off
+                      color: '#6e7681'
+                    - value: 'unavailable'
+                      icon: mdi:television-off
+                      color: '#6e7681'
+                    - operator: default
+                      icon: mdi:television
+                      color: '#58a6ff'
+                      styles:
+                        card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
+                  styles:
+                    card: [{ height: '70px' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
+                    name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                    state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
+                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
 
-                card_mod:
-                  style: |
-                    :host { display: block; height: 100%; }
-                    #root {
-                      background: #161b22;
-                      border-radius: 10px;
-                      border-top: 3px solid #e3b341;
-                      padding: 12px;
-                      height: 100%;
-                      box-sizing: border-box;
-                      display: flex !important;
-                      flex-direction: column;
-                      gap: 8px;
-                    }
-                    #root > *:nth-child(1) { flex: 1; min-height: 0; }
-                    #root > *:nth-child(2) { flex: 0 0 24px; min-height: 0; }
+                - type: custom:button-card
+                  entity: media_player.basement_tv
+                  name: Basement
+                  show_name: true
+                  show_state: true
+                  show_icon: true
+                  size: 30%
+                  layout: icon_name_state
+                  tap_action: { action: none }
+                  state:
+                    - value: 'off'
+                      icon: mdi:television-off
+                      color: '#6e7681'
+                    - value: 'unavailable'
+                      icon: mdi:television-off
+                      color: '#6e7681'
+                    - operator: default
+                      icon: mdi:television
+                      color: '#58a6ff'
+                      styles:
+                        card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
+                  styles:
+                    card: [{ height: '70px' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
+                    name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                    state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
+                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
 
-              # --------------------------------------------------------
-              # COLUMN 4: MEDIA (blue accent)
-              # 3x2 Sonos grid + TVs row
-              # Group-aware: leader shows "Office +2", followers show "↳ Office"
-              # --------------------------------------------------------
-              - type: custom:html-template-card
-                ignore_line_breaks: true
-                content: |
-                  {%- macro sonos_cell(entity, label) -%}
-                    {%- set s = states(entity) -%}
-                    {%- set group = state_attr(entity,'group_members') or [] -%}
-                    {%- set is_grouped = group | length > 1 -%}
-                    {%- set is_leader = group and group[0] == entity -%}
-                    {%- set is_follower = is_grouped and not is_leader -%}
-
-                    {%- if is_follower -%}
-                      {%- set leader = group[0] -%}
-                      {%- set leader_name = state_attr(leader,'friendly_name') or (leader.split('.')[1] | replace('_',' ') | title) -%}
-                      <div style="background:#1a1f27;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;opacity:0.55;">
-                        <div style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ label }}</div>
-                        <div style="font-size:11px;color:#6e7681;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">↳ {{ leader_name }}</div>
-                      </div>
-                    {%- elif s == 'playing' -%}
-                      {%- set title = state_attr(entity,'media_title') or '' -%}
-                      {%- set artist = state_attr(entity,'media_artist') or '' -%}
-                      {%- if title == 'TV' -%}
-                        {%- set title = 'TV audio' -%}
-                        {%- set artist = '' -%}
-                      {%- endif -%}
-                      {%- set group_count = group | length - 1 -%}
-                      {%- set group_suffix = ' +' ~ group_count if is_grouped else '' -%}
-                      <div style="background:#14283f;border-radius:6px;padding:6px 8px;border-left:2px solid #58a6ff;display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;">
-                        <div style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ label }}{{ group_suffix }}</div>
-                        <div style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ title }}</div>
-                        <div style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ artist }}</div>
-                      </div>
-                    {%- else -%}
-                      <div style="background:#1a1f27;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;">
-                        <div style="font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ label }}</div>
-                        <div style="font-size:11px;color:#6e7681;">{{ s }}</div>
-                      </div>
-                    {%- endif -%}
-                  {%- endmacro -%}
-
-                  {%- macro tv_status(entity, label) -%}
-                    {%- set s = states(entity) -%}
-                    {%- set color = '#58a6ff' if s not in ['off','unavailable','unknown'] else '#6e7681' -%}
-                    <span style="color:{{ color }};">{{ label }} · {{ s }}</span>
-                  {%- endmacro -%}
-
-                  <div style="display:flex;flex-direction:column;height:100%;gap:10px;">
-                    <div style="font-size:11px;color:#8b949e;flex:0 0 auto;">Media</div>
-
-                    <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3, minmax(0, 1fr));gap:6px;flex:1;min-height:0;">
-                      {{ sonos_cell('media_player.master_bedroom','Master Bedroom') }}
-                      {{ sonos_cell('media_player.basement','Basement') }}
-                      {{ sonos_cell('media_player.office','Office') }}
-                      {{ sonos_cell('media_player.kitchen','Kitchen') }}
-                      {{ sonos_cell('media_player.dining_room','Dining Room') }}
-                      {{ sonos_cell('media_player.roam_2','Roam 2') }}
-                    </div>
-
-                    <div style="background:#1a1f27;border-radius:8px;padding:10px;height:60px;flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
-                      <div style="font-size:10px;color:#8b949e;margin-bottom:4px;">TVs</div>
-                      <div style="font-size:11px;display:flex;justify-content:space-between;">
-                        {{ tv_status('media_player.office_tv','Office') }}
-                        {{ tv_status('media_player.basement_tv','Basement') }}
-                        {{ tv_status('media_player.play_room_tv','Play') }}
-                      </div>
-                    </div>
-                  </div>
-                card_mod:
-                  style: |
-                    :host { display: block; height: 100%; }
-                    ha-card {
-                      background: #161b22;
-                      border-radius: 10px;
-                      border: none;
-                      border-top: 3px solid #58a6ff;
-                      padding: 12px;
-                      height: 100%;
-                      box-sizing: border-box;
-                    }
-                    ha-markdown { padding: 0 !important; height: 100%; }
-                    ha-markdown > * { height: 100%; }
+                - type: custom:button-card
+                  entity: media_player.play_room_tv
+                  name: Play
+                  show_name: true
+                  show_state: true
+                  show_icon: true
+                  size: 30%
+                  layout: icon_name_state
+                  tap_action: { action: none }
+                  state:
+                    - value: 'off'
+                      icon: mdi:television-off
+                      color: '#6e7681'
+                    - value: 'unavailable'
+                      icon: mdi:television-off
+                      color: '#6e7681'
+                    - operator: default
+                      icon: mdi:television
+                      color: '#58a6ff'
+                      styles:
+                        card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
+                  styles:
+                    card: [{ height: '70px' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
+                    name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                    state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
+                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
