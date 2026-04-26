@@ -1,12 +1,8 @@
 # dashboards/
 
-YAML-managed Lovelace dashboards. Both are registered in `configuration.yaml` under `lovelace.dashboards` and are fully git-tracked — no UI editor involvement. Changes deploy automatically via the GitOps pipeline.
+YAML-managed Lovelace dashboards. All three are registered in `configuration.yaml` under `lovelace.dashboards` and are fully git-tracked — no UI editor involvement. Changes deploy automatically via the GitOps pipeline.
 
-## `home.yaml` — Home + Kiosk
-
-Two views in a single file, each solving a distinct display context.
-
-### Home view (`/dashboard-home/home`)
+## `home.yaml` — Home view (`/dashboard-home/home`)
 
 Mobile-first control interface. Design principle: show only what's active.
 
@@ -16,34 +12,37 @@ Mobile-first control interface. Design principle: show only what's active.
 - **Alarm panel** — always visible at top, with a 3×2 sensor grid showing all door/motion contacts
 - **Weather forecast** — daily summary from Met.no
 
-### Kiosk view (`/dashboard-home/kiosk`)
+## `kiosk.yaml` — Kiosk view (`/dashboard-kiosk/home`)
 
 Fixed 1080p wall display on a 65-inch TCL TV running Chromium in kiosk mode.
 
-- **Panel mode** (`panel: true`, `type: panel`) hosts a single root `custom:layout-card` with `height: 100vh` — no scrolling at any content state
-- **Markdown-only cards** — every cell is a `type: markdown` card with inline `card_mod` styles. No Mushroom, no theme dependency, no per-state class toggling. State drives color via Jinja2 inside the markdown.
-- **Non-interactive** — markdown cards have no tap action by default; the wall display ignores touch.
-- **Unavailable handling** — handled inside each Jinja macro (e.g. door dot turns gray for `unavailable`/`unknown`, green for closed, red for open), not via wrapper conditionals.
-- **Accent borders** — each column carries a 3px `border-top` in its column color: orange (Climate), green (Doors & motion), amber (Lights & doorbell), blue (Media). Alarm uses a 3px `border-left` that recolors with state.
+- **View IS the grid** — the view itself is `type: custom:grid-layout` with `height: 100vh`; no nested panel-mode wrapper
+- **Typed cards per cell** — every panel is a typed Lovelace card (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card` so the ha-card host provides the height cascade
+- **State-driven styling** — colors live in per-card `state` blocks (`button-card`) and `card_mod` styles, not Jinja-templated HTML. The alarm hero pulses on triggered.
+- **Non-interactive** — every card sets `tap_action: { action: none }`; the wall display ignores touch
+- **Unavailable handling** — declared inside each card's `state` list (e.g. a `value: unavailable` block on a button-card), not via wrapper conditionals
 
 **Grid structure:**
 ```
-top strip (76px):  "clock  weather+forecast  alarm"
-main grid:         "climate  doors  lights  media"
+grid-template-columns: 1fr 1fr 1.4fr 1fr
+grid-template-rows:    130px 1fr
+grid-template-areas:
+  "weather weather alarm   alarm"
+  "climate sensors lights  media"
 ```
 
-| Column | Contents |
-|--------|----------|
-| Col 1 | Climate — outdoor temp/condition, upstairs/downstairs temp+humidity, office heater state |
-| Col 2 | Doors & motion — 6 door contacts as colored dots, 2 garage cover states, 2 motion sensors |
-| Col 3 | Lights & doorbell — on/total counts and per-room counts, front-door camera snapshot, last chime/motion timestamps |
-| Col 4 | Media — 3×2 Sonos cell grid (active cells highlighted blue with title/artist), TV status row |
-
-The `lights_on_*_count` template sensors backing Col 3 are defined in `configuration.yaml`.
+| Cell | Contents |
+|------|----------|
+| weather | `clock-weather-card` with 4-day forecast (top-left, spans 2 cols) |
+| alarm | `button-card` hero (top-right, spans 2 cols) |
+| climate | 2 `better-thermostat-ui-card` dials stacked + heater `button-card` |
+| sensors | 10 `button-card` tiles in a 2×5 internal grid (6 doors + 2 garage covers + 2 motion) |
+| lights | 21 `mushroom-light-card` tiles in a 3×7 internal grid |
+| media | 6 `mini-media-player` cards (album art via `artwork: full-cover-fit`) in a 2×3 internal grid + TVs row |
 
 ### Kiosk Mode
 
-`kiosk_mode` block at the top of `home.yaml` hides header and sidebar for the `Kiosk` user (a non-admin local account used on the wall display).
+`kiosk_mode` block at the top of `kiosk.yaml` hides header and sidebar for the `Kiosk` user (a non-admin local account used on the wall display).
 
 ## `homelab-status.yaml` — Homelab Status
 
@@ -63,9 +62,11 @@ Scrollable infrastructure overview dashboard (`/dashboard-homelab-status`). Seve
 
 | Card | Used by |
 |------|---------|
-| [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Light, entity, alarm cards, chips, title cards |
-| [mini-media-player](https://github.com/kalkih/mini-media-player) | Sonos cards with album art |
-| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid engine (kiosk view) |
-| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS + Jinja2 templates |
+| [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Home view light/entity/alarm cards; `mushroom-light-card` per light on kiosk |
+| [mini-media-player](https://github.com/kalkih/mini-media-player) | Sonos cards on Home view; kiosk media cells with `artwork: full-cover-fit` |
+| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | `custom:grid-layout` — used as the kiosk VIEW type (not nested) |
+| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS + `custom:mod-card` cell wrapper |
+| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, heater, TVs row in kiosk view |
+| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in kiosk view |
 | [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Sidebar/header hiding for wall display |
-| [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Animated weather + clock widget |
+| [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Combined clock + 4-day forecast on kiosk top strip |

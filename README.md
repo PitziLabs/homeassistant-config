@@ -10,7 +10,7 @@ This isn't a collection of UI screenshots. It's an opinionated infrastructure pr
 
 **A custom alarm system** built from bare hardware up. Two Konnected ESP8266 panels running fully inlined ESPHome firmware: one driving 4 door contacts, 2 motion sensors, and a siren output; the other repurposed as an interior annunciator with a piezo buzzer playing RTTTL tones. Eight YAML automations handle the full alarm lifecycle — arming sequences, entry/exit delays with audible countdowns, triggered siren activation, disarm confirmation, and a door chime for everyday use.
 
-**Two dashboard experiences** from a single YAML file. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Kiosk view drives a 65-inch wall display using CSS Grid layout, Mushroom cards with theme-driven state coloring, animated alarm status chips, and a clock-weather widget — all locked to 1080p with zero scrolling.
+**Two dashboard experiences** built from typed Lovelace cards. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Kiosk view drives a 65-inch wall display using `custom:grid-layout` as the view itself, populated with `mushroom-light-card`, `button-card`, `mini-media-player` (with album art), `clock-weather-card`, and circular `better-thermostat-ui-card` dials — all locked to 1080p with zero scrolling.
 
 **A Homelab Status dashboard** providing an at-a-glance infrastructure overview: NAS health (Neptune UGREEN DXP2800 — pool status, disk temps, SMART hours, LAN throughput), Proxmox node and VM metrics, smart home coordinator firmware/signal status, battery health grid with amber/red color coding, CMYK toner levels, GitHub repo activity, and the custom-built ESP32 meeting indicator device.
 
@@ -30,7 +30,7 @@ Proxmox VE (hypervisor)
 │   │   ├── automations/ — git-managed automations (meeting indicator)
 │   │   ├── packages/ — HA version sync (startup dispatch to GitHub)
 │   │   ├── scripts/gitops-sync.sh — fetch → validate → smart reload or rollback
-│   │   ├── dashboards/ — Home (mobile) + Kiosk (wall display) + Homelab Status
+│   │   ├── dashboards/ — Home (mobile) + Kiosk (wall display) + Homelab Status (3 files)
 │   │   └── themes/noctis_kiosk.yaml — global card-mod state styling
 │   └── .storage/ — HA-managed runtime state (excluded from git)
 ├── Firewalla Gold SE — network firewall
@@ -190,7 +190,7 @@ A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.
 
 **Why a manual alarm platform instead of an integration?** The manual platform gives explicit control over every timing parameter and state transition. The alarm behavior is defined entirely in YAML — arming delays, entry delays, trigger duration, which sensors are active in which arm mode — making it auditable, version-controlled, and reproducible.
 
-**Why global theme-based card styling instead of per-card card-mod?** The Noctis Kiosk theme applies state-based backgrounds (warm amber for lights on, cool blue for switches on) to all Mushroom cards through a single `card-mod-card` block. This means adding a new light to the dashboard requires zero styling work — it inherits the theme automatically. Per-card styling creates maintenance debt that scales linearly with entity count.
+**Why typed Lovelace cards on the kiosk instead of html-template-card?** An earlier kiosk iteration used `custom:html-template-card` so each cell was Jinja-templated HTML. That gave maximum layout control but offered no schema validation, fought shadow-DOM CSS for sizing, and made every minor change a string-concatenation problem. The current kiosk uses typed cards (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card` so per-card styling lives next to the entity binding. Adding a new light is one extra `mushroom-light-card` block; state-driven colors are declarative `state` lists, not Jinja conditionals.
 
 **Why conditional cards on the mobile view?** A house with 40+ controllable entities produces a dashboard that's mostly noise. The Home view shows only what's active — if all kitchen lights are off, you see "All off" instead of four disabled tiles. This is an opinionated UX choice: the dashboard reflects the current state of the house, not its full capability.
 
@@ -229,7 +229,8 @@ Seven sections:
 ├── scripts/
 │   └── gitops-sync.sh        GitOps deploy: fetch → validate → smart reload or rollback
 ├── dashboards/
-│   ├── home.yaml             Two views: Home (mobile) + Kiosk (wall display)
+│   ├── home.yaml             Mobile/tablet Home dashboard
+│   ├── kiosk.yaml            Kiosk wall-display dashboard (custom:grid-layout)
 │   └── homelab-status.yaml   Homelab Status: NAS, Proxmox, coordinators, battery, printer
 ├── themes/
 │   ├── noctis_kiosk.yaml     Active theme with global card-mod state styling
@@ -255,8 +256,10 @@ Seven sections:
 | [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Light/entity/alarm cards and sensor chips |
 | [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Animated weather with clock and forecast |
 | [mini-media-player](https://github.com/kalkih/mini-media-player) | Compact Sonos display with album art |
-| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid layout engine for kiosk view |
-| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling with Jinja2 |
+| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid layout engine — used as the kiosk view type itself |
+| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling + `custom:mod-card` cell wrapper |
+| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, TV row in kiosk view |
+| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in kiosk view |
 | [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Hides sidebar/header for wall display |
 | [Noctis](https://github.com/aFFekopp/nern) | Base dark theme (extended by Noctis Kiosk) |
 
