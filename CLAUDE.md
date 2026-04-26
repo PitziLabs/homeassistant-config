@@ -202,6 +202,7 @@ grid-template-areas:
 
 ### Theme Files
 - `/config/themes/noctis_kiosk.yaml` — Active theme. Originally provided global state-based backgrounds for Mushroom cards on the kiosk; the kiosk view no longer relies on it (state styling moved into per-card `card_mod` and `button-card` state blocks). Still loaded as the project's default dark theme.
+- `/config/themes/kiosk_polish.yaml` — Design-token layer applied on top of Noctis Kiosk via `theme: Kiosk Polish` on the kiosk view. Defines `--kiosk-*` CSS variables for column accents, tile/card backgrounds, text tints, alarm-state colors, and Mushroom sizing — `dashboards/kiosk.yaml` references these tokens instead of inlining hex literals.
 - `/config/themes/kiosk_dark.yaml` — Deprecated custom theme (retained for reference).
 - Noctis base theme installed via HACS.
 
@@ -261,6 +262,7 @@ The "Kiosk" person/user (Settings → People) is a non-admin local account used 
 │   └── homelab-status.yaml     # Homelab Status (NAS, Proxmox, coordinators, battery, printer)
 ├── themes/
 │   ├── noctis_kiosk.yaml       # Active theme: global card-mod state-based backgrounds
+│   ├── kiosk_polish.yaml       # Kiosk design tokens (--kiosk-*) layered via view-level theme
 │   └── kiosk_dark.yaml         # Deprecated custom theme (retained for reference)
 ├── esphome/
 │   ├── konnected-56ac70.yaml   # Main panel firmware: 4 doors, 2 motion, siren

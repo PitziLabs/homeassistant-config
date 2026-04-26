@@ -29,6 +29,7 @@ views:
   - title: Home
     path: home
     icon: mdi:monitor-dashboard
+    theme: Kiosk Polish
     type: custom:grid-layout
     layout:
       height: 100vh
@@ -77,50 +78,50 @@ views:
         state:
           - value: disarmed
             icon: mdi:shield-check
-            color: '#56d364'
+            color: 'var(--kiosk-accent-disarmed)'
             styles:
               card:
                 - background-color: 'rgba(86, 211, 100, 0.15)'
-                - border-left: '4px solid #56d364'
-              state: [{ color: '#56d364' }]
+                - border-left: '4px solid var(--kiosk-accent-disarmed)'
+              state: [{ color: 'var(--kiosk-accent-disarmed)' }]
           - value: arming
             icon: mdi:shield-half-full
-            color: '#e3b341'
+            color: 'var(--kiosk-accent-armed)'
             styles:
               card:
                 - background-color: 'rgba(227, 179, 65, 0.15)'
-                - border-left: '4px solid #e3b341'
-              state: [{ color: '#e3b341' }]
+                - border-left: '4px solid var(--kiosk-accent-armed)'
+              state: [{ color: 'var(--kiosk-accent-armed)' }]
           - operator: regex
             value: '^armed.*'
             icon: mdi:shield-lock
-            color: '#e3b341'
+            color: 'var(--kiosk-accent-armed)'
             styles:
               card:
                 - background-color: 'rgba(227, 179, 65, 0.15)'
-                - border-left: '4px solid #e3b341'
-              state: [{ color: '#e3b341' }]
+                - border-left: '4px solid var(--kiosk-accent-armed)'
+              state: [{ color: 'var(--kiosk-accent-armed)' }]
           - operator: regex
             value: '^(pending|triggered)$'
             icon: mdi:alarm-light
-            color: '#f85149'
+            color: 'var(--kiosk-accent-triggered)'
             styles:
               card:
                 - background-color: 'rgba(248, 81, 73, 0.20)'
-                - border-left: '4px solid #f85149'
+                - border-left: '4px solid var(--kiosk-accent-triggered)'
                 - animation: 'pulse 1.2s infinite'
-              state: [{ color: '#f85149' }]
+              state: [{ color: 'var(--kiosk-accent-triggered)' }]
         styles:
           card:
             - height: '100%'
             - border-radius: '10px'
             - border: 'none'
             - padding: '20px 28px'
-            - background: '#161b22'
+            - background: 'var(--kiosk-bg-card)'
           name:
             - font-size: '20px'
             - font-weight: '500'
-            - color: '#8b949e'
+            - color: 'var(--kiosk-text-secondary)'
             - justify-self: start
           state:
             - font-size: '38px'
@@ -152,9 +153,9 @@ views:
               height: 100%;
               border-radius: 10px;
               border: none;
-              border-top: 3px solid #f0883e;
+              border-top: 3px solid var(--kiosk-accent-climate);
               padding: 8px;
-              background: #161b22;
+              background: var(--kiosk-bg-card);
               display: flex;
               flex-direction: column;
               gap: 8px;
@@ -172,7 +173,7 @@ views:
               disable_menu: true
               card_mod:
                 style: |
-                  ha-card { height: 100%; background: #1a1f27; border-radius: 8px; border: none; }
+                  ha-card { height: 100%; background: var(--kiosk-bg-tile); border-radius: 8px; border: none; }
 
             - type: custom:better-thermostat-ui-card
               entity: climate.downstairs
@@ -182,7 +183,7 @@ views:
               disable_menu: true
               card_mod:
                 style: |
-                  ha-card { height: 100%; background: #1a1f27; border-radius: 8px; border: none; }
+                  ha-card { height: 100%; background: var(--kiosk-bg-tile); border-radius: 8px; border: none; }
 
             - type: custom:button-card
               entity: climate.heatstorm_infrared_heater
@@ -196,20 +197,20 @@ views:
               state:
                 - value: 'off'
                   icon: mdi:radiator-off
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'heat'
                   icon: mdi:radiator
-                  color: '#f0883e'
+                  color: 'var(--kiosk-accent-climate)'
                   styles:
                     card: [{ background-color: 'rgba(240, 136, 62, 0.12)' }]
               styles:
                 card:
                   - height: '70px'
-                  - background: '#1a1f27'
+                  - background: 'var(--kiosk-bg-tile)'
                   - border-radius: '8px'
                   - border: 'none'
                   - padding: '8px 14px'
-                name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
                 state: [{ font-size: '14px' }, { font-weight: '500' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
                 grid:
                   - grid-template-areas: '"i n" "i s"'
@@ -227,9 +228,9 @@ views:
               height: 100%;
               border-radius: 10px;
               border: none;
-              border-top: 3px solid #56d364;
+              border-top: 3px solid var(--kiosk-accent-sensors);
               padding: 8px;
-              background: #161b22;
+              background: var(--kiosk-bg-card);
             }
         card:
           type: custom:grid-layout
@@ -251,23 +252,23 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:door-open
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'off'
                   icon: mdi:door-closed
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'unavailable'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unknown'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             - type: custom:button-card
@@ -281,23 +282,23 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:door-sliding-open
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'off'
                   icon: mdi:door-sliding
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'unavailable'
                   icon: mdi:door-sliding
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unknown'
                   icon: mdi:door-sliding
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             - type: custom:button-card
@@ -311,23 +312,23 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:door-open
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'off'
                   icon: mdi:door-closed
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'unavailable'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unknown'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             - type: custom:button-card
@@ -341,23 +342,23 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:door-open
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'off'
                   icon: mdi:door-closed
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'unavailable'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unknown'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             - type: custom:button-card
@@ -371,23 +372,23 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:door-open
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'off'
                   icon: mdi:door-closed
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'unavailable'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unknown'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             - type: custom:button-card
@@ -401,23 +402,23 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:door-open
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'off'
                   icon: mdi:door-closed
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'unavailable'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unknown'
                   icon: mdi:door
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             # === Garage door covers (state: closed/open) ===
@@ -432,27 +433,27 @@ views:
               state:
                 - value: 'closed'
                   icon: mdi:garage
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'open'
                   icon: mdi:garage-open-variant
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'opening'
                   icon: mdi:garage-alert-variant
-                  color: '#e3b341'
+                  color: 'var(--kiosk-accent-lights)'
                   styles:
                     card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
                 - value: 'closing'
                   icon: mdi:garage-alert-variant
-                  color: '#e3b341'
+                  color: 'var(--kiosk-accent-lights)'
                   styles:
                     card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             - type: custom:button-card
@@ -466,27 +467,27 @@ views:
               state:
                 - value: 'closed'
                   icon: mdi:garage
-                  color: '#56d364'
+                  color: 'var(--kiosk-accent-sensors)'
                   styles:
                     card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
                 - value: 'open'
                   icon: mdi:garage-open-variant
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid #f85149' }]
+                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
                 - value: 'opening'
                   icon: mdi:garage-alert-variant
-                  color: '#e3b341'
+                  color: 'var(--kiosk-accent-lights)'
                   styles:
                     card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
                 - value: 'closing'
                   icon: mdi:garage-alert-variant
-                  color: '#e3b341'
+                  color: 'var(--kiosk-accent-lights)'
                   styles:
                     card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             # === Motion sensors (binary_sensor; on=detected=red pulse, off=clear=gray) ===
@@ -501,18 +502,18 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:motion-sensor
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
                     card: [{ background-color: 'rgba(248, 81, 73, 0.20)' }, { animation: 'pulse 1s infinite' }]
                 - value: 'off'
                   icon: mdi:motion-sensor-off
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unavailable'
                   icon: mdi:motion-sensor-off
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
             - type: custom:button-card
@@ -526,18 +527,18 @@ views:
               state:
                 - value: 'on'
                   icon: mdi:motion-sensor
-                  color: '#f85149'
+                  color: 'var(--kiosk-accent-triggered)'
                   styles:
                     card: [{ background-color: 'rgba(248, 81, 73, 0.20)' }, { animation: 'pulse 1s infinite' }]
                 - value: 'off'
                   icon: mdi:motion-sensor-off
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
                 - value: 'unavailable'
                   icon: mdi:motion-sensor-off
-                  color: '#6e7681'
+                  color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: '#8b949e' }, { padding-top: '4px' }]
+                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
+                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
       # ============================================================
@@ -551,9 +552,9 @@ views:
               height: 100%;
               border-radius: 10px;
               border: none;
-              border-top: 3px solid #e3b341;
+              border-top: 3px solid var(--kiosk-accent-lights);
               padding: 8px;
-              background: #161b22;
+              background: var(--kiosk-bg-card);
             }
         card:
           type: custom:grid-layout
@@ -596,9 +597,9 @@ views:
               height: 100%;
               border-radius: 10px;
               border: none;
-              border-top: 3px solid #58a6ff;
+              border-top: 3px solid var(--kiosk-accent-media);
               padding: 8px;
-              background: #161b22;
+              background: var(--kiosk-bg-card);
             }
         card:
           type: custom:grid-layout
@@ -617,7 +618,30 @@ views:
               tap_action: { action: none }
               card_mod:
                 style: |
-                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
+                  ha-card {
+                    height: 100%;
+                    border-radius: 6px;
+                    border: none;
+                    overflow: hidden;
+                    {% set members = state_attr(config.entity, 'group_members') or [] %}
+                    {% if members | length > 1 and members[0] != config.entity %}
+                      opacity: 0.5;
+                      filter: grayscale(0.4);
+                    {% endif %}
+                  }
+                  {% set members = state_attr(config.entity, 'group_members') or [] %}
+                  {% if members | length > 1 and members[0] != config.entity %}
+                  ha-card::after {
+                    content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                    position: absolute;
+                    bottom: 6px;
+                    left: 8px;
+                    font-size: 10px;
+                    color: white;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                    z-index: 10;
+                  }
+                  {% endif %}
 
             - type: custom:mini-media-player
               entity: media_player.basement
@@ -628,7 +652,30 @@ views:
               tap_action: { action: none }
               card_mod:
                 style: |
-                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
+                  ha-card {
+                    height: 100%;
+                    border-radius: 6px;
+                    border: none;
+                    overflow: hidden;
+                    {% set members = state_attr(config.entity, 'group_members') or [] %}
+                    {% if members | length > 1 and members[0] != config.entity %}
+                      opacity: 0.5;
+                      filter: grayscale(0.4);
+                    {% endif %}
+                  }
+                  {% set members = state_attr(config.entity, 'group_members') or [] %}
+                  {% if members | length > 1 and members[0] != config.entity %}
+                  ha-card::after {
+                    content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                    position: absolute;
+                    bottom: 6px;
+                    left: 8px;
+                    font-size: 10px;
+                    color: white;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                    z-index: 10;
+                  }
+                  {% endif %}
 
             - type: custom:mini-media-player
               entity: media_player.office
@@ -639,7 +686,30 @@ views:
               tap_action: { action: none }
               card_mod:
                 style: |
-                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
+                  ha-card {
+                    height: 100%;
+                    border-radius: 6px;
+                    border: none;
+                    overflow: hidden;
+                    {% set members = state_attr(config.entity, 'group_members') or [] %}
+                    {% if members | length > 1 and members[0] != config.entity %}
+                      opacity: 0.5;
+                      filter: grayscale(0.4);
+                    {% endif %}
+                  }
+                  {% set members = state_attr(config.entity, 'group_members') or [] %}
+                  {% if members | length > 1 and members[0] != config.entity %}
+                  ha-card::after {
+                    content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                    position: absolute;
+                    bottom: 6px;
+                    left: 8px;
+                    font-size: 10px;
+                    color: white;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                    z-index: 10;
+                  }
+                  {% endif %}
 
             - type: custom:mini-media-player
               entity: media_player.kitchen
@@ -650,7 +720,30 @@ views:
               tap_action: { action: none }
               card_mod:
                 style: |
-                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
+                  ha-card {
+                    height: 100%;
+                    border-radius: 6px;
+                    border: none;
+                    overflow: hidden;
+                    {% set members = state_attr(config.entity, 'group_members') or [] %}
+                    {% if members | length > 1 and members[0] != config.entity %}
+                      opacity: 0.5;
+                      filter: grayscale(0.4);
+                    {% endif %}
+                  }
+                  {% set members = state_attr(config.entity, 'group_members') or [] %}
+                  {% if members | length > 1 and members[0] != config.entity %}
+                  ha-card::after {
+                    content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                    position: absolute;
+                    bottom: 6px;
+                    left: 8px;
+                    font-size: 10px;
+                    color: white;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                    z-index: 10;
+                  }
+                  {% endif %}
 
             - type: custom:mini-media-player
               entity: media_player.dining_room
@@ -661,7 +754,30 @@ views:
               tap_action: { action: none }
               card_mod:
                 style: |
-                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
+                  ha-card {
+                    height: 100%;
+                    border-radius: 6px;
+                    border: none;
+                    overflow: hidden;
+                    {% set members = state_attr(config.entity, 'group_members') or [] %}
+                    {% if members | length > 1 and members[0] != config.entity %}
+                      opacity: 0.5;
+                      filter: grayscale(0.4);
+                    {% endif %}
+                  }
+                  {% set members = state_attr(config.entity, 'group_members') or [] %}
+                  {% if members | length > 1 and members[0] != config.entity %}
+                  ha-card::after {
+                    content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                    position: absolute;
+                    bottom: 6px;
+                    left: 8px;
+                    font-size: 10px;
+                    color: white;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                    z-index: 10;
+                  }
+                  {% endif %}
 
             - type: custom:mini-media-player
               entity: media_player.roam_2
@@ -672,7 +788,30 @@ views:
               tap_action: { action: none }
               card_mod:
                 style: |
-                  ha-card { height: 100%; border-radius: 6px; border: none; overflow: hidden; }
+                  ha-card {
+                    height: 100%;
+                    border-radius: 6px;
+                    border: none;
+                    overflow: hidden;
+                    {% set members = state_attr(config.entity, 'group_members') or [] %}
+                    {% if members | length > 1 and members[0] != config.entity %}
+                      opacity: 0.5;
+                      filter: grayscale(0.4);
+                    {% endif %}
+                  }
+                  {% set members = state_attr(config.entity, 'group_members') or [] %}
+                  {% if members | length > 1 and members[0] != config.entity %}
+                  ha-card::after {
+                    content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                    position: absolute;
+                    bottom: 6px;
+                    left: 8px;
+                    font-size: 10px;
+                    color: white;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                    z-index: 10;
+                  }
+                  {% endif %}
 
             # --- TVs row (spans both cols) ---
             - type: horizontal-stack
@@ -690,18 +829,18 @@ views:
                   state:
                     - value: 'off'
                       icon: mdi:television-off
-                      color: '#6e7681'
+                      color: 'var(--kiosk-text-tertiary)'
                     - value: 'unavailable'
                       icon: mdi:television-off
-                      color: '#6e7681'
+                      color: 'var(--kiosk-text-tertiary)'
                     - operator: default
                       icon: mdi:television
-                      color: '#58a6ff'
+                      color: 'var(--kiosk-accent-media)'
                       styles:
                         card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
                   styles:
-                    card: [{ height: '70px' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
-                    name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
+                    name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
                     state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
                     grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
 
@@ -717,18 +856,18 @@ views:
                   state:
                     - value: 'off'
                       icon: mdi:television-off
-                      color: '#6e7681'
+                      color: 'var(--kiosk-text-tertiary)'
                     - value: 'unavailable'
                       icon: mdi:television-off
-                      color: '#6e7681'
+                      color: 'var(--kiosk-text-tertiary)'
                     - operator: default
                       icon: mdi:television
-                      color: '#58a6ff'
+                      color: 'var(--kiosk-accent-media)'
                       styles:
                         card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
                   styles:
-                    card: [{ height: '70px' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
-                    name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
+                    name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
                     state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
                     grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
 
@@ -744,17 +883,17 @@ views:
                   state:
                     - value: 'off'
                       icon: mdi:television-off
-                      color: '#6e7681'
+                      color: 'var(--kiosk-text-tertiary)'
                     - value: 'unavailable'
                       icon: mdi:television-off
-                      color: '#6e7681'
+                      color: 'var(--kiosk-text-tertiary)'
                     - operator: default
                       icon: mdi:television
-                      color: '#58a6ff'
+                      color: 'var(--kiosk-accent-media)'
                       styles:
                         card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
                   styles:
-                    card: [{ height: '70px' }, { background: '#1a1f27' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
-                    name: [{ font-size: '11px' }, { color: '#8b949e' }, { justify-self: 'start' }]
+                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
+                    name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
                     state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
                     grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]

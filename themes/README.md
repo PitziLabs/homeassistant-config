@@ -33,6 +33,31 @@ This approach trades one design decision for a runtime dependency: every card ev
 | `card-background-color` | `#171a21` | Card resting state |
 | `state-icon-active-color` | `#f0b429` | Active entity icons |
 
+## `kiosk_polish.yaml` — Kiosk design tokens
+
+Layered on top of `Noctis Kiosk` via the `theme: Kiosk Polish` key on the kiosk view in `dashboards/kiosk.yaml`. Defines `--kiosk-*` CSS custom properties for the 1920x1080 wall-display dashboard so colors, accents, and Mushroom sizing tokens are edited in one place instead of search-and-replace across `kiosk.yaml`.
+
+### Tokens
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--kiosk-bg-page` | `#0e1117` | Page background (forced via `card-mod-root`) |
+| `--kiosk-bg-card` | `#161b22` | Outer column wrappers (climate/sensors/lights/media/alarm hero) |
+| `--kiosk-bg-tile` | `#1a1f27` | Inner tile backgrounds (per-sensor, per-thermostat, TV row) |
+| `--kiosk-bg-tile-active-media` | `#14283f` | Reserved for active-media tinting |
+| `--kiosk-text-primary` | `#e6edf3` | Reserved for headline text |
+| `--kiosk-text-secondary` | `#8b949e` | Card name labels |
+| `--kiosk-text-tertiary` | `#6e7681` | Off / unavailable icons |
+| `--kiosk-accent-climate` | `#f0883e` | Climate column border-top + heater on |
+| `--kiosk-accent-sensors` | `#56d364` | Sensors column border-top + door/cover closed |
+| `--kiosk-accent-lights` | `#e3b341` | Lights column border-top + cover transition |
+| `--kiosk-accent-media` | `#58a6ff` | Media column border-top + TV on |
+| `--kiosk-accent-disarmed` | `#56d364` | Alarm hero, disarmed state |
+| `--kiosk-accent-armed` | `#e3b341` | Alarm hero, arming/armed states |
+| `--kiosk-accent-triggered` | `#f85149` | Alarm hero pending/triggered + door open + motion |
+
+Mushroom token overrides (`--mush-icon-size`, `--mush-icon-symbol-size`, `--mush-card-primary-font-size`, `--mush-card-secondary-font-size`) propagate to every `mushroom-light-card` in the lights grid.
+
 ## `kiosk_dark.yaml` — Deprecated
 
 The original custom dark theme, replaced by Noctis Kiosk. Retained for reference. Not applied to any dashboard or view.
