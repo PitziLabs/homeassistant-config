@@ -37,7 +37,7 @@ views:
       padding: 8px
       grid-gap: 8px
       grid-template-columns: 1fr 1fr 1.4fr 1fr
-      grid-template-rows: 130px 1fr
+      grid-template-rows: 200px 1fr
       grid-template-areas: |
         "weather weather alarm   alarm"
         "climate sensors lights  media"
@@ -59,7 +59,7 @@ views:
         card:
           type: custom:clock-weather-card
           entity: weather.forecast_home
-          forecast_rows: 2
+          forecast_rows: 0
           time_format: 12
           date_pattern: "EEEE, MMM d"
 
@@ -248,6 +248,17 @@ views:
           type: grid
           columns: 2
           square: false
+          card_mod:
+            style: |
+              :host {
+                height: 100%;
+                display: block;
+              }
+              #root {
+                height: 100%;
+                grid-template-rows: repeat(5, 1fr) !important;
+                gap: 6px !important;
+              }
           cards:
             # === Door sensors (binary_sensor; on=open=red, off=closed=green) ===
             - type: custom:button-card
