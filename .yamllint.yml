@@ -4,6 +4,8 @@ extends: default
 rules:
   brackets:
     max-spaces-inside: 1 # allow the `[ x, y ]` style GitHub uses everywhere
+  braces:
+    max-spaces-inside: 1 # allow the `{ key: value }` flow-mapping style used in dashboard view_layout/tap_action shorthands
   # HA Jinja2 templates and base64 keys create long lines
   line-length:
     max: 250
