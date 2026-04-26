@@ -145,11 +145,9 @@ Automations are split across two locations with different governance models:
 
 ## Dashboard Architecture
 
-Two YAML dashboards registered in `configuration.yaml`. Both are fully git-tracked; no UI editing.
+Three YAML dashboards registered in `configuration.yaml`. All are fully git-tracked; no UI editing.
 
-### `dashboards/home.yaml` — Home + Kiosk
-
-### Two Views
+### `dashboards/home.yaml` — Home view
 
 **Home view** (`/dashboard-home/home`) — Mobile/tablet control dashboard
 - Masonry layout (standard, not panel mode)
@@ -159,36 +157,51 @@ Two YAML dashboards registered in `configuration.yaml`. Both are fully git-track
 - Alarm panel with permanent sensor grid (always visible)
 - Activity-driven: lights/switches appear when on, vanish when off
 
-**Kiosk view** (`/dashboard-home/kiosk`) — 65-inch 1080p wall display
-- Panel mode (`panel: true`, `type: panel`) with one root `custom:layout-card` (`height: 100vh`, no scroll)
-- `custom:html-template-card` cells with inline `card_mod`; no Mushroom, no Noctis Kiosk theme dependency. (Built-in `markdown` cards strip arbitrary inline `style` attributes via DOMPurify, which collapsed our spans/divs — `html-template-card` renders the Jinja-templated HTML verbatim.)
-- Non-interactive — HTML template cards have no tap action
-- Unavailable handling lives inside Jinja macros (e.g. door dot grays out for `unavailable`); no wrapper conditionals
+The Home view uses standard HA `tile`, `weather-forecast`, and `media-control` cards plus `mini-media-player` for Sonos.
+
+### `dashboards/kiosk.yaml` — Kiosk view
+
+**Kiosk view** (`/dashboard-kiosk/home`) — 65-inch 1080p wall display
+- View type: `custom:grid-layout` (layout-card AS the view, not nested inside a panel)
+- Cell wrappers: `custom:mod-card` provides the ha-card host so `height: 100%` cascades through the nested shadow DOM
+- Typed cards per panel (no html-template-card):
+  - Climate: `custom:better-thermostat-ui-card` with humidity sensor binding
+  - Sensors: `custom:button-card` with state-driven backgrounds and pulse animations
+  - Lights: `custom:mushroom-light-card` per individual light (21 lights in a 3×7 grid)
+  - Media: `custom:mini-media-player` with `artwork: full-cover-fit` for album art
+  - Weather: `custom:clock-weather-card` (combined clock + 4-day forecast)
+  - Alarm: `custom:button-card` hero with state-driven colors and pulse on triggered
+- Non-interactive — every card has `tap_action: { action: none }`
 - Kiosk-mode hides sidebar/header for "Kiosk" user
-- Alarm state shown in top-strip card via 3px `border-left` recolored by Jinja (green=disarmed, amber=arming/armed, red=triggered)
+- No camera (handled in a separate cameras dashboard)
 
 ### Grid Layout (Kiosk)
-Top strip (76px): `clock | weather + 3-day forecast | alarm`
-Main grid (fills viewport):
 ```
-"climate doors lights media"
+grid-template-columns: 1fr 1fr 1.4fr 1fr
+grid-template-rows: 130px 1fr
+grid-template-areas:
+  "weather weather alarm   alarm"
+  "climate sensors lights  media"
 ```
-Each main column carries a 3px accent `border-top`:
-- **Climate** (orange) — outdoor temp/condition, upstairs + downstairs temp/humidity, Heatstorm office heater state
-- **Doors & motion** (green) — 6 door contacts as colored dots (front, basement-kitchen, sliding, garage, Hannah, Jacob), 2 garage cover states, 2 motion sensors
-- **Lights & doorbell** (amber) — total on/off counts, per-room counts (`sensor.lights_on_*_count`), front-door camera snapshot, last chime/motion timestamps
-- **Media** (blue) — 3×2 Sonos cell grid (master bedroom, basement, office, kitchen, dining room, roam 2; active cells highlighted with title/artist), TV status row (office, basement, play room)
+- **weather** — clock-weather-card with 4-day forecast (top-left, spans 2 cols)
+- **alarm** — button-card hero (top-right, spans 2 cols)
+- **climate** — 2 better-thermostat-ui-cards stacked + heater button-card
+- **sensors** — 10 button-cards in a 2×5 internal grid (6 doors + 2 garage covers + 2 motion)
+- **lights** — 21 mushroom-light-cards in a 3×7 internal grid
+- **media** — 6 mini-media-players in a 2×3 internal grid + TVs row spanning both cols
 
 ### HACS Cards Used by Kiosk View
-- `layout-card` (lovelace-layout-card) — CSS Grid layout engine for panel-mode root
-- `card-mod` (lovelace-card-mod) — inline CSS for every cell
-- `html-template-card` (lovelace-html-jinja2-template-card) — renders Jinja-templated HTML verbatim, bypassing the markdown card's style sanitizer
+- `layout-card` — provides `custom:grid-layout` (used as the VIEW type, not nested)
+- `card-mod` — provides `custom:mod-card` cell wrapper + theme-level CSS
+- `button-card` — sensors, alarm hero, heater state, TVs row
+- `mushroom` — `mushroom-light-card` for individual lights
+- `mini-media-player` — Sonos with album art via `artwork: full-cover-fit`
+- `clock-weather-card` — combined clock + forecast in top strip
+- `better-thermostat-ui-card` — circular thermostat dial with humidity
 - `kiosk-mode` — hides sidebar/header for kiosk user
 
-The Home view additionally uses standard HA `tile`, `weather-forecast`, and `media-control` cards plus `mini-media-player` for Sonos.
-
 ### Theme Files
-- `/config/themes/noctis_kiosk.yaml` — Active theme. Originally provided global state-based backgrounds for Mushroom cards on the kiosk; the kiosk view no longer relies on it (state styling moved inline). Still loaded as the project's default dark theme.
+- `/config/themes/noctis_kiosk.yaml` — Active theme. Originally provided global state-based backgrounds for Mushroom cards on the kiosk; the kiosk view no longer relies on it (state styling moved into per-card `card_mod` and `button-card` state blocks). Still loaded as the project's default dark theme.
 - `/config/themes/kiosk_dark.yaml` — Deprecated custom theme (retained for reference).
 - Noctis base theme installed via HACS.
 
@@ -206,7 +219,7 @@ Seven-section infrastructure overview dashboard (sidebar: Homelab Status, icon: 
 | GitHub (cpitzi/prompts) | Commits, issues, PRs, stars, forks, watchers via REST sensor |
 | Meeting Indicator | ESP32 device state, WiFi signal quality, uptime |
 
-### Kiosk Mode Config (top of dashboards/home.yaml)
+### Kiosk Mode Config (top of dashboards/kiosk.yaml)
 ```yaml
 kiosk_mode:
   non_admin_settings:
@@ -243,7 +256,8 @@ The "Kiosk" person/user (Settings → People) is a non-admin local account used 
 ├── scripts/
 │   └── gitops-sync.sh          # GitOps deploy: fetch → validate → reload/restart or rollback
 ├── dashboards/
-│   ├── home.yaml               # Two-view dashboard (Home mobile + Kiosk wall display)
+│   ├── home.yaml               # Mobile/tablet Home dashboard
+│   ├── kiosk.yaml              # 1080p wall-display Kiosk dashboard (custom:grid-layout)
 │   └── homelab-status.yaml     # Homelab Status (NAS, Proxmox, coordinators, battery, printer)
 ├── themes/
 │   ├── noctis_kiosk.yaml       # Active theme: global card-mod state-based backgrounds
@@ -300,7 +314,7 @@ frontend:
     - /hacsfiles/card-mod/card-mod.js
 ```
 
-Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) are loaded automatically by HACS — do NOT add them to `extra_module_url` or they'll double-register and throw "already been used with this registry" errors.
+Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card, button-card, better-thermostat-ui-card) are loaded automatically by HACS — do NOT add them to `extra_module_url` or they'll double-register and throw "already been used with this registry" errors.
 
 ---
 
@@ -312,8 +326,8 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card) 
 - **Entity IDs retain original adoption names.** The siren is `switch.alarm_panel_56ac70_siren` (not `switch.main_panel_siren`) because ESPHome entity IDs are set at first adoption and don't change when the device is renamed.
 - **Sonos group awareness.** Template sensors (`binary_sensor.sonos_*_leader`) detect group coordinators on the Home view; only the coordinator's media card renders, preventing duplicate cards when speakers are grouped.
 - **Home view uses conditionals.** Light/switch tiles in the Home view are wrapped in `type: conditional` so each tile appears only when the entity is on; per-room "All off" tiles use `binary_sensor.*_lights_on` template sensors.
-- **Kiosk view styles inline.** The kiosk uses `custom:html-template-card` cells with inline `card_mod` and Jinja state-driven colors — no theme-level state styling, no Mushroom, no `fill_container`. The built-in `markdown` card sanitizes inline `style` attributes (DOMPurify) and was collapsing styled spans, so `html-template-card` is required for raw HTML+Jinja output. Unavailable handling is inside Jinja macros, not in conditional wrappers.
-- **Alarm color semantics (kiosk top strip):** green = disarmed, amber = arming/armed_home/armed_away, red = pending/triggered. Recolors the card's 3px `border-left`, the state label, and the subtitle; no animation.
+- **Kiosk uses typed cards, not html-template-card.** The kiosk view is itself a `custom:grid-layout`; each cell is a typed card (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card`. State-driven colors live in per-card `state` blocks and `card_mod` styles — no Jinja-templated HTML, no DOMPurify fight. Unavailable handling lives inside each card's state list (e.g. a `value: unavailable` block on a button-card).
+- **Alarm color semantics (kiosk hero):** green = disarmed, amber = arming/armed_home/armed_away, red = pending/triggered, with a pulse animation on triggered. State-driven via `button-card` `state` blocks.
 - **PR creation includes arming auto-merge.** When implementation is complete,
   open a pull request as the final step — do not stop at "pushed the branch."
   PR title should match or clearly refine the issue title. PR body must include
