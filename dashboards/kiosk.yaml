@@ -177,7 +177,7 @@ views:
           show_state: false
           show_label: true
           show_icon: true
-          size: 35%
+          size: 60%
           tap_action: { action: none }
           hold_action: { action: none }
           state:
@@ -214,23 +214,26 @@ views:
               - padding: '20px 24px'
               - background: 'var(--kiosk-bg-card)'
             name:
-              - font-size: '18px'
+              - font-size: '20px'
               - font-weight: '500'
               - color: 'var(--kiosk-text-secondary)'
               - justify-self: start
+              - align-self: end
             label:
-              - font-size: '24px'
+              - font-size: '28px'
               - font-weight: '600'
               - text-transform: 'uppercase'
               - letter-spacing: '1.5px'
               - justify-self: start
+              - align-self: start
             grid:
               - grid-template-areas: '"i n" "i l"'
               - grid-template-columns: 'min-content 1fr'
-              - grid-template-rows: 'min-content min-content'
-              - column-gap: '18px'
+              - grid-template-rows: '1fr 1fr'
+              - column-gap: '20px'
               - row-gap: '4px'
-              - align-items: 'center'
+              - align-items: 'stretch'
+              - height: '100%'
 
       # ============================================================
       # CLIMATE COLUMN
@@ -251,7 +254,6 @@ views:
               gap: 8px;
             }
             ha-card > * { flex: 1 1 auto; min-height: 0; }
-            ha-card > *:last-child { flex: 0 0 70px; }
         card:
           type: vertical-stack
           cards:
@@ -275,40 +277,9 @@ views:
                 style: |
                   ha-card { height: 100%; background: var(--kiosk-bg-tile); border-radius: 8px; border: none; }
 
-            - type: custom:button-card
-              entity: climate.heatstorm_infrared_heater
-              name: Office Heater
-              show_name: true
-              show_state: true
-              show_icon: true
-              size: 30%
-              layout: icon_name_state
-              tap_action: { action: none }
-              state:
-                - value: 'off'
-                  icon: mdi:radiator-off
-                  color: 'var(--kiosk-text-tertiary)'
-                - value: 'heat'
-                  icon: mdi:radiator
-                  color: 'var(--kiosk-accent-climate)'
-                  styles:
-                    card: [{ background-color: 'rgba(240, 136, 62, 0.12)' }]
-              styles:
-                card:
-                  - height: '70px'
-                  - background: 'var(--kiosk-bg-tile)'
-                  - border-radius: '8px'
-                  - border: 'none'
-                  - padding: '8px 14px'
-                name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
-                state: [{ font-size: '14px' }, { font-weight: '500' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
-                grid:
-                  - grid-template-areas: '"i n" "i s"'
-                  - grid-template-columns: 'min-content 1fr'
-                  - column-gap: '12px'
-
       # ============================================================
-      # SENSORS COLUMN — 10 sensors in 2x5 grid
+      # SENSORS COLUMN — 8 sensors in 2x4 grid
+      # (4 doors + 2 garage covers + 2 motion)
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: sensors }
@@ -334,7 +305,7 @@ views:
               }
               #root {
                 height: 100%;
-                grid-template-rows: repeat(5, 1fr) !important;
+                grid-template-rows: repeat(4, 1fr) !important;
                 gap: 6px !important;
               }
           cards:
@@ -432,66 +403,6 @@ views:
             - type: custom:button-card
               entity: binary_sensor.basement_kitchen_door
               name: Basement
-              show_name: true
-              show_state: true
-              show_icon: true
-              size: 50%
-              tap_action: { action: none }
-              state:
-                - value: 'on'
-                  icon: mdi:door-open
-                  color: 'var(--kiosk-accent-triggered)'
-                  styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
-                - value: 'off'
-                  icon: mdi:door-closed
-                  color: 'var(--kiosk-accent-sensors)'
-                  styles:
-                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
-                - value: 'unavailable'
-                  icon: mdi:door
-                  color: 'var(--kiosk-text-tertiary)'
-                - value: 'unknown'
-                  icon: mdi:door
-                  color: 'var(--kiosk-text-tertiary)'
-              styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
-
-            - type: custom:button-card
-              entity: binary_sensor.z_wave_door_window_sensor
-              name: Hannah
-              show_name: true
-              show_state: true
-              show_icon: true
-              size: 50%
-              tap_action: { action: none }
-              state:
-                - value: 'on'
-                  icon: mdi:door-open
-                  color: 'var(--kiosk-accent-triggered)'
-                  styles:
-                    card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
-                - value: 'off'
-                  icon: mdi:door-closed
-                  color: 'var(--kiosk-accent-sensors)'
-                  styles:
-                    card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
-                - value: 'unavailable'
-                  icon: mdi:door
-                  color: 'var(--kiosk-text-tertiary)'
-                - value: 'unknown'
-                  icon: mdi:door
-                  color: 'var(--kiosk-text-tertiary)'
-              styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
-
-            - type: custom:button-card
-              entity: binary_sensor.z_wave_door_window_sensor_2
-              name: Jacob
               show_name: true
               show_state: true
               show_icon: true
@@ -642,7 +553,9 @@ views:
       # ============================================================
       # LIGHTS COLUMN — 20 lights, grouped into 5 room sections.
       # (light.meeting_light is hoisted to the top-right meeting cell.)
-      # Sections render as a vertical-stack of (section header + 3-col grid).
+      # Sections render as a vertical-stack of (section header + 4-col grid).
+      # 4 cols keeps the column from outgrowing its cell and triggering
+      # a page-level scrollbar.
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: lights }
@@ -681,7 +594,7 @@ views:
                   }
                   ha-card .card-content p { margin: 0 !important; }
             - type: grid
-              columns: 3
+              columns: 4
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.family_room, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
@@ -692,7 +605,7 @@ views:
             - <<: *light_section_header
               content: "KITCHEN"
             - type: grid
-              columns: 3
+              columns: 4
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.kitchen_island, name: Island, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
@@ -703,7 +616,7 @@ views:
             - <<: *light_section_header
               content: "OFFICE"
             - type: grid
-              columns: 3
+              columns: 4
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.office, name: Office, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
@@ -718,7 +631,7 @@ views:
             - <<: *light_section_header
               content: "HALLWAYS"
             - type: grid
-              columns: 3
+              columns: 4
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.downstairs_hallway, name: Down Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
@@ -728,7 +641,7 @@ views:
             - <<: *light_section_header
               content: "OUTDOOR"
             - type: grid
-              columns: 3
+              columns: 4
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.front_door, name: Front, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }

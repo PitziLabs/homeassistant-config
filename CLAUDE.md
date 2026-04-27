@@ -187,9 +187,9 @@ grid-template-areas:
 - **weather** — clock-weather-card with 4-day forecast (top-left, spans 2 cols)
 - **alarm** — button-card hero (top-row, col 3 — 1.4fr)
 - **meeting** — button-card driven by `light.meeting_light` (top-row, col 4 — 1fr)
-- **climate** — 2 better-thermostat-ui-cards stacked + heater button-card
-- **sensors** — 10 button-cards in a 2×5 internal grid (6 doors + 2 garage covers + 2 motion)
-- **lights** — 20 mushroom-light-cards grouped into 5 room sections (Family Room, Kitchen, Office, Hallways, Outdoor) inside a vertical-stack; each section is a markdown header + 3-col grid. The meeting light is hoisted to the top-right `meeting` cell.
+- **climate** — 2 better-thermostat-ui-cards stacked (upstairs + downstairs)
+- **sensors** — 8 button-cards in a 2×4 internal grid (4 doors + 2 garage covers + 2 motion)
+- **lights** — 20 mushroom-light-cards grouped into 5 room sections (Family Room, Kitchen, Office, Hallways, Outdoor) inside a vertical-stack; each section is a markdown header + 4-col grid. The meeting light is hoisted to the top-right `meeting` cell.
 - **media** — 6 mini-media-players in a 2×3 internal grid + TVs row spanning both cols
 
 ### HACS Cards Used by Kiosk View
