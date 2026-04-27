@@ -59,7 +59,7 @@ views:
         card:
           type: custom:clock-weather-card
           entity: weather.forecast_home
-          forecast_rows: 0
+          forecast_rows: 4
           time_format: 12
           date_pattern: "EEEE, MMM d"
 
@@ -307,6 +307,14 @@ views:
                 height: 100%;
                 grid-template-rows: repeat(4, 1fr) !important;
                 gap: 6px !important;
+              }
+              /* Stretch each grid child so the inner button-card's
+                 height: 100% has a parent to fill against. Without
+                 this, hui-card collapses to its content height and
+                 leaves dead space below each row. */
+              #root > * {
+                height: 100% !important;
+                min-height: 0 !important;
               }
           cards:
             # === Door sensors (binary_sensor; on=open=red, off=closed=green) ===
@@ -566,9 +574,12 @@ views:
               border-radius: 10px;
               border: none;
               border-top: 3px solid var(--kiosk-accent-lights);
-              padding: 8px;
+              padding: 6px;
               background: var(--kiosk-bg-card);
             }
+            /* Tighten vertical-stack so the 5 section headers + 7 tile
+               rows fit inside the cell without a page-level scrollbar. */
+            ha-card #root > * + * { margin-top: 4px !important; }
         card:
           type: vertical-stack
           cards:
@@ -585,8 +596,8 @@ views:
                     border-radius: 0 !important;
                   }
                   ha-card .card-content {
-                    padding: 4px 4px 2px 4px !important;
-                    font-size: 10px !important;
+                    padding: 2px 4px 1px 4px !important;
+                    font-size: 9px !important;
                     font-weight: 700 !important;
                     letter-spacing: 1.5px !important;
                     color: var(--kiosk-accent-lights) !important;
