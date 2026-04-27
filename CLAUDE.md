@@ -167,10 +167,11 @@ The Home view uses standard HA `tile`, `weather-forecast`, and `media-control` c
 - Typed cards per panel (no html-template-card):
   - Climate: `custom:better-thermostat-ui-card` with humidity sensor binding
   - Sensors: `custom:button-card` with state-driven backgrounds and pulse animations
-  - Lights: `custom:mushroom-light-card` per individual light (21 lights in a 3×7 grid)
+  - Lights: `custom:mushroom-light-card` per individual light (20 lights, grouped into 5 room sections inside a vertical-stack)
   - Media: `custom:mini-media-player` with `artwork: full-cover-fit` for album art
   - Weather: `custom:clock-weather-card` (combined clock + 4-day forecast)
   - Alarm: `custom:button-card` hero with state-driven colors and pulse on triggered
+  - Meeting: `custom:button-card` driven by `light.meeting_light` — "In Meeting" red+pulse / "Available" green / "Offline" muted
 - Non-interactive — every card has `tap_action: { action: none }`
 - Kiosk-mode hides sidebar/header for "Kiosk" user
 - No camera (handled in a separate cameras dashboard)
@@ -178,16 +179,17 @@ The Home view uses standard HA `tile`, `weather-forecast`, and `media-control` c
 ### Grid Layout (Kiosk)
 ```
 grid-template-columns: 1fr 1fr 1.4fr 1fr
-grid-template-rows: 130px 1fr
+grid-template-rows: 200px 1fr
 grid-template-areas:
-  "weather weather alarm   alarm"
+  "weather weather alarm   meeting"
   "climate sensors lights  media"
 ```
 - **weather** — clock-weather-card with 4-day forecast (top-left, spans 2 cols)
-- **alarm** — button-card hero (top-right, spans 2 cols)
+- **alarm** — button-card hero (top-row, col 3 — 1.4fr)
+- **meeting** — button-card driven by `light.meeting_light` (top-row, col 4 — 1fr)
 - **climate** — 2 better-thermostat-ui-cards stacked + heater button-card
 - **sensors** — 10 button-cards in a 2×5 internal grid (6 doors + 2 garage covers + 2 motion)
-- **lights** — 21 mushroom-light-cards in a 3×7 internal grid
+- **lights** — 20 mushroom-light-cards grouped into 5 room sections (Family Room, Kitchen, Office, Hallways, Outdoor) inside a vertical-stack; each section is a markdown header + 3-col grid. The meeting light is hoisted to the top-right `meeting` cell.
 - **media** — 6 mini-media-players in a 2×3 internal grid + TVs row spanning both cols
 
 ### HACS Cards Used by Kiosk View

@@ -39,7 +39,7 @@ views:
       grid-template-columns: 1fr 1fr 1.4fr 1fr
       grid-template-rows: 200px 1fr
       grid-template-areas: |
-        "weather weather alarm   alarm"
+        "weather weather alarm   meeting"
         "climate sensors lights  media"
     cards:
 
@@ -153,6 +153,84 @@ views:
               0%, 100% { opacity: 1; transform: scale(1); }
               50% { opacity: 0.7; transform: scale(0.99); }
             }
+
+      # ============================================================
+      # MEETING INDICATOR (top-right corner — Rachel's office light)
+      # State-driven by light.meeting_light, which the meeting.yaml
+      # automations drive red when switch.meeting_button_in_meeting is on.
+      # ============================================================
+      - type: custom:mod-card
+        view_layout: { grid-area: meeting }
+        card_mod:
+          style: |
+            ha-card {
+              height: 100%;
+              border-radius: 10px;
+              border: none;
+              background: transparent;
+            }
+        card:
+          type: custom:button-card
+          entity: light.meeting_light
+          name: Rachel
+          show_name: true
+          show_state: false
+          show_label: true
+          show_icon: true
+          size: 35%
+          tap_action: { action: none }
+          hold_action: { action: none }
+          state:
+            - value: 'on'
+              icon: mdi:account-voice
+              color: 'var(--kiosk-accent-triggered)'
+              label: In Meeting
+              styles:
+                card:
+                  - background-color: 'rgba(248, 81, 73, 0.20)'
+                  - border-left: '4px solid var(--kiosk-accent-triggered)'
+                  - animation: 'pulse 1.8s infinite'
+                label: [{ color: 'var(--kiosk-accent-triggered)' }]
+            - value: 'off'
+              icon: mdi:account-check
+              color: 'var(--kiosk-accent-disarmed)'
+              label: Available
+              styles:
+                card:
+                  - background-color: 'rgba(86, 211, 100, 0.12)'
+                  - border-left: '4px solid var(--kiosk-accent-disarmed)'
+                label: [{ color: 'var(--kiosk-accent-disarmed)' }]
+            - value: 'unavailable'
+              icon: mdi:account-off
+              color: 'var(--kiosk-text-tertiary)'
+              label: Offline
+              styles:
+                label: [{ color: 'var(--kiosk-text-tertiary)' }]
+          styles:
+            card:
+              - height: '100%'
+              - border-radius: '10px'
+              - border: 'none'
+              - padding: '20px 24px'
+              - background: 'var(--kiosk-bg-card)'
+            name:
+              - font-size: '18px'
+              - font-weight: '500'
+              - color: 'var(--kiosk-text-secondary)'
+              - justify-self: start
+            label:
+              - font-size: '24px'
+              - font-weight: '600'
+              - text-transform: 'uppercase'
+              - letter-spacing: '1.5px'
+              - justify-self: start
+            grid:
+              - grid-template-areas: '"i n" "i l"'
+              - grid-template-columns: 'min-content 1fr'
+              - grid-template-rows: 'min-content min-content'
+              - column-gap: '18px'
+              - row-gap: '4px'
+              - align-items: 'center'
 
       # ============================================================
       # CLIMATE COLUMN
@@ -562,7 +640,9 @@ views:
                 state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
 
       # ============================================================
-      # LIGHTS COLUMN — 21 lights in 3x7 grid
+      # LIGHTS COLUMN — 20 lights, grouped into 5 room sections.
+      # (light.meeting_light is hoisted to the top-right meeting cell.)
+      # Sections render as a vertical-stack of (section header + 3-col grid).
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: lights }
@@ -577,31 +657,85 @@ views:
               background: var(--kiosk-bg-card);
             }
         card:
-          type: grid
-          columns: 3
-          square: false
+          type: vertical-stack
           cards:
-            - { type: 'custom:mushroom-light-card', entity: light.family_room, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.floor_lamp_composite, name: Floor Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.kitchen_island, name: Island, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.kitchen_main, name: Kitchen, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.kitchen_table, name: Table, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.office, name: Office, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.office_bookcase, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.office_corner, name: Corner, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.office_door, name: Door, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.office_lamp, name: Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.meeting_light, name: Meeting, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.desk_lamp, name: Desk, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.front_door, name: Front, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.front_lantern, name: Lantern, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.garage_front, name: Garage Fr, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.garage_side, name: Garage Sd, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.shed, name: Shed, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.downstairs_hallway, name: Down Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-            - { type: 'custom:mushroom-light-card', entity: light.upstairs_hallway_light, name: Up Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+            # --- Family Room ---
+            - &light_section_header
+              type: markdown
+              content: "FAMILY ROOM"
+              card_mod:
+                style: |
+                  ha-card {
+                    background: transparent !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    border-radius: 0 !important;
+                  }
+                  ha-card .card-content {
+                    padding: 4px 4px 2px 4px !important;
+                    font-size: 10px !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 1.5px !important;
+                    color: var(--kiosk-accent-lights) !important;
+                    border-bottom: 1px solid rgba(227, 179, 65, 0.25) !important;
+                  }
+                  ha-card .card-content p { margin: 0 !important; }
+            - type: grid
+              columns: 3
+              square: false
+              cards:
+                - { type: 'custom:mushroom-light-card', entity: light.family_room, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.floor_lamp_composite, name: Floor Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+
+            # --- Kitchen ---
+            - <<: *light_section_header
+              content: "KITCHEN"
+            - type: grid
+              columns: 3
+              square: false
+              cards:
+                - { type: 'custom:mushroom-light-card', entity: light.kitchen_island, name: Island, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.kitchen_main, name: Kitchen, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.kitchen_table, name: Table, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+
+            # --- Office ---
+            - <<: *light_section_header
+              content: "OFFICE"
+            - type: grid
+              columns: 3
+              square: false
+              cards:
+                - { type: 'custom:mushroom-light-card', entity: light.office, name: Office, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.office_bookcase, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.office_corner, name: Corner, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.office_door, name: Door, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.office_lamp, name: Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp, name: Desk, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+
+            # --- Hallways ---
+            - <<: *light_section_header
+              content: "HALLWAYS"
+            - type: grid
+              columns: 3
+              square: false
+              cards:
+                - { type: 'custom:mushroom-light-card', entity: light.downstairs_hallway, name: Down Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.upstairs_hallway_light, name: Up Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+
+            # --- Outdoor ---
+            - <<: *light_section_header
+              content: "OUTDOOR"
+            - type: grid
+              columns: 3
+              square: false
+              cards:
+                - { type: 'custom:mushroom-light-card', entity: light.front_door, name: Front, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.front_lantern, name: Lantern, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.garage_front, name: Garage Fr, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.garage_side, name: Garage Sd, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.shed, name: Shed, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
 
       # ============================================================
       # MEDIA COLUMN — 6 Sonos cells (2x3) + TV row (60px)
