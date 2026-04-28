@@ -325,7 +325,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'on'
@@ -345,9 +345,23 @@ views:
                   icon: mdi:door
                   color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
             - type: custom:button-card
               entity: binary_sensor.main_panel_sliding_door
@@ -355,7 +369,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'on'
@@ -375,9 +389,23 @@ views:
                   icon: mdi:door-sliding
                   color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
             - type: custom:button-card
               entity: binary_sensor.main_panel_garage_door
@@ -385,7 +413,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'on'
@@ -405,9 +433,23 @@ views:
                   icon: mdi:door
                   color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
             - type: custom:button-card
               entity: binary_sensor.basement_kitchen_door
@@ -415,7 +457,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'on'
@@ -435,9 +477,23 @@ views:
                   icon: mdi:door
                   color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
             # === Garage door covers (state: closed/open) ===
             - type: custom:button-card
@@ -446,7 +502,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'closed'
@@ -470,9 +526,23 @@ views:
                   styles:
                     card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
             - type: custom:button-card
               entity: cover.garage_door_2_door
@@ -480,7 +550,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'closed'
@@ -504,9 +574,23 @@ views:
                   styles:
                     card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
             # === Motion sensors (binary_sensor; on=detected=red pulse, off=clear=gray) ===
             - type: custom:button-card
@@ -515,7 +599,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'on'
@@ -530,9 +614,23 @@ views:
                   icon: mdi:motion-sensor-off
                   color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
             - type: custom:button-card
               entity: binary_sensor.main_panel_office_motion
@@ -540,7 +638,7 @@ views:
               show_name: true
               show_state: true
               show_icon: true
-              size: 50%
+              size: 70%
               tap_action: { action: none }
               state:
                 - value: 'on'
@@ -555,9 +653,23 @@ views:
                   icon: mdi:motion-sensor-off
                   color: 'var(--kiosk-text-tertiary)'
               styles:
-                card: [{ height: '100%' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px' }]
-                name: [{ font-size: '12px' }, { color: 'var(--kiosk-text-secondary)' }, { padding-top: '4px' }]
-                state: [{ font-size: '11px' }, { text-transform: 'uppercase' }, { font-weight: '500' }]
+                card:
+                  - height: '100%'
+                  - background: 'var(--kiosk-bg-tile)'
+                  - border-radius: '8px'
+                  - border: 'none'
+                  - padding: '12px'
+                name:
+                  - font-size: '18px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - padding-top: '8px'
+                state:
+                  - font-size: '24px'
+                  - text-transform: 'uppercase'
+                  - font-weight: '600'
+                  - letter-spacing: '1px'
+                  - padding-top: '4px'
 
       # ============================================================
       # LIGHTS COLUMN — 20 lights, grouped into 5 room sections.
