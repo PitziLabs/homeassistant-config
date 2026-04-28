@@ -48,7 +48,7 @@ views:
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: weather }
-card_mod:
+        card_mod:
           style: |
             ha-card {
               height: 100%;
