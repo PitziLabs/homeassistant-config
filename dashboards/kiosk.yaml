@@ -35,6 +35,7 @@ views:
       height: 100vh
       margin: 0
       padding: 8px
+      overflow: hidden
       grid-gap: 8px
       grid-template-columns: 1fr 1fr 1.4fr 1fr
       grid-template-rows: 200px 1fr
@@ -370,7 +371,13 @@ views:
                       - type: template
                         icon: mdi:thermometer
                         icon_color: amber
-                        content: 'Set {{ state_attr("climate.upstairs", "temperature") | round }}°'
+                        content: |-
+                          {% set t = state_attr("climate.upstairs", "temperature") %}
+                          {% set tl = state_attr("climate.upstairs", "target_temp_low") %}
+                          {% set th = state_attr("climate.upstairs", "target_temp_high") %}
+                          {% if t is not none %}Set {{ t | round }}°
+                          {% elif tl is not none and th is not none %}{{ tl | round }}–{{ th | round }}°
+                          {% else %}—{% endif %}
                       - type: template
                         icon: |-
                           {% set a = state_attr("climate.upstairs", "hvac_action") %}
@@ -433,7 +440,13 @@ views:
                       - type: template
                         icon: mdi:thermometer
                         icon_color: amber
-                        content: 'Set {{ state_attr("climate.downstairs", "temperature") | round }}°'
+                        content: |-
+                          {% set t = state_attr("climate.downstairs", "temperature") %}
+                          {% set tl = state_attr("climate.downstairs", "target_temp_low") %}
+                          {% set th = state_attr("climate.downstairs", "target_temp_high") %}
+                          {% if t is not none %}Set {{ t | round }}°
+                          {% elif tl is not none and th is not none %}{{ tl | round }}–{{ th | round }}°
+                          {% else %}—{% endif %}
                       - type: template
                         icon: |-
                           {% set a = state_attr("climate.downstairs", "hvac_action") %}
@@ -993,221 +1006,269 @@ views:
                     min-height: 0 !important;
                   }
               cards:
-                - type: custom:mini-media-player
-                  entity: media_player.master_bedroom
-                  name: Master Bedroom
-                  artwork: full-cover-fit
-                  info: scroll
-                  hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                  tap_action: { action: none }
+                - type: custom:mod-card
                   card_mod:
                     style: |
                       ha-card {
                         height: 100%;
                         min-height: 100px;
+                        background: var(--kiosk-bg-tile);
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
-                        background: var(--kiosk-bg-tile);
+                      }
+                  card:
+                    type: custom:mini-media-player
+                    entity: media_player.master_bedroom
+                    name: Master Bedroom
+                    artwork: full-cover-fit
+                    info: scroll
+                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+                    tap_action: { action: none }
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          {% set members = state_attr(config.entity, 'group_members') or [] %}
+                          {% if members | length > 1 and members[0] != config.entity %}
+                            opacity: 0.5;
+                            filter: grayscale(0.4);
+                          {% endif %}
+                        }
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
-                          opacity: 0.5;
-                          filter: grayscale(0.4);
+                        ha-card::after {
+                          content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                          position: absolute;
+                          bottom: 6px;
+                          left: 8px;
+                          font-size: 10px;
+                          color: white;
+                          text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                          z-index: 10;
+                        }
                         {% endif %}
-                      }
-                      {% set members = state_attr(config.entity, 'group_members') or [] %}
-                      {% if members | length > 1 and members[0] != config.entity %}
-                      ha-card::after {
-                        content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
-                        position: absolute;
-                        bottom: 6px;
-                        left: 8px;
-                        font-size: 10px;
-                        color: white;
-                        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-                        z-index: 10;
-                      }
-                      {% endif %}
 
-                - type: custom:mini-media-player
-                  entity: media_player.basement
-                  name: Basement
-                  artwork: full-cover-fit
-                  info: scroll
-                  hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                  tap_action: { action: none }
+                - type: custom:mod-card
                   card_mod:
                     style: |
                       ha-card {
                         height: 100%;
                         min-height: 100px;
+                        background: var(--kiosk-bg-tile);
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
-                        background: var(--kiosk-bg-tile);
+                      }
+                  card:
+                    type: custom:mini-media-player
+                    entity: media_player.basement
+                    name: Basement
+                    artwork: full-cover-fit
+                    info: scroll
+                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+                    tap_action: { action: none }
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          {% set members = state_attr(config.entity, 'group_members') or [] %}
+                          {% if members | length > 1 and members[0] != config.entity %}
+                            opacity: 0.5;
+                            filter: grayscale(0.4);
+                          {% endif %}
+                        }
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
-                          opacity: 0.5;
-                          filter: grayscale(0.4);
+                        ha-card::after {
+                          content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                          position: absolute;
+                          bottom: 6px;
+                          left: 8px;
+                          font-size: 10px;
+                          color: white;
+                          text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                          z-index: 10;
+                        }
                         {% endif %}
-                      }
-                      {% set members = state_attr(config.entity, 'group_members') or [] %}
-                      {% if members | length > 1 and members[0] != config.entity %}
-                      ha-card::after {
-                        content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
-                        position: absolute;
-                        bottom: 6px;
-                        left: 8px;
-                        font-size: 10px;
-                        color: white;
-                        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-                        z-index: 10;
-                      }
-                      {% endif %}
 
-                - type: custom:mini-media-player
-                  entity: media_player.office
-                  name: Office
-                  artwork: full-cover-fit
-                  info: scroll
-                  hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                  tap_action: { action: none }
+                - type: custom:mod-card
                   card_mod:
                     style: |
                       ha-card {
                         height: 100%;
                         min-height: 100px;
+                        background: var(--kiosk-bg-tile);
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
-                        background: var(--kiosk-bg-tile);
+                      }
+                  card:
+                    type: custom:mini-media-player
+                    entity: media_player.office
+                    name: Office
+                    artwork: full-cover-fit
+                    info: scroll
+                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+                    tap_action: { action: none }
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          {% set members = state_attr(config.entity, 'group_members') or [] %}
+                          {% if members | length > 1 and members[0] != config.entity %}
+                            opacity: 0.5;
+                            filter: grayscale(0.4);
+                          {% endif %}
+                        }
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
-                          opacity: 0.5;
-                          filter: grayscale(0.4);
+                        ha-card::after {
+                          content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                          position: absolute;
+                          bottom: 6px;
+                          left: 8px;
+                          font-size: 10px;
+                          color: white;
+                          text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                          z-index: 10;
+                        }
                         {% endif %}
-                      }
-                      {% set members = state_attr(config.entity, 'group_members') or [] %}
-                      {% if members | length > 1 and members[0] != config.entity %}
-                      ha-card::after {
-                        content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
-                        position: absolute;
-                        bottom: 6px;
-                        left: 8px;
-                        font-size: 10px;
-                        color: white;
-                        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-                        z-index: 10;
-                      }
-                      {% endif %}
 
-                - type: custom:mini-media-player
-                  entity: media_player.kitchen
-                  name: Kitchen
-                  artwork: full-cover-fit
-                  info: scroll
-                  hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                  tap_action: { action: none }
+                - type: custom:mod-card
                   card_mod:
                     style: |
                       ha-card {
                         height: 100%;
                         min-height: 100px;
+                        background: var(--kiosk-bg-tile);
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
-                        background: var(--kiosk-bg-tile);
+                      }
+                  card:
+                    type: custom:mini-media-player
+                    entity: media_player.kitchen
+                    name: Kitchen
+                    artwork: full-cover-fit
+                    info: scroll
+                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+                    tap_action: { action: none }
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          {% set members = state_attr(config.entity, 'group_members') or [] %}
+                          {% if members | length > 1 and members[0] != config.entity %}
+                            opacity: 0.5;
+                            filter: grayscale(0.4);
+                          {% endif %}
+                        }
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
-                          opacity: 0.5;
-                          filter: grayscale(0.4);
+                        ha-card::after {
+                          content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                          position: absolute;
+                          bottom: 6px;
+                          left: 8px;
+                          font-size: 10px;
+                          color: white;
+                          text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                          z-index: 10;
+                        }
                         {% endif %}
-                      }
-                      {% set members = state_attr(config.entity, 'group_members') or [] %}
-                      {% if members | length > 1 and members[0] != config.entity %}
-                      ha-card::after {
-                        content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
-                        position: absolute;
-                        bottom: 6px;
-                        left: 8px;
-                        font-size: 10px;
-                        color: white;
-                        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-                        z-index: 10;
-                      }
-                      {% endif %}
 
-                - type: custom:mini-media-player
-                  entity: media_player.dining_room
-                  name: Dining Room
-                  artwork: full-cover-fit
-                  info: scroll
-                  hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                  tap_action: { action: none }
+                - type: custom:mod-card
                   card_mod:
                     style: |
                       ha-card {
                         height: 100%;
                         min-height: 100px;
+                        background: var(--kiosk-bg-tile);
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
-                        background: var(--kiosk-bg-tile);
+                      }
+                  card:
+                    type: custom:mini-media-player
+                    entity: media_player.dining_room
+                    name: Dining Room
+                    artwork: full-cover-fit
+                    info: scroll
+                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+                    tap_action: { action: none }
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          {% set members = state_attr(config.entity, 'group_members') or [] %}
+                          {% if members | length > 1 and members[0] != config.entity %}
+                            opacity: 0.5;
+                            filter: grayscale(0.4);
+                          {% endif %}
+                        }
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
-                          opacity: 0.5;
-                          filter: grayscale(0.4);
+                        ha-card::after {
+                          content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                          position: absolute;
+                          bottom: 6px;
+                          left: 8px;
+                          font-size: 10px;
+                          color: white;
+                          text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                          z-index: 10;
+                        }
                         {% endif %}
-                      }
-                      {% set members = state_attr(config.entity, 'group_members') or [] %}
-                      {% if members | length > 1 and members[0] != config.entity %}
-                      ha-card::after {
-                        content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
-                        position: absolute;
-                        bottom: 6px;
-                        left: 8px;
-                        font-size: 10px;
-                        color: white;
-                        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-                        z-index: 10;
-                      }
-                      {% endif %}
 
-                - type: custom:mini-media-player
-                  entity: media_player.roam_2
-                  name: Roam 2
-                  artwork: full-cover-fit
-                  info: scroll
-                  hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                  tap_action: { action: none }
+                - type: custom:mod-card
                   card_mod:
                     style: |
                       ha-card {
                         height: 100%;
                         min-height: 100px;
+                        background: var(--kiosk-bg-tile);
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
-                        background: var(--kiosk-bg-tile);
+                      }
+                  card:
+                    type: custom:mini-media-player
+                    entity: media_player.roam_2
+                    name: Roam 2
+                    artwork: full-cover-fit
+                    info: scroll
+                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
+                    tap_action: { action: none }
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          {% set members = state_attr(config.entity, 'group_members') or [] %}
+                          {% if members | length > 1 and members[0] != config.entity %}
+                            opacity: 0.5;
+                            filter: grayscale(0.4);
+                          {% endif %}
+                        }
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
-                          opacity: 0.5;
-                          filter: grayscale(0.4);
+                        ha-card::after {
+                          content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
+                          position: absolute;
+                          bottom: 6px;
+                          left: 8px;
+                          font-size: 10px;
+                          color: white;
+                          text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+                          z-index: 10;
+                        }
                         {% endif %}
-                      }
-                      {% set members = state_attr(config.entity, 'group_members') or [] %}
-                      {% if members | length > 1 and members[0] != config.entity %}
-                      ha-card::after {
-                        content: "↳ {{ state_attr(members[0], 'friendly_name') or 'leader' }}";
-                        position: absolute;
-                        bottom: 6px;
-                        left: 8px;
-                        font-size: 10px;
-                        color: white;
-                        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-                        z-index: 10;
-                      }
-                      {% endif %}
 
             # --- TVs row (spans both cols) ---
             - type: horizontal-stack
