@@ -334,25 +334,131 @@ views:
         card:
           type: vertical-stack
           cards:
-            - type: custom:better-thermostat-ui-card
-              entity: climate.upstairs
-              name: Upstairs
-              humidity: sensor.upstairs_humidity
-              disable_buttons: true
-              disable_menu: true
+            - type: custom:mod-card
               card_mod:
                 style: |
-                  ha-card { height: 100%; background: var(--kiosk-bg-tile); border-radius: 8px; border: none; }
+                  ha-card {
+                    height: 100%;
+                    background: var(--kiosk-bg-tile);
+                    border-radius: 8px;
+                    border: none;
+                    padding: 8px 8px 12px 8px;
+                    display: flex;
+                    flex-direction: column;
+                  }
+                  ha-card > * { flex: 1 1 auto; min-height: 0; }
+              card:
+                type: vertical-stack
+                cards:
+                  - type: custom:better-thermostat-ui-card
+                    entity: climate.upstairs
+                    name: Upstairs
+                    humidity: sensor.upstairs_humidity
+                    disable_buttons: true
+                    disable_menu: true
+                    card_mod:
+                      style: |
+                        ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
 
-            - type: custom:better-thermostat-ui-card
-              entity: climate.downstairs
-              name: Downstairs
-              humidity: sensor.downstairs_humidity
-              disable_buttons: true
-              disable_menu: true
+                  - type: custom:mushroom-chips-card
+                    alignment: center
+                    chips:
+                      - type: template
+                        icon: mdi:water-percent
+                        icon_color: blue
+                        content: '{{ states("sensor.upstairs_humidity") | round }}%'
+                      - type: template
+                        icon: mdi:thermometer
+                        icon_color: amber
+                        content: 'Set {{ state_attr("climate.upstairs", "temperature") | round }}°'
+                      - type: template
+                        icon: |-
+                          {% set a = state_attr("climate.upstairs", "hvac_action") %}
+                          {% if a == "heating" %}mdi:fire
+                          {% elif a == "cooling" %}mdi:snowflake
+                          {% elif a == "idle" %}mdi:thermometer-check
+                          {% else %}mdi:thermometer-off
+                          {% endif %}
+                        icon_color: |-
+                          {% set a = state_attr("climate.upstairs", "hvac_action") %}
+                          {% if a == "heating" %}red
+                          {% elif a == "cooling" %}blue
+                          {% else %}grey
+                          {% endif %}
+                        content: |-
+                          {% set a = state_attr("climate.upstairs", "hvac_action") %}
+                          {{ a | title if a else "Off" }}
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          box-shadow: none !important;
+                          padding: 0 !important;
+                        }
+
+            - type: custom:mod-card
               card_mod:
                 style: |
-                  ha-card { height: 100%; background: var(--kiosk-bg-tile); border-radius: 8px; border: none; }
+                  ha-card {
+                    height: 100%;
+                    background: var(--kiosk-bg-tile);
+                    border-radius: 8px;
+                    border: none;
+                    padding: 8px 8px 12px 8px;
+                    display: flex;
+                    flex-direction: column;
+                  }
+                  ha-card > * { flex: 1 1 auto; min-height: 0; }
+              card:
+                type: vertical-stack
+                cards:
+                  - type: custom:better-thermostat-ui-card
+                    entity: climate.downstairs
+                    name: Downstairs
+                    humidity: sensor.downstairs_humidity
+                    disable_buttons: true
+                    disable_menu: true
+                    card_mod:
+                      style: |
+                        ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
+
+                  - type: custom:mushroom-chips-card
+                    alignment: center
+                    chips:
+                      - type: template
+                        icon: mdi:water-percent
+                        icon_color: blue
+                        content: '{{ states("sensor.downstairs_humidity") | round }}%'
+                      - type: template
+                        icon: mdi:thermometer
+                        icon_color: amber
+                        content: 'Set {{ state_attr("climate.downstairs", "temperature") | round }}°'
+                      - type: template
+                        icon: |-
+                          {% set a = state_attr("climate.downstairs", "hvac_action") %}
+                          {% if a == "heating" %}mdi:fire
+                          {% elif a == "cooling" %}mdi:snowflake
+                          {% elif a == "idle" %}mdi:thermometer-check
+                          {% else %}mdi:thermometer-off
+                          {% endif %}
+                        icon_color: |-
+                          {% set a = state_attr("climate.downstairs", "hvac_action") %}
+                          {% if a == "heating" %}red
+                          {% elif a == "cooling" %}blue
+                          {% else %}grey
+                          {% endif %}
+                        content: |-
+                          {% set a = state_attr("climate.downstairs", "hvac_action") %}
+                          {{ a | title if a else "Off" }}
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          border: none !important;
+                          box-shadow: none !important;
+                          padding: 0 !important;
+                        }
 
       # ============================================================
       # SENSORS COLUMN — 8 sensors in 2x4 grid
