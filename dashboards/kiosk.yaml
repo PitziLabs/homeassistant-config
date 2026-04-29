@@ -977,6 +977,21 @@ views:
             - type: grid
               columns: 2
               square: false
+              card_mod:
+                style: |
+                  :host {
+                    height: 100%;
+                    display: block;
+                  }
+                  #root {
+                    height: 100%;
+                    grid-template-rows: repeat(3, 1fr) !important;
+                    gap: 6px !important;
+                  }
+                  #root > * {
+                    height: 100% !important;
+                    min-height: 0 !important;
+                  }
               cards:
                 - type: custom:mini-media-player
                   entity: media_player.master_bedroom
@@ -989,9 +1004,11 @@ views:
                     style: |
                       ha-card {
                         height: 100%;
+                        min-height: 100px;
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
+                        background: var(--kiosk-bg-tile);
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
                           opacity: 0.5;
@@ -1023,9 +1040,11 @@ views:
                     style: |
                       ha-card {
                         height: 100%;
+                        min-height: 100px;
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
+                        background: var(--kiosk-bg-tile);
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
                           opacity: 0.5;
@@ -1057,9 +1076,11 @@ views:
                     style: |
                       ha-card {
                         height: 100%;
+                        min-height: 100px;
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
+                        background: var(--kiosk-bg-tile);
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
                           opacity: 0.5;
@@ -1091,9 +1112,11 @@ views:
                     style: |
                       ha-card {
                         height: 100%;
+                        min-height: 100px;
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
+                        background: var(--kiosk-bg-tile);
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
                           opacity: 0.5;
@@ -1125,9 +1148,11 @@ views:
                     style: |
                       ha-card {
                         height: 100%;
+                        min-height: 100px;
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
+                        background: var(--kiosk-bg-tile);
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
                           opacity: 0.5;
@@ -1159,9 +1184,11 @@ views:
                     style: |
                       ha-card {
                         height: 100%;
+                        min-height: 100px;
                         border-radius: 6px;
                         border: none;
                         overflow: hidden;
+                        background: var(--kiosk-bg-tile);
                         {% set members = state_attr(config.entity, 'group_members') or [] %}
                         {% if members | length > 1 and members[0] != config.entity %}
                           opacity: 0.5;
