@@ -70,6 +70,12 @@ lovelace:
       icon: mdi:monitor-dashboard
       show_in_sidebar: false
       filename: dashboards/kiosk.yaml
+    dashboard-command-deck:
+      mode: yaml
+      filename: dashboards/command-deck.yaml
+      title: Command Deck
+      icon: mdi:gamepad-variant
+      show_in_sidebar: true
 
 # Prometheus
 prometheus:
