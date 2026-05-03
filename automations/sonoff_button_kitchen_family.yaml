@@ -1,0 +1,23 @@
+- id: sonoff_button_1_kitchen_family_full_on
+  alias: 'Sonoff Button 1: Kitchen + Family Room lights to 100%'
+  triggers:
+  - entity_id: event.button_1_1
+    trigger: state
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.family_room_outlets
+  - action: light.turn_on
+    data:
+      brightness: 255
+    target:
+      entity_id:
+      - light.kitchen_main
+      - light.kitchen_island
+      - light.kitchen_table
+      - light.kitchen_sink
+      - light.family_room
+      - light.family_room_2
+      - light.floor_lamp
+  mode: single
