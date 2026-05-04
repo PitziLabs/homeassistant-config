@@ -1,0 +1,47 @@
+- id: sonoff_button_1_kitchen_family_on
+  alias: 'Sonoff Button 1: Single press → Kitchen + Family Room ON'
+  triggers:
+  - trigger: event
+    event_type: zha_event
+    event_data:
+      device_ieee: f0:44:d3:ff:fe:f6:94:01
+      command: single
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.family_room_outlets
+  - action: light.turn_on
+    data:
+      brightness: 255
+    target:
+      entity_id:
+      - light.kitchen_main
+      - light.kitchen_island
+      - light.kitchen_table
+      - light.kitchen_sink
+      - light.family_room
+      - light.family_room_2
+      - light.floor_lamp
+  mode: single
+- id: sonoff_button_1_kitchen_family_off
+  alias: 'Sonoff Button 1: Double press → Kitchen + Family Room OFF'
+  triggers:
+  - trigger: event
+    event_type: zha_event
+    event_data:
+      device_ieee: f0:44:d3:ff:fe:f6:94:01
+      command: double
+  conditions: []
+  actions:
+  - action: light.turn_off
+    target:
+      entity_id:
+      - light.kitchen_main
+      - light.kitchen_island
+      - light.kitchen_table
+      - light.kitchen_sink
+      - light.family_room
+      - light.family_room_2
+      - light.floor_lamp
+  mode: single
