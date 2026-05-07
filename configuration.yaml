@@ -80,6 +80,33 @@ lovelace:
 # Prometheus
 prometheus:
 
+# Light groups — referenced by Sonoff button automations and dashboards.
+# `switch.back_porch` is outdoor lighting too but lives in a separate action
+# in `automations/sonoff_button_outdoor.yaml` because light groups can't hold
+# switches.
+light:
+  - platform: group
+    name: Outdoor
+    unique_id: outdoor
+    entities:
+      - light.front_door
+      - light.front_lantern
+      - light.garage_front
+      - light.garage_side
+      - light.shed
+
+  - platform: group
+    name: Downstairs
+    unique_id: downstairs
+    entities:
+      - light.kitchen_main
+      - light.kitchen_island
+      - light.kitchen_table
+      - light.kitchen_sink
+      - light.family_room
+      - light.family_room_2
+      - light.floor_lamp
+
 # Template sensors for Sonos group-aware dashboard
 template:
   - binary_sensor:
@@ -176,13 +203,8 @@ template:
       - name: "Outdoor Lights On"
         unique_id: outdoor_lights_on
         state: >
-          {{ is_state('light.front_door', 'on')
-             or is_state('light.front_lantern', 'on')
-             or is_state('light.garage_front', 'on')
-             or is_state('light.garage_side', 'on')
-             or is_state('light.shed', 'on')
-             or is_state('switch.back_porch', 'on')
-             or is_state('switch.garden', 'on') }}
+          {{ is_state('light.outdoor', 'on')
+             or is_state('switch.back_porch', 'on') }}
 
       - name: "Any Switch On"
         unique_id: any_switch_on
