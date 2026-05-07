@@ -1,5 +1,6 @@
+# device_ieee f0:44:d3:ff:fe:f6:94:01 = Sonoff Button 1 (downstairs)
 - id: sonoff_button_1_kitchen_family_on
-  alias: 'Sonoff Button 1: Single press → Kitchen + Family Room ON'
+  alias: 'Sonoff Button 1: Single press → Downstairs ON'
   triggers:
   - trigger: event
     event_type: zha_event
@@ -8,17 +9,14 @@
       command: single
   conditions: []
   actions:
-  - action: switch.turn_on
-    target:
-      entity_id: switch.family_room_outlets
-  - action: light.turn_on
+  - action: homeassistant.turn_on
     data:
       brightness: 255
     target:
-      entity_id: light.downstairs
+      entity_id: group.downstairs_lights
   mode: single
 - id: sonoff_button_1_kitchen_family_off
-  alias: 'Sonoff Button 1: Double press → Kitchen + Family Room OFF'
+  alias: 'Sonoff Button 1: Double press → Downstairs OFF'
   triggers:
   - trigger: event
     event_type: zha_event
@@ -27,7 +25,7 @@
       command: double
   conditions: []
   actions:
-  - action: light.turn_off
+  - action: homeassistant.turn_off
     target:
-      entity_id: light.downstairs
+      entity_id: group.downstairs_lights
   mode: single
