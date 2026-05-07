@@ -126,7 +126,6 @@ views:
               - light.garage_side
               - light.shed
               - switch.back_porch
-              - switch.garden
 
       # ============================================================
       # ROW 3 — Switches + Media

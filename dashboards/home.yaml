@@ -475,16 +475,6 @@ views:
               entity: switch.back_porch
               name: Back Porch
               icon: mdi:outdoor-lamp
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: switch.garden
-                state: "on"
-            card:
-              type: tile
-              entity: switch.garden
-              name: Garden
-              icon: mdi:flower
 
       # --- Switches ---
       - type: vertical-stack
