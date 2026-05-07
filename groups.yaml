@@ -13,3 +13,24 @@ motion:
   entities:
     - binary_sensor.main_panel_office_motion
     - binary_sensor.main_panel_family_room_motion
+
+downstairs_lights:
+  name: Downstairs Lights
+  entities:
+    - light.kitchen_main
+    - light.kitchen_island
+    - light.kitchen_table
+    - light.kitchen_sink
+    - light.family_room
+    - light.family_room_2
+    - light.floor_lamp_composite
+
+outdoor_lights:
+  name: Outdoor Lights
+  entities:
+    - light.front_door
+    - light.front_lantern
+    - light.garage_front
+    - light.garage_side
+    - light.shed
+    - switch.back_porch

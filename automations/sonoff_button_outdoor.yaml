@@ -9,10 +9,7 @@
       command: double
   conditions: []
   actions:
-  - action: light.turn_off
+  - action: homeassistant.turn_off
     target:
-      entity_id: light.outdoor
-  - action: switch.turn_off
-    target:
-      entity_id: switch.back_porch
+      entity_id: group.outdoor_lights
   mode: single
