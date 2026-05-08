@@ -109,7 +109,7 @@ Automations are split across two locations with different governance models:
 ### Lights
 | Room | Entities |
 |------|----------|
-| Kitchen | `light.kitchen_main`, `light.kitchen_island`, `light.kitchen_table`, `light.kitchen_sink` |
+| Kitchen | `light.kitchen_main`, `light.kitchen_island`, `light.kitchen_table` |
 | Office | `light.office`, `light.office_lamp`, `light.office_bookcase`, `light.office_corner`, `light.office_door`, `light.desk_lamp`, `light.desk_lamp_2` |
 | Play Room | `light.play_room`, `light.play_room_1`, `light.play_room_2`, `light.play_room_3`, `light.play_room_4` |
 | Family Room | `light.family_room`, `light.family_room_2`, `light.floor_lamp` |

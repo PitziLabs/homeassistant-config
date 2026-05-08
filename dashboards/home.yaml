@@ -146,15 +146,6 @@ views:
               type: tile
               entity: light.kitchen_table
               name: Table
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: light.kitchen_sink
-                state: "on"
-            card:
-              type: tile
-              entity: light.kitchen_sink
-              name: Sink
 
       # --- Office ---
       - type: vertical-stack
