@@ -102,7 +102,6 @@ light:
       - light.kitchen_main
       - light.kitchen_island
       - light.kitchen_table
-      - light.kitchen_sink
       - light.family_room
       - light.family_room_2
       - light.floor_lamp
@@ -160,8 +159,7 @@ template:
         state: >
           {{ is_state('light.kitchen_main', 'on')
              or is_state('light.kitchen_island', 'on')
-             or is_state('light.kitchen_table', 'on')
-             or is_state('light.kitchen_sink', 'on') }}
+             or is_state('light.kitchen_table', 'on') }}
 
       - name: "Office Lights On"
         unique_id: office_lights_on

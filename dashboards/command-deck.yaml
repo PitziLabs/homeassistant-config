@@ -71,7 +71,6 @@ views:
               - light.kitchen_main
               - light.kitchen_island
               - light.kitchen_table
-              - light.kitchen_sink
 
           - type: entities
             title: Office
