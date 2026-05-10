@@ -78,21 +78,21 @@ views:
             entities:
               - light.office
               - light.office_lamp
-              - light.office_bookcase
-              - light.office_corner
-              - light.office_door
-              - light.desk_lamp
+              - light.bookcase_lamp
+              - light.corner_lamp
+              - light.door_lamp
               - light.desk_lamp_2
+              - light.desk_lamp_2_2
 
           - type: entities
             title: Play Room
             show_header_toggle: true
             entities:
               - light.play_room
-              - light.play_room_1
-              - light.play_room_2
-              - light.play_room_3
-              - light.play_room_4
+              - light.playroom_1
+              - light.playroom_2
+              - light.playroom_3
+              - light.playroom_4
 
       - type: horizontal-stack
         cards:

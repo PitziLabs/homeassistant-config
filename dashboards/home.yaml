@@ -181,39 +181,30 @@ views:
           - type: conditional
             conditions:
               - condition: state
-                entity: light.office_bookcase
+                entity: light.bookcase_lamp
                 state: "on"
             card:
               type: tile
-              entity: light.office_bookcase
+              entity: light.bookcase_lamp
               name: Bookcase
           - type: conditional
             conditions:
               - condition: state
-                entity: light.office_corner
+                entity: light.corner_lamp
                 state: "on"
             card:
               type: tile
-              entity: light.office_corner
+              entity: light.corner_lamp
               name: Corner
           - type: conditional
             conditions:
               - condition: state
-                entity: light.office_door
+                entity: light.door_lamp
                 state: "on"
             card:
               type: tile
-              entity: light.office_door
+              entity: light.door_lamp
               name: Door
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: light.desk_lamp
-                state: "on"
-            card:
-              type: tile
-              entity: light.desk_lamp
-              name: Desk Lamp
           - type: conditional
             conditions:
               - condition: state
@@ -222,6 +213,15 @@ views:
             card:
               type: tile
               entity: light.desk_lamp_2
+              name: Desk Lamp
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: light.desk_lamp_2_2
+                state: "on"
+            card:
+              type: tile
+              entity: light.desk_lamp_2_2
               name: Desk Lamp 2
 
       # --- Play Room ---
@@ -249,38 +249,38 @@ views:
           - type: conditional
             conditions:
               - condition: state
-                entity: light.play_room_1
+                entity: light.playroom_1
                 state: "on"
             card:
               type: tile
-              entity: light.play_room_1
+              entity: light.playroom_1
               name: Light 1
           - type: conditional
             conditions:
               - condition: state
-                entity: light.play_room_2
+                entity: light.playroom_2
                 state: "on"
             card:
               type: tile
-              entity: light.play_room_2
+              entity: light.playroom_2
               name: Light 2
           - type: conditional
             conditions:
               - condition: state
-                entity: light.play_room_3
+                entity: light.playroom_3
                 state: "on"
             card:
               type: tile
-              entity: light.play_room_3
+              entity: light.playroom_3
               name: Light 3
           - type: conditional
             conditions:
               - condition: state
-                entity: light.play_room_4
+                entity: light.playroom_4
                 state: "on"
             card:
               type: tile
-              entity: light.play_room_4
+              entity: light.playroom_4
               name: Light 4
 
       # --- Family Room ---

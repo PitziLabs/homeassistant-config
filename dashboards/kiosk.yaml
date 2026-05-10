@@ -939,12 +939,12 @@ views:
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.office, name: Office, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.office_bookcase, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.office_corner, name: Corner, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.office_door, name: Door, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.bookcase_lamp, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.corner_lamp, name: Corner, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.door_lamp, name: Door, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
                 - { type: 'custom:mushroom-light-card', entity: light.office_lamp, name: Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp, name: Desk, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
 
             # --- Hallways ---
             - <<: *light_section_header
