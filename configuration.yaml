@@ -166,20 +166,20 @@ template:
         state: >
           {{ is_state('light.office', 'on')
              or is_state('light.office_lamp', 'on')
-             or is_state('light.office_bookcase', 'on')
-             or is_state('light.office_corner', 'on')
-             or is_state('light.office_door', 'on')
-             or is_state('light.desk_lamp', 'on')
-             or is_state('light.desk_lamp_2', 'on') }}
+             or is_state('light.bookcase_lamp', 'on')
+             or is_state('light.corner_lamp', 'on')
+             or is_state('light.door_lamp', 'on')
+             or is_state('light.desk_lamp_2', 'on')
+             or is_state('light.desk_lamp_2_2', 'on') }}
 
       - name: "Play Room Lights On"
         unique_id: play_room_lights_on
         state: >
           {{ is_state('light.play_room', 'on')
-             or is_state('light.play_room_1', 'on')
-             or is_state('light.play_room_2', 'on')
-             or is_state('light.play_room_3', 'on')
-             or is_state('light.play_room_4', 'on') }}
+             or is_state('light.playroom_1', 'on')
+             or is_state('light.playroom_2', 'on')
+             or is_state('light.playroom_3', 'on')
+             or is_state('light.playroom_4', 'on') }}
 
       - name: "Family Room Lights On"
         unique_id: family_room_lights_on
@@ -238,9 +238,9 @@ template:
       - name: "Lights On Office Count"
         unique_id: lights_on_office_count
         state: >
-          {{ ['light.office','light.office_bookcase','light.office_corner',
-              'light.office_door','light.office_lamp','light.meeting_light',
-              'light.desk_lamp','light.desk_lamp_2']
+          {{ ['light.office','light.bookcase_lamp','light.corner_lamp',
+              'light.door_lamp','light.office_lamp','light.meeting_light',
+              'light.desk_lamp_2','light.desk_lamp_2_2']
              | select('is_state','on') | list | count }}
         icon: mdi:lightbulb-group
 
