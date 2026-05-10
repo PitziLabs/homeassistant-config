@@ -6,7 +6,7 @@
   triggers:
   - trigger: device
     domain: zha
-    device_id: REPLACE_WITH_DEVICE_ID_FOR_SONOFF_BUTTON_1
+    device_id: 666ed2817145ee99844918d938e5bcc3
     type: remote_button_short_press
     subtype: turn_on
   conditions: []
