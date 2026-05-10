@@ -6,7 +6,7 @@
   triggers:
   - trigger: device
     domain: zha
-    device_id: REPLACE_WITH_DEVICE_ID_FOR_SONOFF_BUTTON_2
+    device_id: 4d0a2da9e3905a44ae800c5b422fce2f
     type: remote_button_short_press
     subtype: turn_on
   conditions: []
@@ -20,7 +20,7 @@
   triggers:
   - trigger: device
     domain: zha
-    device_id: REPLACE_WITH_DEVICE_ID_FOR_SONOFF_BUTTON_2
+    device_id: 4d0a2da9e3905a44ae800c5b422fce2f
     type: remote_button_double_press
     subtype: turn_on
   conditions: []
