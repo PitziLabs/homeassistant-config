@@ -79,6 +79,7 @@ apply_reload() {
 
   local needs_restart=false
   local reload_dashboard=false
+  local reload_themes=false
   local reload_automations=false
   local reload_scripts=false
   local reload_scenes=false
@@ -87,15 +88,27 @@ apply_reload() {
     if [[ -z "$f" ]]; then
       continue
     fi
-    if [[ "$f" =~ ^dashboards/.*\.yaml$ ]]; then
+    # No-op: files that don't affect HA Core runtime
+    if   [[ "$f" =~ ^context/ ]] || \
+         [[ "$f" =~ ^\.github/ ]] || \
+         [[ "$f" =~ ^esphome/ ]] || \
+         [[ "$f" =~ ^scripts/.*\.sh$ ]] || \
+         [[ "$f" =~ \.md$ ]] || \
+         [[ "$f" == ".gitignore" || "$f" == ".yamllint.yml" || \
+            "$f" == "LICENSE"    || "$f" == ".gitattributes" ]]; then
+      continue
+    elif [[ "$f" =~ ^dashboards/.*\.yaml$ ]]; then
       reload_dashboard=true
-    elif [[ "$f" == "automations.yaml" ]]; then
+    elif [[ "$f" =~ ^themes/ ]]; then
+      reload_themes=true
+    elif [[ "$f" == "automations.yaml" || "$f" =~ ^automations/.*\.yaml$ ]]; then
       reload_automations=true
-    elif [[ "$f" == "scripts.yaml" ]]; then
+    elif [[ "$f" == "scripts.yaml"     || "$f" =~ ^scripts/.*\.yaml$ ]]; then
       reload_scripts=true
-    elif [[ "$f" == "scenes.yaml" ]]; then
+    elif [[ "$f" == "scenes.yaml"      || "$f" =~ ^scenes/.*\.yaml$ ]]; then
       reload_scenes=true
     else
+      log INFO "Routing: ${f} outside lightweight set → full restart"
       needs_restart=true
     fi
   done <<< "$changed_files"
@@ -106,9 +119,20 @@ apply_reload() {
     return
   fi
 
+  if [[ "$reload_dashboard" == false && "$reload_themes" == false && \
+        "$reload_automations" == false && "$reload_scripts" == false && \
+        "$reload_scenes" == false ]]; then
+    log INFO "Routing: all changes outside HA runtime scope → no reload needed"
+    return
+  fi
+
   if [[ "$reload_dashboard" == true ]]; then
     log INFO "Routing: dashboards → lovelace.reload_resources + frontend.reload_themes"
     ha_call_service lovelace reload_resources
+    ha_call_service frontend reload_themes
+  fi
+  if [[ "$reload_themes" == true ]]; then
+    log INFO "Routing: themes → frontend.reload_themes"
     ha_call_service frontend reload_themes
   fi
   if [[ "$reload_automations" == true ]]; then
