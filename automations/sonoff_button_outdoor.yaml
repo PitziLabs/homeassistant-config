@@ -1,14 +1,12 @@
 # device_ieee 18:69:0a:ff:fe:13:a1:01 = Sonoff Button 2 (outdoor)
-# device_id: get from Settings → Devices & Services → ZHA → Sonoff Button 2
-#            (the UUID in the device URL, or copy from Automation editor Device trigger UI)
 - id: sonoff_button_2_outdoor_on
   alias: 'Sonoff Button 2: Single press → Outdoor lights ON'
   triggers:
-  - trigger: device
-    domain: zha
-    device_id: 4d0a2da9e3905a44ae800c5b422fce2f
-    type: remote_button_short_press
-    subtype: turn_on
+  - trigger: event
+    event_type: zha_event
+    event_data:
+      device_ieee: 18:69:0a:ff:fe:13:a1:01
+      command: toggle
   conditions: []
   actions:
   - action: homeassistant.turn_on
@@ -18,11 +16,11 @@
 - id: sonoff_button_2_outdoor_off
   alias: 'Sonoff Button 2: Double press → Outdoor lights OFF'
   triggers:
-  - trigger: device
-    domain: zha
-    device_id: 4d0a2da9e3905a44ae800c5b422fce2f
-    type: remote_button_double_press
-    subtype: turn_on
+  - trigger: event
+    event_type: zha_event
+    event_data:
+      device_ieee: 18:69:0a:ff:fe:13:a1:01
+      command: "on"
   conditions: []
   actions:
   - action: homeassistant.turn_off
