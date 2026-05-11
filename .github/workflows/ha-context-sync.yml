@@ -1,0 +1,81 @@
+name: HA Context Sync
+
+# Triggered by HA-side dump script after it pushes a context-sync/<timestamp> branch.
+# Opens a PR from that branch to main, applies the context-snapshot label,
+# and enables auto-merge. The PR uses HA_SYNC_PAT (not GITHUB_TOKEN) so that
+# downstream workflows (ha-config-check, claude-code-review) fire on the resulting
+# pull_request event — same reasoning as ha-version-sync.yml.
+
+on:
+  repository_dispatch:
+    types: [ha-context-report]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-context-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate dispatch payload
+        env:
+          BRANCH: ${{ github.event.client_payload.branch }}
+        run: |
+          if [[ ! "$BRANCH" =~ ^context-sync/[0-9]{8}-[0-9]{6}$ ]]; then
+            echo "::error::Invalid branch name pattern: $BRANCH"
+            echo "::error::Expected: context-sync/YYYYMMDD-HHMMSS"
+            exit 1
+          fi
+          echo "Branch validated: $BRANCH"
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.HA_SYNC_PAT }}
+          fetch-depth: 0
+
+      - name: Verify branch exists on remote
+        env:
+          BRANCH: ${{ github.event.client_payload.branch }}
+        run: |
+          if ! git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
+            echo "::error::Branch not found on remote: $BRANCH"
+            echo "::error::HA-side push may have failed; check /config/ha-context-dump.log"
+            exit 1
+          fi
+          echo "Branch present on remote"
+
+      - name: Ensure context-snapshot label exists
+        env:
+          GH_TOKEN: ${{ secrets.HA_SYNC_PAT }}
+        run: |
+          gh label create context-snapshot \
+            --color "BFD4F2" \
+            --description "Automated HA state snapshot — auto-generated, do not edit" \
+            --force
+
+      - name: Open PR (idempotent)
+        env:
+          GH_TOKEN: ${{ secrets.HA_SYNC_PAT }}
+          BRANCH: ${{ github.event.client_payload.branch }}
+        run: |
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' || true)
+          if [[ -n "$existing" ]]; then
+            echo "PR already open for $BRANCH: #$existing"
+            exit 0
+          fi
+
+          stamp="${BRANCH#context-sync/}"
+
+          pr_url=$(gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "context-snapshot: ${stamp}" \
+            --body "Automated HA state snapshot. See context/README.md for details. Auto-merged once CI passes." \
+            --label "context-snapshot")
+
+          echo "Opened: $pr_url"
+
+          gh pr merge --auto --squash "$pr_url"
+          echo "Auto-merge enabled"
