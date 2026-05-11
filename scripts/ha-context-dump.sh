@@ -4,7 +4,6 @@ set -euo pipefail
 readonly LOG_FILE="/config/ha-context-dump.log"
 readonly LOG_MAX_BYTES=1048576
 readonly STAGING_DIR="/config/context-staging"
-readonly SUPERVISOR_BASE="http://supervisor"
 readonly STORAGE="/config/.storage"
 
 log() {
@@ -31,47 +30,22 @@ main() {
   rotate_log
   log INFO "Starting HA context dump"
 
-  if [[ -z "${SUPERVISOR_TOKEN:-}" ]]; then
-    log ERROR "SUPERVISOR_TOKEN is not set — HA must expose it to shell_command context"
-    log ERROR "See: https://www.home-assistant.io/integrations/shell_command/"
-    exit 1
-  fi
-
   mkdir -p "$STAGING_DIR"
 
-  # Fetch live states for friendly_name resolution
-  local states_file
-  states_file=$(mktemp)
-  trap 'rm -f "${states_file}"' EXIT
-
-  log INFO "Fetching live entity states via Supervisor API"
-  if ! curl -sf \
-    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
-    "${SUPERVISOR_BASE}/core/api/states" \
-    -o "$states_file"; then
-    log ERROR "Failed to fetch states from Supervisor API"
-    exit 1
-  fi
-
-  # entities.json: non-disabled entities with friendly_name from live state
   log INFO "Building entities.json"
-  jq -n \
-    --slurpfile reg "${STORAGE}/core.entity_registry" \
-    --slurpfile states "${states_file}" \
-    '
-    ($states[0] | map({(.entity_id): .attributes.friendly_name}) | add // {}) as $state_names |
-    $reg[0].data.entities
+  jq '
+    .data.entities
     | map(select(.disabled_by == null))
     | map({
         entity_id: .entity_id,
-        friendly_name: ($state_names[.entity_id] // .name // .original_name // null),
+        friendly_name: (.name // .original_name // null),
         area_id: .area_id,
         device_id: .device_id,
         platform: .platform,
         hidden: (.hidden_by != null)
       })
     | sort_by(.entity_id)
-    ' > "${STAGING_DIR}/entities.json"
+  ' "${STORAGE}/core.entity_registry" > "${STAGING_DIR}/entities.json"
 
   # areas.json: area_id + name, sorted by name
   log INFO "Building areas.json"
