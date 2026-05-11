@@ -1,76 +1,34 @@
-# Office Hue Switch — device mode setter (one-shot diagnostic scripts)
+# Office Hue Switch — device mode setter (one-shot diagnostic)
 #
-# The Office Switch (Signify RDM001, ieee 00:17:88:01:0b:03:51:1e) is currently
-# in "single momentary" mode, which makes a maintained-contact rocker emit an
-# endless `left_hold` stream on cluster 0xFC00 while the rocker rests in the
-# up position. We want "dual rocker" mode so each flip emits one event and
-# nothing else.
+# The Office Switch is on the `zhaquirks.philips.wall_switch.PhilipsWallSwitchNewFirmware`
+# quirk. Cluster 0xFC00 is on the input (server) side at endpoint 1, so the
+# `device_mode` attribute at 0x0034 is reachable via `zha.set_zigbee_cluster_attribute`.
 #
-# An earlier `zha.set_zigbee_cluster_attribute` write to attribute 0x0034
-# failed with "Unknown error". These scripts try alternative paths via
-# `zha.issue_zigbee_cluster_command` (manufacturer command) and a refined
-# attribute-write variant. Run each in Developer Tools → Services, watch the
-# device's event stream, and report back which one takes.
+# Wiring: ONE traditional SPST/SPDT wall rocker. Target mode = 1 (single rocker)
+# — the device currently behaves as if it's in a dual-button mode and interprets
+# each rocker position as a button held continuously, hence the `left_hold` /
+# `right_hold` event flood.
 #
-# Cluster 0xFC00 device-mode values (from zha-device-handlers Philips quirk):
+# Mode values (Philips device_mode enum8 on cluster 0xFC00):
 #   0 = unknown / factory default
-#   1 = single rocker        (1 wall switch, 1 zone)
-#   2 = single push button   (1 momentary button)
-#   3 = dual rocker          (2 wall switches OR a 2-position rocker)  ← target
-#   4 = dual push button     (2 momentary buttons)
+#   1 = single rocker      ← target for a 1-position SPST/SPDT wall switch
+#   2 = single push button
+#   3 = dual rocker
+#   4 = dual push button
 #
-# Manufacturer code: 0x100B (Signify Netherlands / Philips) = 4107.
+# Run from Developer Tools → Services. Earlier attempts that passed
+# `manufacturer: 4107` (0x100B) all failed — the loaded quirk applies the mfg
+# code automatically, and passing it explicitly appears to break the call.
 
 script:
-  office_switch_set_mode_via_command_0:
-    alias: 'Office Switch: try mfg command 0x00 with mode=3 (dual rocker)'
-    sequence:
-      - action: zha.issue_zigbee_cluster_command
-        data:
-          ieee: 00:17:88:01:0b:03:51:1e
-          endpoint_id: 1
-          cluster_id: 64512        # 0xFC00
-          cluster_type: in
-          command: 0               # 0x00
-          command_type: server
-          manufacturer: 4107       # 0x100B
-          args: [3]                # dual rocker
-
-  office_switch_set_mode_via_command_2:
-    alias: 'Office Switch: try mfg command 0x02 with mode=3 (dual rocker)'
-    sequence:
-      - action: zha.issue_zigbee_cluster_command
-        data:
-          ieee: 00:17:88:01:0b:03:51:1e
-          endpoint_id: 1
-          cluster_id: 64512
-          cluster_type: in
-          command: 2               # 0x02
-          command_type: server
-          manufacturer: 4107
-          args: [3]
-
-  office_switch_set_mode_via_attr_hex:
-    alias: 'Office Switch: try attribute write 0x0034 = 3 (no mfg code)'
+  office_switch_set_mode_single_rocker:
+    alias: 'Office Switch: set device_mode = 1 (single rocker)'
     sequence:
       - action: zha.set_zigbee_cluster_attribute
         data:
           ieee: 00:17:88:01:0b:03:51:1e
           endpoint_id: 1
-          cluster_id: 64512
+          cluster_id: 64512        # 0xFC00 — Philips manufacturer cluster
           cluster_type: in
-          attribute: 0x0034
-          value: 3
-
-  office_switch_set_mode_via_attr_with_mfg:
-    alias: 'Office Switch: try attribute write 0x0034 = 3 (mfg 0x100B)'
-    sequence:
-      - action: zha.set_zigbee_cluster_attribute
-        data:
-          ieee: 00:17:88:01:0b:03:51:1e
-          endpoint_id: 1
-          cluster_id: 64512
-          cluster_type: in
-          attribute: 0x0034
-          value: 3
-          manufacturer: 0x100B
+          attribute: 0x0034        # device_mode (enum8)
+          value: 1                 # single rocker
