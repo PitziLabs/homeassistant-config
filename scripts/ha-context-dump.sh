@@ -113,10 +113,21 @@ main() {
     exit 0
   fi
 
-  # Extract PAT from secrets.yaml
-  GITHUB_PAT=$(awk '/^github_pat:/ {print $2}' "$SECRETS_FILE")
-  if [[ -z "$GITHUB_PAT" ]]; then
+  # Extract the full Authorization header value from secrets.yaml.
+  # Secret format follows HA rest_command convention: "Bearer github_pat_xxx" stored
+  # as a single quoted string so it can be used directly as a header value.
+  GITHUB_AUTH=$(awk -F'"' '/^github_pat:/ {print $2}' "$SECRETS_FILE")
+  if [[ -z "$GITHUB_AUTH" ]]; then
     log ERROR "Could not read github_pat from $SECRETS_FILE"
+    exit 1
+  fi
+
+  # Derive the bare token (no "Bearer " prefix) for git push URL-embedded auth.
+  # Git HTTPS push auth uses a different envelope than REST API auth — the URL
+  # carries credentials directly, no Authorization header.
+  GITHUB_TOKEN="${GITHUB_AUTH#Bearer }"
+  if [[ "$GITHUB_TOKEN" == "$GITHUB_AUTH" ]]; then
+    log ERROR "Secret value did not start with 'Bearer ' prefix — unexpected format"
     exit 1
   fi
 
@@ -130,9 +141,12 @@ main() {
   git -C "$WORKTREE" checkout -b "$branch"
   git -C "$WORKTREE" add context/
   git -C "$WORKTREE" commit -m "context-snapshot: ${stamp}"
-  git -C "$WORKTREE" \
-    -c "http.https://github.com/.extraheader=Authorization: token ${GITHUB_PAT}" \
-    push -u origin "$branch"
+  # Use URL-embedded auth for git push. The extraheader approach (git -c http...extraheader=...)
+  # is unreliable for push in git 2.52 — git drops the extraheader on auth challenge during
+  # the receive-pack handshake. URL-embedded auth is what GitHub Actions uses internally.
+  git -C "$WORKTREE" push \
+    "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git" \
+    "$branch"
 
   log INFO "Pushed branch $branch"
 
@@ -144,7 +158,8 @@ main() {
   http_status=$(curl -s -o "$response_file" -w "%{http_code}" \
     -X POST \
     -H "Accept: application/vnd.github+json" \
-    -H "Authorization: token ${GITHUB_PAT}" \
+    -H "Authorization: ${GITHUB_AUTH}" \
+    -H "Content-Type: application/json" \
     "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches" \
     -d "$payload")
   if [[ "$http_status" != "204" ]]; then
