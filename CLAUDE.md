@@ -373,6 +373,145 @@ entity IDs, area IDs, or device IDs, consult the relevant `context/` files:**
 If a stale entity_id appears there, the fix is to correct the source of truth
 in HA (rename the entity, reassign the area), not to edit the snapshot.
 
+### Working with `context/` efficiently
+
+The `context/` files can be large — `entities.json` is typically 200KB+ on this
+install. Reading them in full is wasteful when you only need a few entries. Prefer
+targeted queries via the Bash tool with `jq` over a full `Read`:
+
+**Look up a specific entity:**
+
+    jq '.[] | select(.entity_id == "light.meeting_light")' context/entities.json
+
+**Find all entities in an area:**
+
+    jq '.[] | select(.area_id == "office")' context/entities.json
+
+**List all entities in a given domain:**
+
+    jq '.[] | select(.entity_id | startswith("light.")) | .entity_id' context/entities.json
+
+**Find devices by manufacturer or model:**
+
+    jq '.[] | select(.manufacturer == "Konnected")' context/devices.json
+    jq '.[] | select(.model | test("ratgdo"))' context/devices.json
+
+**Find devices missing area assignment** (often the source of dashboard gaps):
+
+    jq '.[] | select(.area_id == null) | {name, manufacturer, model}' context/devices.json
+
+**List integrations in use:**
+
+    jq -r '.[].integrations[]' context/devices.json | sort -u
+
+**Find UI automations referencing a specific entity** (before proposing a new one
+that might duplicate or conflict):
+
+    grep -A 20 "light.meeting_light" context/automations-ui.yaml
+
+`context/areas.json` and `context/automations-ui.yaml` are small enough (<150KB
+combined) that reading them in full is fine when needed.
+
+### Handling stale or missing context
+
+Snapshots refresh every 6 hours and on manual button press. If config you propose
+based on `context/` produces "entity not found" errors, the snapshot may be stale
+relative to recent HA UI changes. Recommend the user press
+`input_button.ha_context_dump_now` and re-run.
+
+If an entity_id genuinely doesn't appear in `context/entities.json` (not stale,
+just absent), it likely doesn't exist yet — propose creating the corresponding
+device/integration first, or ask the user to confirm the entity name.
+
+### When NOT to consult `context/`
+
+Skip the lookup for:
+
+- Pure shell/Python/Terraform/Docker work unrelated to HA entity references
+- Documentation, README, or comment-only edits
+- Workflow file changes (the token scope blocks you from writing those anyway)
+- General HA architecture or troubleshooting discussions
+- Issues that explicitly provide entity_ids in the request — those are the source
+  of truth, not the snapshot
+
+---
+
+## Script auth conventions
+
+Three conventions learned the hard way during context-sync work. Future scripts
+that talk to GitHub or the HA Supervisor from inside the HA Core container
+should follow these without re-deriving them.
+
+### `secrets.yaml` stores complete Authorization header values
+
+The `github_pat` secret in `/config/secrets.yaml` is stored as the **full
+Authorization header value**, including the auth scheme prefix:
+
+    github_pat: "Bearer github_pat_xxxxxxxxxx..."
+
+This is the HA `rest_command` integration convention — it allows direct use as
+`headers: { authorization: !secret github_pat }` in rest_command definitions
+(see `packages/ha_version_sync.yaml` for the canonical example).
+
+Bash scripts consuming this secret should extract the quoted value cleanly:
+
+    GITHUB_AUTH=$(awk -F'"' '/^github_pat:/ {print $2}' /config/secrets.yaml)
+
+The naive `awk '{print $2}'` (whitespace-split, no quote awareness) returns
+`"Bearer` — the opening quote plus the scheme word. It's non-empty (passes
+naive checks) but unusable. Always use `-F'"'`.
+
+When a bare token is needed (e.g., for git URL-embedded auth), strip the prefix:
+
+    GITHUB_TOKEN="${GITHUB_AUTH#Bearer }"
+
+### Git HTTPS push needs URL-embedded credentials, not extraheader
+
+For `git push` over HTTPS from inside the Core container, use URL-embedded auth:
+
+    git -C "$WORKTREE" push \
+        "https://x-access-token:${GITHUB_TOKEN}@github.com/${OWNER}/${REPO}.git" \
+        "$branch"
+
+**Do not use** the `git -c http.extraheader=...` or
+`git -c http.<url>.extraheader=...` patterns for push. They work for fetch and
+`ls-remote` but git 2.52 drops the extraheader on the auth challenge during the
+receive-pack handshake, falling back to credential helper or interactive prompt
+— which has no terminal in shell_command context, so it hangs.
+
+The URL-embedded form is what GitHub Actions uses internally for its own git
+operations. It puts the bare token briefly in `ps` output, but on a single-user
+HAOS VM this is acceptable. The push is one-shot — the URL is constructed inline,
+not persisted to git config; `git remote -v` continues to show only the bare
+HTTPS origin URL afterward.
+
+### GitHub REST API uses Bearer auth (the stored format works as-is)
+
+For curl calls to `api.github.com` endpoints (firing `repository_dispatch`,
+checking PR state, etc.), use the full stored value directly as the
+Authorization header:
+
+    curl -H "Authorization: ${GITHUB_AUTH}" \
+        https://api.github.com/repos/${OWNER}/${REPO}/dispatches \
+        ...
+
+No prefix manipulation — the `Bearer ` is already in the value. Adding
+`token ` or `Bearer ` prefixes in the script produces malformed headers.
+
+### Public-repo `ls-remote` is not a valid auth test
+
+`git ls-remote https://github.com/<owner>/<public-repo>.git HEAD` succeeds
+anonymously — GitHub serves refs for public repos without authentication. If
+you're testing whether a PAT works for git operations, the only valid test is
+an authenticated operation that the public-anonymous path can't satisfy:
+
+- A push (`git push ...`)
+- A REST API call requiring auth (e.g., `GET /user`, `GET /repos/.../dispatches`
+  with a body)
+- A clone of a private repo
+
+Don't conclude auth works just because `ls-remote` returns a SHA.
+
 ---
 
 ## Infrastructure Context
