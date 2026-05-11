@@ -1,0 +1,58 @@
+[
+  {
+    "area_id": "basement",
+    "name": "Basement"
+  },
+  {
+    "area_id": "bedroom",
+    "name": "Bedroom"
+  },
+  {
+    "area_id": "dining_room",
+    "name": "Dining Room"
+  },
+  {
+    "area_id": "downstairs",
+    "name": "Downstairs"
+  },
+  {
+    "area_id": "family_room",
+    "name": "Family Room"
+  },
+  {
+    "area_id": "front_door",
+    "name": "Front Door"
+  },
+  {
+    "area_id": "garage",
+    "name": "Garage"
+  },
+  {
+    "area_id": "kitchen",
+    "name": "Kitchen"
+  },
+  {
+    "area_id": "living_room",
+    "name": "Living Room"
+  },
+  {
+    "area_id": "master_bedroom",
+    "name": "Master Bedroom"
+  },
+  {
+    "area_id": "office",
+    "name": "Office"
+  },
+  {
+    "area_id": "play_room",
+    "name": "Play Room"
+  },
+  {
+    "area_id": "upstairs",
+    "name": "Upstairs"
+  },
+  {
+    "area_id": "outside",
+    "name": "outside"
+  }
+]

@@ -1,0 +1,1392 @@
+[
+  {
+    "device_id": "1bd5818602f5c504d5bdadb697437577",
+    "name": "Backup",
+    "manufacturer": "Home Assistant",
+    "model": "Home Assistant Backup",
+    "area_id": null,
+    "integrations": [
+      "backup"
+    ]
+  },
+  {
+    "device_id": "302467d56935e72646a7bb0175a41d8f",
+    "name": "Basement TV",
+    "manufacturer": "TCL",
+    "model": "65R625",
+    "area_id": "basement",
+    "integrations": [
+      "roku"
+    ]
+  },
+  {
+    "device_id": "4911f075d1a94d702cef9bb1e0740abd",
+    "name": "Basement-Kitchen Door",
+    "manufacturer": "Ecolink",
+    "model": "4655BC0-R",
+    "area_id": "basement",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "7e5bc28cefae42176e747f6b0cd8823f",
+    "name": "Better Thermostat",
+    "manufacturer": "kartoffeltoby",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "556e9cb2e240e39fcdd625353971ef3b",
+    "name": "Better Thermostat UI",
+    "manufacturer": "KartoffelToby",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "b8ea40d324fb61b273f008e09cfa35b0",
+    "name": "Body",
+    "manufacturer": "Withings",
+    "model": "Body",
+    "area_id": null,
+    "integrations": [
+      "withings"
+    ]
+  },
+  {
+    "device_id": "cb2f82f7e05c0c803d1a769aa47ab3cb",
+    "name": "Bookcase Lamp",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCL001",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "9f4ebbb742445b128f4f08060d64ae98",
+    "name": "Claude AI Task",
+    "manufacturer": "Anthropic",
+    "model": "Claude Haiku 4.5",
+    "area_id": null,
+    "integrations": [
+      "anthropic"
+    ]
+  },
+  {
+    "device_id": "3d17631adfb4b3d4e279aa75ed5c0cd3",
+    "name": "Claude conversation",
+    "manufacturer": "Anthropic",
+    "model": "Claude Haiku 4.5",
+    "area_id": "office",
+    "integrations": [
+      "anthropic"
+    ]
+  },
+  {
+    "device_id": "055a6f8b3b42c8fb0413c5305fec4626",
+    "name": "Clock Weather Card",
+    "manufacturer": "pkissling",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "3e452e168782a954bdfe68df7bdbcbb5",
+    "name": "Corner Lamp",
+    "manufacturer": "Philips",
+    "model": "915005987501",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "42bfb736cf5e7d6fadc0a7beae30bd2c",
+    "name": "Desk Lamp",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCA009",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "a6a5ffeb8b561d98b1e53245835d391d",
+    "name": "Desk Lamp 2",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCA009",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "12c8ae2c56930eed864c0da47972132b",
+    "name": "Dining Room",
+    "manufacturer": "Sonos",
+    "model": "Move",
+    "area_id": "dining_room",
+    "integrations": [
+      "sonos"
+    ]
+  },
+  {
+    "device_id": "b864ce7e9feab3a8fadc0ecdfddf7f3c",
+    "name": "Door Lamp",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCA009",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "1a1ee7279d9103a7ae2cd26290c013aa",
+    "name": "Downstairs",
+    "manufacturer": "Google Nest",
+    "model": "Thermostat",
+    "area_id": "downstairs",
+    "integrations": [
+      "nest"
+    ]
+  },
+  {
+    "device_id": "2a8974ec4d25550b4fb41e361c4fee60",
+    "name": "ESPHome Device Builder",
+    "manufacturer": "ESPHome",
+    "model": "Home Assistant App",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "637d72767c80489de2451a1ce94f1c16",
+    "name": "Evolve",
+    "manufacturer": "Tuya",
+    "model": "Evolve (unsupported)",
+    "area_id": null,
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "77e03adb854061830edc666e3c3838f6",
+    "name": "Family room",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "81fbd9a5df7ea3ca13cbe194a1523f40",
+    "name": "Forecast",
+    "manufacturer": "Met.no",
+    "model": "Forecast",
+    "area_id": null,
+    "integrations": [
+      "met"
+    ]
+  },
+  {
+    "device_id": "501f79b27b82cbab70a7359d04c17a36",
+    "name": "Front Door",
+    "manufacturer": "Google Nest",
+    "model": "Doorbell",
+    "area_id": "front_door",
+    "integrations": [
+      "nest"
+    ]
+  },
+  {
+    "device_id": "51a0a03a29b9d533c8c84dcaadca0964",
+    "name": "Garage Door 1",
+    "manufacturer": "ratgdo",
+    "model": "v32board_secplus2",
+    "area_id": "garage",
+    "integrations": [
+      "esphome"
+    ]
+  },
+  {
+    "device_id": "acda552ed14727d055f9f552e1c5d305",
+    "name": "Garage Door 2",
+    "manufacturer": "ratgdo",
+    "model": "v32board_secplus2",
+    "area_id": "garage",
+    "integrations": [
+      "esphome"
+    ]
+  },
+  {
+    "device_id": "7b6e498370bd4c13b7beaa0027d342de",
+    "name": "Garden",
+    "manufacturer": "Rachio",
+    "model": "Smart Hose Timer",
+    "area_id": "outside",
+    "integrations": [
+      "rachio"
+    ]
+  },
+  {
+    "device_id": "65f099139174f0cdc2bd57357f1b8916",
+    "name": "Google AI Conversation",
+    "manufacturer": "Google",
+    "model": "gemini-2.5-flash",
+    "area_id": null,
+    "integrations": [
+      "google_generative_ai_conversation"
+    ]
+  },
+  {
+    "device_id": "7be4bf3ffcfc1a618bf6167dc3c6c830",
+    "name": "Google AI STT",
+    "manufacturer": "Google",
+    "model": "gemini-2.5-flash",
+    "area_id": null,
+    "integrations": [
+      "google_generative_ai_conversation"
+    ]
+  },
+  {
+    "device_id": "3be636e0e82f8160992d9399f7faf460",
+    "name": "Google AI TTS",
+    "manufacturer": "Google",
+    "model": "gemini-2.5-flash-preview-tts",
+    "area_id": null,
+    "integrations": [
+      "google_generative_ai_conversation"
+    ]
+  },
+  {
+    "device_id": "0112d3561bba9a2931bc4fe269b8d18b",
+    "name": "Google AI Task",
+    "manufacturer": "Google",
+    "model": "gemini-2.5-flash",
+    "area_id": null,
+    "integrations": [
+      "google_generative_ai_conversation"
+    ]
+  },
+  {
+    "device_id": "11d97f3ce9e942687218e7001b0dbca6",
+    "name": "Google Translate en com",
+    "manufacturer": "Google",
+    "model": "Google Translate TTS",
+    "area_id": null,
+    "integrations": [
+      "google_translate"
+    ]
+  },
+  {
+    "device_id": "f9a51eae4abd5087170b4a6577eb96d7",
+    "name": "HACS",
+    "manufacturer": "hacs.xyz",
+    "model": "",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "4a0854d7e9119b895c005a145a9252d7",
+    "name": "HP Color LaserJet MFP M477fdw",
+    "manufacturer": "Hewlett-Packard",
+    "model": "HP Color LaserJet MFP M477fdw",
+    "area_id": "office",
+    "integrations": [
+      "ipp"
+    ]
+  },
+  {
+    "device_id": "04d5a7a6c6053a2f943b2bb09bbb81d1",
+    "name": "HTML Jinja2 Template card",
+    "manufacturer": "PiotrMachowski",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "0a6647718a0292e693aab2afb449b75d",
+    "name": "Hannah's Room",
+    "manufacturer": "Ecolink",
+    "model": "4655BC0-R",
+    "area_id": "upstairs",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "f36e043ce521b8af4f4b1c5cd33eef60",
+    "name": "Hannah's door",
+    "manufacturer": "Ecolink",
+    "model": "DWZWAVE25",
+    "area_id": "bedroom",
+    "integrations": [
+      "zwave_js"
+    ]
+  },
+  {
+    "device_id": "f0867698e5c5780106a30fc140b34555",
+    "name": "HeatStorm Infrared heater",
+    "manufacturer": "Tuya",
+    "model": "HeatStorm Infrared heater",
+    "area_id": null,
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "ed1de90e29de782a98db5aef110ab096",
+    "name": "Holiday lights",
+    "manufacturer": "Tuya",
+    "model": "IC-BS06",
+    "area_id": null,
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "0c9cded159068797862d5c173a621511",
+    "name": "Holiday lights outlet ",
+    "manufacturer": "Tuya",
+    "model": "WiFi controller",
+    "area_id": null,
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "df2e18893c85f99d908ca2c63a39336f",
+    "name": "Home Assistant Connect ZBT-2",
+    "manufacturer": "Nabu Casa",
+    "model": "Home Assistant Connect ZBT-2",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "712d024b1cfa61cae452fe4dac554368",
+    "name": "Home Assistant Connect ZBT-2 (DCB4D90D5790)",
+    "manufacturer": "Nabu Casa",
+    "model": "Home Assistant Connect ZBT-2",
+    "area_id": null,
+    "integrations": [
+      "homeassistant_connect_zbt2"
+    ]
+  },
+  {
+    "device_id": "793ef23e9ab51d603863d13679a03311",
+    "name": "Home Assistant Connect ZWA-2",
+    "manufacturer": "Nabu Casa",
+    "model": "NC-ZWA-9734",
+    "area_id": "office",
+    "integrations": [
+      "zwave_js"
+    ]
+  },
+  {
+    "device_id": "d0b348f9d93f93c5f512d7fb81ff509c",
+    "name": "Home Assistant Core",
+    "manufacturer": "Home Assistant",
+    "model": "Home Assistant Core",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "ec1bea5ee8812e8ed849ec1c0767fbe8",
+    "name": "Home Assistant Host",
+    "manufacturer": "Home Assistant",
+    "model": "Home Assistant Host",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "30bd33222544e7af408969307d4a5e37",
+    "name": "Home Assistant Operating System",
+    "manufacturer": "Home Assistant",
+    "model": "Home Assistant Operating System",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "f691977c6345d07d8f64a0efc2c24c01",
+    "name": "Home Assistant Supervisor",
+    "manufacturer": "Home Assistant",
+    "model": "Home Assistant Supervisor",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "51c8fa3a3f8821645df2da203b3edbbd",
+    "name": "Hue Bridge",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "Hue Bridge",
+    "area_id": null,
+    "integrations": [
+      "hue"
+    ]
+  },
+  {
+    "device_id": "6786ff4f13ad099ed099d5eff246dad8",
+    "name": "Jacob's Door",
+    "manufacturer": "Ecolink",
+    "model": "DWZWAVE25",
+    "area_id": "bedroom",
+    "integrations": [
+      "zwave_js"
+    ]
+  },
+  {
+    "device_id": "fd24e357ce92c31bd980dd7705fbb599",
+    "name": "Jacob's Room",
+    "manufacturer": "Ecolink",
+    "model": "4655BC0-R",
+    "area_id": "upstairs",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "519017a3fa6a200b9dfa9ff625df984a",
+    "name": "Kiosk Mode",
+    "manufacturer": "NemesisRE",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "23f4f74f8da201e8faa28dc4ce4be577",
+    "name": "Kitchen",
+    "manufacturer": "Sonos",
+    "model": "Play:5",
+    "area_id": "kitchen",
+    "integrations": [
+      "sonos"
+    ]
+  },
+  {
+    "device_id": "48d49cbc456a5942edd0ec627baab874",
+    "name": "Main Panel",
+    "manufacturer": "Espressif",
+    "model": "nodemcuv2",
+    "area_id": null,
+    "integrations": [
+      "esphome"
+    ]
+  },
+  {
+    "device_id": "3c41daadbcb8c0f1eab851cd857d29f9",
+    "name": "Master Bedroom",
+    "manufacturer": "Sonos",
+    "model": "One",
+    "area_id": "master_bedroom",
+    "integrations": [
+      "sonos"
+    ]
+  },
+  {
+    "device_id": "57f9aaf4150340c21fef3b946f473547",
+    "name": "Matter Server",
+    "manufacturer": "Official apps",
+    "model": "Home Assistant App",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "03ebc1371a65dd35fbc10846dd9811ce",
+    "name": "Meeting Light",
+    "manufacturer": "Philips",
+    "model": "LCT026",
+    "area_id": "upstairs",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "4c9becab9b126829de2701907ceef542",
+    "name": "Mini 2 - 0N3C",
+    "manufacturer": "Blink",
+    "model": "mini",
+    "area_id": null,
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "8e9f948dcd751282457e6f148eb0a1a5",
+    "name": "Mini Media Player",
+    "manufacturer": "kalkih",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "7126a716c726fd2e401080befa872937",
+    "name": "Mushroom",
+    "manufacturer": "piitaya",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "08c2e551219f1e94b52abe8a6ac72c6a",
+    "name": "Noctis",
+    "manufacturer": "aFFekopp",
+    "model": "theme",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "d723e430ed6d2075e0600b409be85201",
+    "name": "Office",
+    "manufacturer": "Sonos",
+    "model": "Playbar",
+    "area_id": "office",
+    "integrations": [
+      "sonos"
+    ]
+  },
+  {
+    "device_id": "8bf1e839ce7964732ace6d4f811bef3c",
+    "name": "Office",
+    "manufacturer": "Sonos",
+    "model": "Arc",
+    "area_id": "basement",
+    "integrations": [
+      "sonos"
+    ]
+  },
+  {
+    "device_id": "395a1fe75120d1096fd9aa564c2d0f40",
+    "name": "Office",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "Room",
+    "area_id": "office",
+    "integrations": [
+      "hue"
+    ]
+  },
+  {
+    "device_id": "0ca521afbbfd4474f24f6203d59ab398",
+    "name": "Office Switch",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "RDM001",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "2e36e6eac114bf2f201c568d60ff792a",
+    "name": "Office TV",
+    "manufacturer": "TCL",
+    "model": "65R625",
+    "area_id": "office",
+    "integrations": [
+      "roku"
+    ]
+  },
+  {
+    "device_id": "4fcbe2cd2b09afd73653a869550219fd",
+    "name": "Outdoor 4 - 1DUA",
+    "manufacturer": "Blink",
+    "model": "",
+    "area_id": null,
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "1051242996c65d83b0f89a573268dafd",
+    "name": "Outdoor 4 - 1E01",
+    "manufacturer": "Blink",
+    "model": "",
+    "area_id": null,
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "f0294aecee0524d66718be17772ce51f",
+    "name": "Outdoor 4 - 28UW",
+    "manufacturer": "Blink",
+    "model": "",
+    "area_id": null,
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "c1600573944916f6434a6f24723130be",
+    "name": "Outdoor 4 - 28VD",
+    "manufacturer": "Blink",
+    "model": "",
+    "area_id": null,
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "b04540fa7a58dc5a90109540d5b269c8",
+    "name": "Outdoor 4 - 4FM0",
+    "manufacturer": "Blink",
+    "model": "",
+    "area_id": null,
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "2be7ef7db479c2d31b64c44e549f9fcc",
+    "name": "Outdoor 4 - 4KW4",
+    "manufacturer": "Blink",
+    "model": "",
+    "area_id": null,
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
+    "name": "Play Room TV",
+    "manufacturer": "TCL",
+    "model": "32S327",
+    "area_id": "play_room",
+    "integrations": [
+      "roku"
+    ]
+  },
+  {
+    "device_id": "c13d103ea0a1177f174dba7bd38fbeaa",
+    "name": "Play Room outlet",
+    "manufacturer": "TP-Link",
+    "model": "HS200",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "50c1e6118dc36a57539f8fa843d1cf14",
+    "name": "Playroom 1",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCT011",
+    "area_id": "play_room",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "796088198fdc8b93c2810ada02809484",
+    "name": "Playroom 2",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCT011",
+    "area_id": "play_room",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "8a93d92e1ef5b0f7e39d20a7d9cfa603",
+    "name": "Playroom 3",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCT011",
+    "area_id": null,
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "2cf841bd422c4e20593540bf7eeb2f1b",
+    "name": "Playroom 4",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCT011",
+    "area_id": null,
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "5ac39823cd31ab7be6aa94736be4a93c",
+    "name": "Rachio",
+    "manufacturer": "Rachio",
+    "model": "GENERATION3_8ZONE",
+    "area_id": "basement",
+    "integrations": [
+      "rachio"
+    ]
+  },
+  {
+    "device_id": "815507c33505261bf37180004f6468a7",
+    "name": "Roam 2",
+    "manufacturer": "Sonos",
+    "model": "Roam 2",
+    "area_id": "office",
+    "integrations": [
+      "sonos"
+    ]
+  },
+  {
+    "device_id": "d2014c733948cebda0f6a68d761b29ca",
+    "name": "SM-S926U1",
+    "manufacturer": "samsung",
+    "model": "SM-S926U1",
+    "area_id": null,
+    "integrations": [
+      "mobile_app"
+    ]
+  },
+  {
+    "device_id": "63ce9fae8c8d3b1b49fe5c4b4c00db2c",
+    "name": "Samba share",
+    "manufacturer": "Official apps",
+    "model": "Home Assistant App",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "aeecb0348f80b9b5b9e789ad5c220d2a",
+    "name": "Secondary Panel",
+    "manufacturer": "Espressif",
+    "model": "nodemcuv2",
+    "area_id": "office",
+    "integrations": [
+      "esphome"
+    ]
+  },
+  {
+    "device_id": "7f4822cd40071b7ee1042626c6ab00f0",
+    "name": "Signify Netherlands B.V. LCA003",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCA003",
+    "area_id": null,
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "f68584302c389454da21ee384a4edcbb",
+    "name": "Smart IR with T&H Sensor",
+    "manufacturer": "Tuya",
+    "model": "Smart IR with T&H Sensor",
+    "area_id": "basement",
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "8b9bc18bc893c9d0e1a7fb905a8ecec1",
+    "name": "Solar production forecast",
+    "manufacturer": "Forecast.Solar",
+    "model": "public",
+    "area_id": "outside",
+    "integrations": [
+      "forecast_solar"
+    ]
+  },
+  {
+    "device_id": "8099bb7aaac63f524cfc316dbbffa6bc",
+    "name": "Spotify",
+    "manufacturer": "Spotify AB",
+    "model": "Spotify premium",
+    "area_id": "downstairs",
+    "integrations": [
+      "spotify"
+    ]
+  },
+  {
+    "device_id": "e0475bea85c93946aef4aa4d0a1a4e61",
+    "name": "Storage (PItziLabs)",
+    "manufacturer": null,
+    "model": "Storage",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "025e04bd2b95f6c314f6677c3b3d7a2f",
+    "name": "Storage (PitziLabs)",
+    "manufacturer": null,
+    "model": "Storage",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "43ee50178ac23062ca65cbee867e8fcc",
+    "name": "Storage (local)",
+    "manufacturer": null,
+    "model": "Storage",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "d5bc905049022637782f5b68a34d4f61",
+    "name": "Storage (local-lvm)",
+    "manufacturer": null,
+    "model": "Storage",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "6aeeeb2493b27f593d5d57251e5ffed9",
+    "name": "Storage (nas)",
+    "manufacturer": null,
+    "model": "Storage",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "a9dd84abced3129cab0a3a5b64354c88",
+    "name": "Storage (neptune)",
+    "manufacturer": null,
+    "model": "Storage",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "8d35b22f1fc820f9c109c1a03a1db13e",
+    "name": "Storage (vmdata)",
+    "manufacturer": null,
+    "model": "Storage",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "f8a2cc27737db0221c3c7f56d78da5cd",
+    "name": "Sun",
+    "manufacturer": null,
+    "model": null,
+    "area_id": null,
+    "integrations": [
+      "sun"
+    ]
+  },
+  {
+    "device_id": "572144c6b5b3e480f73704f239f7355f",
+    "name": "Table Lamp",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "LCA009",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "c55bc7f41a255958ae37e152328b47a1",
+    "name": "Terminal & SSH",
+    "manufacturer": "Official apps",
+    "model": "Home Assistant App",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "name": "UGREEN NAS",
+    "manufacturer": "UGREEN",
+    "model": "UGREEN DXP2800",
+    "area_id": null,
+    "integrations": [
+      "ugreen"
+    ]
+  },
+  {
+    "device_id": "007de11242de6081a3876f417ee566e0",
+    "name": "UGREEN NAS (Pool 1 | Disk 1)",
+    "manufacturer": "Western Digital",
+    "model": "Western Digital WDC WD40EFZZ-68CPAN0",
+    "area_id": null,
+    "integrations": [
+      "ugreen"
+    ]
+  },
+  {
+    "device_id": "86c2711ed25521bb7005750c9f2955a5",
+    "name": "UGREEN NAS (Pool 1 | Disk 2)",
+    "manufacturer": "Seagate",
+    "model": "Seagate ST4000VN006-3CW104",
+    "area_id": null,
+    "integrations": [
+      "ugreen"
+    ]
+  },
+  {
+    "device_id": "29ee23ce4526698869d3f178f7532993",
+    "name": "UGREEN NAS (Pool 1 | Volume 1)",
+    "manufacturer": "UGREEN",
+    "model": "UGREEN btrfs volume",
+    "area_id": null,
+    "integrations": [
+      "ugreen"
+    ]
+  },
+  {
+    "device_id": "785097251a71b2137e56b4195f993e74",
+    "name": "UGREEN NAS (Pool 1)",
+    "manufacturer": "UGREEN",
+    "model": "UGREEN RAID1 pool",
+    "area_id": null,
+    "integrations": [
+      "ugreen"
+    ]
+  },
+  {
+    "device_id": "792675a285dd3da24e44c67268e933ee",
+    "name": "UGreen NAS Integration",
+    "manufacturer": "Tom-Bom-badil, dobby5",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "9a9b77008bdf8a082fcfe35e0f206da5",
+    "name": "Upstairs Thermostat",
+    "manufacturer": "Google Nest",
+    "model": "Thermostat",
+    "area_id": "upstairs",
+    "integrations": [
+      "nest"
+    ]
+  },
+  {
+    "device_id": "915775ccecd22835605a71e047e57aea",
+    "name": "VM 102",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "c159bb5e739ec1604ba3631bc5315b06",
+    "name": "VM 105",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
+    "name": "Withings",
+    "manufacturer": "Withings",
+    "model": null,
+    "area_id": null,
+    "integrations": [
+      "withings"
+    ]
+  },
+  {
+    "device_id": "6220f12b090c4659cf61c746c0486a54",
+    "name": "Z-Wave JS",
+    "manufacturer": "Official apps",
+    "model": "Home Assistant App",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "ca434a02db9505fe9478fe8a028a4922",
+    "name": "apexcharts-card",
+    "manufacturer": "RomRider",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "c0263c2200a5e656f9af7f0713d58566",
+    "name": "back porch",
+    "manufacturer": "TP-Link",
+    "model": "HS200",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "3836830b832d9ee4e32fd60466f71821",
+    "name": "blink my home",
+    "manufacturer": "Blink",
+    "model": null,
+    "area_id": "outside",
+    "integrations": [
+      "blink"
+    ]
+  },
+  {
+    "device_id": "666ed2817145ee99844918d938e5bcc3",
+    "name": "button 1",
+    "manufacturer": "eWeLink",
+    "model": "SNZB-01P",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "4d0a2da9e3905a44ae800c5b422fce2f",
+    "name": "button 2",
+    "manufacturer": "eWeLink",
+    "model": "SNZB-01P",
+    "area_id": "office",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
+    "device_id": "fa2ec64825c5d77a12a5f4896a3a3c26",
+    "name": "button-card",
+    "manufacturer": "custom-cards",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "df4932ca398079fc9324dde2cf715ab6",
+    "name": "card-mod",
+    "manufacturer": "thomasloven",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "c853c4e98d5f7aa5ab06776a212be60c",
+    "name": "downstairs hallway",
+    "manufacturer": "TP-Link",
+    "model": "KS230",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "e95d3dd94e259be0860ec38e5822f07d",
+    "name": "family room outlets",
+    "manufacturer": "TP-Link",
+    "model": "HS200",
+    "area_id": "family_room",
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "195dcc63a4724efaa883aef92dd0e00e",
+    "name": "fedora-ws",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "2c46188c5fe7f9fb0c6e9f2022182827",
+    "name": "front door",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "ba4024ac41685f0d4e3db15df4fab190",
+    "name": "front lantern",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "903e740de90e599a976581447b630acd",
+    "name": "garage front",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "63b7c2b48ffa7d2f00f65079006293c2",
+    "name": "garage side",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "0e5c05bb76bf5cebf684c2072267f88b",
+    "name": "grafana-stack",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "35733916f8eb90eceb77f8026e885337",
+    "name": "grafana-stack",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "2250be7ea783cb9c230f9feece7fbaac",
+    "name": "grafana-stack",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "bef28ca998f28dfd9c0eb716b4135707",
+    "name": "haos-17.1",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "dd1f8a3d6a62c689f67b9fd84ac23432",
+    "name": "kitchen island",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "12243c21f4af74925ce9a9dd92c8b632",
+    "name": "kitchen main",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "8cbd714807a1f0a8f38d97e57dfa1d36",
+    "name": "kitchen table",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "27f5129d872dbf4d905c7983fe44eaa8",
+    "name": "layout-card",
+    "manufacturer": "thomasloven",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "7e3a44d9602c6f285bb4d45a1903b76f",
+    "name": "meeting-button",
+    "manufacturer": "Espressif",
+    "model": "esp32dev",
+    "area_id": "upstairs",
+    "integrations": [
+      "esphome"
+    ]
+  },
+  {
+    "device_id": "0ce09a9250569223715a200bee90df6f",
+    "name": "pve",
+    "manufacturer": null,
+    "model": "Node",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "a56600989af7a6db18277c5f5378ff34",
+    "name": "pve2",
+    "manufacturer": null,
+    "model": "Node",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "2bacafc26157443002277ff37e7fb616",
+    "name": "pve3",
+    "manufacturer": null,
+    "model": "Node",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "ca088dbcd4abaedcf91a023673faa12c",
+    "name": "pve4",
+    "manufacturer": null,
+    "model": "Node",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "0876a527bc3f044619a3bf0ad025c7c5",
+    "name": "pve5",
+    "manufacturer": null,
+    "model": "Node",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "50ee6b3783e325cf286107c75c4ec699",
+    "name": "shed",
+    "manufacturer": "TP-Link",
+    "model": "HS220",
+    "area_id": null,
+    "integrations": [
+      "tplink"
+    ]
+  },
+  {
+    "device_id": "f0bc57d5d6aebd805905855da61d1d0c",
+    "name": "upstairs hallway",
+    "manufacturer": "Tuya",
+    "model": "SmartDimSwitch-3Way",
+    "area_id": null,
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "4561e1cbf0279c77774c6d0f47c5c789",
+    "name": "win-ws",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "77db955bc365c0abece1e1db7e87877c",
+    "name": "workstation 1",
+    "manufacturer": "Tuya",
+    "model": "IC-BS06",
+    "area_id": "office",
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "ec247d71315935bcde958b92f8714b68",
+    "name": "workstation 2",
+    "manufacturer": "Tuya",
+    "model": "IC-BS06",
+    "area_id": "office",
+    "integrations": [
+      "tuya"
+    ]
+  },
+  {
+    "device_id": "8f41a7e0b7047abef06358aef0172be9",
+    "name": "xubuntu-workstation",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "1ad49f57647f856e023cc1d62a483ef4",
+    "name": "xubuntu-ws-test",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  }
+]
