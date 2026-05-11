@@ -350,6 +350,31 @@ Auto-merge is a per-PR action, not a repo-wide default — without this command
 
 ---
 
+## HA Runtime State Context (`context/`)
+
+The `context/` directory is an auto-generated, read-only snapshot of HA runtime
+state — entity registry, area registry, device registry, and the UI-editable
+`automations.yaml`. It is populated by `scripts/ha-context-dump.sh` and refreshed
+every 6 hours (or on manual button press) via the autonomous context-sync pipeline.
+
+**Before writing any automation, script, dashboard, or other config that references
+entity IDs, area IDs, or device IDs, consult the relevant `context/` files:**
+
+- `context/entities.json` — valid `entity_id` values and their current `area_id` /
+  `device_id` assignments. Use this to avoid referencing entities that don't exist.
+- `context/areas.json` — valid `area_id` values. Use this when writing automations
+  that target areas.
+- `context/devices.json` — device-level metadata (manufacturer, model, integration).
+  Useful when an automation needs to scope to a particular hardware type.
+- `context/automations-ui.yaml` — UI-managed automations. Reference this to avoid
+  proposing automations that duplicate existing UI-authored ones.
+
+**Never modify files in `context/`.** They are overwritten on the next snapshot.
+If a stale entity_id appears there, the fix is to correct the source of truth
+in HA (rename the entity, reassign the area), not to edit the snapshot.
+
+---
+
 ## Infrastructure Context
 
 - **Proxmox VM:** Home Assistant OS (local network)

@@ -16,7 +16,16 @@ automation:
       - action: shell_command.ha_context_dump
       - action: persistent_notification.create
         data:
-          message: "Dump complete — check /config/context-staging/"
+          message: "Snapshot dumped; if changes were detected, a context-snapshot PR will open shortly."
           title: "HA Context Dump"
           notification_id: ha_context_dump_done
     mode: single
+
+  - id: ha_context_dump_periodic
+    alias: "Context Dump: Periodic snapshot"
+    mode: single
+    triggers:
+      - trigger: time_pattern
+        hours: "/6"
+    actions:
+      - action: shell_command.ha_context_dump
