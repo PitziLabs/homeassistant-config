@@ -146,20 +146,3 @@
   - service: shell_command.gitops_sync
   mode: single
   max_exceeded: silent
-- id: '1778524341512'
-  alias: Office lights
-  description: ''
-  triggers:
-  - device_id: 0ca521afbbfd4474f24f6203d59ab398
-    domain: zha
-    type: remote_button_short_press
-    subtype: turn_on
-    trigger: device
-  conditions: []
-  actions:
-  - action: light.toggle
-    metadata: {}
-    target:
-      area_id: office
-    data: {}
-  mode: single

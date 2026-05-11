@@ -152,6 +152,30 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.office_hue_switch_bottom_all_office_lights_off",
+    "friendly_name": "Office Hue Switch: Rocker down → all office lights off",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.office_hue_switch_top_cycle_office_scenes",
+    "friendly_name": "Office Hue Switch: Rocker up → cycle office scenes",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.office_hue_switch_top_hold_bright_scene",
+    "friendly_name": "Office Hue Switch: Top hold → Bright scene",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.office_lights",
     "friendly_name": "Office lights",
     "area_id": null,
@@ -2208,6 +2232,14 @@
     "hidden": false
   },
   {
+    "entity_id": "button.hue_tap_dial_identify",
+    "friendly_name": "Identify",
+    "area_id": null,
+    "device_id": "2d6cd400df2e3424cb883cc78bce43d7",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
     "entity_id": "button.kid_room_1_identify",
     "friendly_name": "Identify",
     "area_id": null,
@@ -2909,6 +2941,14 @@
     "area_id": null,
     "device_id": "65f099139174f0cdc2bd57357f1b8916",
     "platform": "google_generative_ai_conversation",
+    "hidden": false
+  },
+  {
+    "entity_id": "counter.office_scene_index",
+    "friendly_name": "Office Scene Index",
+    "area_id": null,
+    "device_id": null,
+    "platform": "counter",
     "hidden": false
   },
   {
@@ -3805,6 +3845,38 @@
     "area_id": null,
     "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
     "platform": "roku",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.office_switch_set_mode_via_attr_hex",
+    "friendly_name": "Office Switch: try attribute write 0x0034 = 3 (no mfg code)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.office_switch_set_mode_via_attr_with_mfg",
+    "friendly_name": "Office Switch: try attribute write 0x0034 = 3 (mfg 0x100B)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.office_switch_set_mode_via_command_0",
+    "friendly_name": "Office Switch: try mfg command 0x00 with mode=3 (dual rocker)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.office_switch_set_mode_via_command_2",
+    "friendly_name": "Office Switch: try mfg command 0x02 with mode=3 (dual rocker)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
     "hidden": false
   },
   {
@@ -4877,6 +4949,14 @@
     "area_id": null,
     "device_id": "4a0854d7e9119b895c005a145a9252d7",
     "platform": "ipp",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.hue_tap_dial_battery",
+    "friendly_name": "Battery",
+    "area_id": null,
+    "device_id": "2d6cd400df2e3424cb883cc78bce43d7",
+    "platform": "zha",
     "hidden": false
   },
   {
@@ -8781,6 +8861,14 @@
     "area_id": null,
     "device_id": "04d5a7a6c6053a2f943b2bb09bbb81d1",
     "platform": "hacs",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.hue_tap_dial_firmware",
+    "friendly_name": "Firmware",
+    "area_id": null,
+    "device_id": "2d6cd400df2e3424cb883cc78bce43d7",
+    "platform": "zha",
     "hidden": false
   },
   {
