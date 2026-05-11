@@ -4,16 +4,26 @@
 #   device_id: 0ca521afbbfd4474f24f6203d59ab398
 #   area:      office
 #
-# Wiring: the module sits behind a maintained-contact rocker light switch, so
-# the only events it emits are `command: on` (rocker flipped up) and
-# `command: off` (rocker flipped down). There is no press/hold/release.
+# Wiring: the module sits behind a maintained-contact rocker light switch and
+# is configured in Hue "rocker" mode. Events fire on the Hue manufacturer-
+# specific cluster 0xFC00, not the standard on/off cluster:
+#
+#   Rocker flips UP   → `left_press`  (once)
+#                       `left_hold`   (repeated while held in the up position)
+#                       `left_long_release` (once, when rocker leaves up)
+#   Rocker flips DOWN → `right_press` (once)
+#                       `right_hold`  (repeated while held in the down position)
+#                       `right_long_release` (once, when rocker leaves down)
+#
+# We trigger only on `*_press` so each rocker flip causes exactly one action;
+# the repeated `*_hold` events are ignored.
 #
 # Behavior:
-#   - Rocker up   → if office lights are off, apply scene 1.
-#                   Otherwise advance the counter (wraps 5 → 1) and apply the
-#                   matching scene. Flipping the rocker down and back up is
-#                   how you cycle scenes.
-#   - Rocker down → all office lights off; reset counter.
+#   - Rocker up (left_press)   → if office lights are off, apply scene 1.
+#                                Otherwise advance the counter (wraps 5 → 1)
+#                                and apply the matching scene. Flipping down
+#                                then up again is how you cycle scenes.
+#   - Rocker down (right_press) → all office lights off; reset counter.
 #
 # Scenes:
 #   1 Bright   — all 6 lights, 100% / 4000K  (general illumination)
@@ -39,7 +49,7 @@ automation:
         event_type: zha_event
         event_data:
           device_id: 0ca521afbbfd4474f24f6203d59ab398
-          command: 'on'
+          command: left_press
     actions:
       # Decide which scene index to land on before applying it.
       - choose:
@@ -178,7 +188,7 @@ automation:
         event_type: zha_event
         event_data:
           device_id: 0ca521afbbfd4474f24f6203d59ab398
-          command: 'off'
+          command: right_press
     actions:
       - action: light.turn_off
         target:
