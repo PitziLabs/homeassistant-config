@@ -1,0 +1,221 @@
+# Office Hue Wall Switch (RDM001) — scene cycler
+#
+# Device: "Office Switch" (Signify RDM001) via ZHA
+#   device_id: 0ca521afbbfd4474f24f6203d59ab398
+#   area:      office
+#
+# Behavior:
+#   - Top rocker press  → if office lights are off, apply scene 1.
+#                         Otherwise advance the counter (wraps 5 → 1) and
+#                         apply the matching scene.
+#   - Top rocker hold   → jump straight to scene 1 (Bright) at full output.
+#   - Bottom rocker     → all office lights off; reset counter.
+#
+# Scenes:
+#   1 Bright   — all 6 lights, 100% / 4000K  (general illumination)
+#   2 Focus    — desk lamps 100% 5000K, table+bookcase 60% 3500K, corners off
+#   3 Relax    — all 6 lights, 50% / 2200K  (warm)
+#   4 Movie    — bookcase + corner only, 20% / 2000K, rest off
+#   5 Color    — bookcase/corner/door/table in different hues, desks off
+
+counter:
+  office_scene_index:
+    name: Office Scene Index
+    minimum: 1
+    maximum: 5
+    initial: 1
+    step: 1
+    restore: true
+
+automation:
+  - id: office_hue_switch_top_cycle
+    alias: 'Office Hue Switch: Top → cycle office scenes'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 0ca521afbbfd4474f24f6203d59ab398
+          command: 'on'
+    actions:
+      # Decide which scene index to land on before applying it.
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.office_lights_on
+                state: 'off'
+            sequence:
+              - action: counter.configure
+                target:
+                  entity_id: counter.office_scene_index
+                data:
+                  value: 1
+        default:
+          - if:
+              - condition: state
+                entity_id: counter.office_scene_index
+                state: '5'
+            then:
+              - action: counter.configure
+                target:
+                  entity_id: counter.office_scene_index
+                data:
+                  value: 1
+            else:
+              - action: counter.increment
+                target:
+                  entity_id: counter.office_scene_index
+      - choose:
+          - conditions: "{{ states('counter.office_scene_index') == '1' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                    - light.door_lamp
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+                    - light.table_lamp
+                data:
+                  brightness_pct: 100
+                  kelvin: 4000
+          - conditions: "{{ states('counter.office_scene_index') == '2' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+                data:
+                  brightness_pct: 100
+                  kelvin: 5000
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.table_lamp
+                    - light.bookcase_lamp
+                data:
+                  brightness_pct: 60
+                  kelvin: 3500
+              - action: light.turn_off
+                target:
+                  entity_id:
+                    - light.corner_lamp
+                    - light.door_lamp
+          - conditions: "{{ states('counter.office_scene_index') == '3' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                    - light.door_lamp
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+                    - light.table_lamp
+                data:
+                  brightness_pct: 50
+                  kelvin: 2200
+          - conditions: "{{ states('counter.office_scene_index') == '4' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                data:
+                  brightness_pct: 20
+                  kelvin: 2000
+              - action: light.turn_off
+                target:
+                  entity_id:
+                    - light.door_lamp
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+                    - light.table_lamp
+          - conditions: "{{ states('counter.office_scene_index') == '5' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: light.bookcase_lamp
+                data:
+                  rgb_color: [255, 50, 200]
+                  brightness_pct: 80
+              - action: light.turn_on
+                target:
+                  entity_id: light.corner_lamp
+                data:
+                  rgb_color: [50, 100, 255]
+                  brightness_pct: 80
+              - action: light.turn_on
+                target:
+                  entity_id: light.door_lamp
+                data:
+                  rgb_color: [100, 255, 150]
+                  brightness_pct: 80
+              - action: light.turn_on
+                target:
+                  entity_id: light.table_lamp
+                data:
+                  rgb_color: [255, 150, 50]
+                  brightness_pct: 80
+              - action: light.turn_off
+                target:
+                  entity_id:
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+    mode: queued
+    max: 5
+
+  - id: office_hue_switch_top_hold_bright
+    alias: 'Office Hue Switch: Top hold → Bright scene'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 0ca521afbbfd4474f24f6203d59ab398
+          command: move_with_on_off
+    actions:
+      - action: counter.configure
+        target:
+          entity_id: counter.office_scene_index
+        data:
+          value: 1
+      - action: light.turn_on
+        target:
+          entity_id:
+            - light.bookcase_lamp
+            - light.corner_lamp
+            - light.door_lamp
+            - light.desk_lamp_2
+            - light.desk_lamp_2_2
+            - light.table_lamp
+        data:
+          brightness_pct: 100
+          kelvin: 4000
+    mode: single
+
+  - id: office_hue_switch_bottom_off
+    alias: 'Office Hue Switch: Bottom → all office lights off'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 0ca521afbbfd4474f24f6203d59ab398
+          command: 'off'
+    actions:
+      - action: light.turn_off
+        target:
+          entity_id:
+            - light.bookcase_lamp
+            - light.corner_lamp
+            - light.door_lamp
+            - light.desk_lamp_2
+            - light.desk_lamp_2_2
+            - light.table_lamp
+      - action: counter.configure
+        target:
+          entity_id: counter.office_scene_index
+        data:
+          value: 1
+    mode: single
