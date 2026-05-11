@@ -1,0 +1,148 @@
+- id: alarm_door_trigger
+  alias: 'Alarm: Door opened while armed'
+  description: 'Fires alarm_trigger when any door sensor goes ON while the alarm is
+    in armed_away or armed_home. The manual alarm platform handles the pending → triggered
+    state transition with the configured delay_time.
+
+    '
+  mode: single
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.main_panel_front_door
+    - binary_sensor.main_panel_garage_door
+    - binary_sensor.main_panel_basement_door
+    - binary_sensor.main_panel_sliding_door
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: alarm_control_panel.home_alarm
+    state:
+    - armed_away
+    - armed_home
+  action:
+  - action: alarm_control_panel.alarm_trigger
+    entity_id: alarm_control_panel.home_alarm
+- id: alarm_motion_trigger
+  alias: 'Alarm: Motion detected while armed away'
+  mode: single
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.main_panel_office_motion
+    - binary_sensor.main_panel_family_room_motion
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: alarm_control_panel.home_alarm
+    state: armed_away
+  action:
+  - action: alarm_control_panel.alarm_trigger
+    entity_id: alarm_control_panel.home_alarm
+- id: alarm_exit_delay_beep
+  alias: 'Alarm: Exit delay beeping'
+  mode: restart
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: arming
+  action:
+  - repeat:
+      while:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: arming
+      sequence:
+      - action: esphome.konnected_56a4fa_play_rtttl
+        data:
+          song_str: exit:d=32,o=4,b=100:e,p
+      - delay:
+          milliseconds: 1500
+- id: alarm_entry_delay_beep
+  alias: 'Alarm: Entry delay beeping'
+  mode: restart
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: pending
+  action:
+  - repeat:
+      while:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: pending
+      sequence:
+      - action: esphome.konnected_56a4fa_play_rtttl
+        data:
+          song_str: entry:d=32,o=4,b=100:e,p
+      - delay:
+          milliseconds: 700
+- id: alarm_triggered_siren
+  alias: 'Alarm: Triggered — activate siren'
+  mode: single
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: triggered
+  action:
+  - action: esphome.konnected_56a4fa_stop_rtttl
+  - action: switch.turn_on
+    entity_id: switch.alarm_panel_56ac70_siren
+- id: alarm_disarmed
+  alias: 'Alarm: Disarmed — all clear'
+  mode: single
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: disarmed
+  action:
+  - action: switch.turn_off
+    entity_id: switch.alarm_panel_56ac70_siren
+  - action: esphome.konnected_56a4fa_stop_rtttl
+  - delay:
+      milliseconds: 300
+  - action: esphome.konnected_56a4fa_play_rtttl
+    data:
+      song_str: disarm:d=32,o=4,b=100:e,p,e,p,e
+- id: alarm_armed_confirmation
+  alias: 'Alarm: Armed — confirmation tone'
+  mode: single
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to:
+    - armed_away
+    - armed_home
+  action:
+  - action: esphome.konnected_56a4fa_play_rtttl
+    data:
+      song_str: armed:d=32,o=4,b=100:e,p,e
+- id: door_chime
+  alias: Door chime when disarmed
+  mode: single
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.main_panel_front_door
+    - binary_sensor.main_panel_garage_door
+    - binary_sensor.main_panel_basement_door
+    - binary_sensor.main_panel_sliding_door
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: alarm_control_panel.home_alarm
+    state: disarmed
+  action:
+  - action: esphome.konnected_56a4fa_play_rtttl
+    data:
+      song_str: chime:d=32,o=4,b=100:e,p,e
+- id: gitops_sync_poll
+  alias: 'GitOps: Poll and deploy'
+  description: Fetch repo every 5 min; validate and restart HA on change
+  trigger:
+  - platform: time_pattern
+    minutes: /5
+  action:
+  - service: shell_command.gitops_sync
+  mode: single
+  max_exceeded: silent
