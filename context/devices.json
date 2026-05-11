@@ -450,6 +450,16 @@
     ]
   },
   {
+    "device_id": "2d6cd400df2e3424cb883cc78bce43d7",
+    "name": "Hue Tap Dial",
+    "manufacturer": "Signify Netherlands B.V.",
+    "model": "RDM002",
+    "area_id": "play_room",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
     "device_id": "6786ff4f13ad099ed099d5eff246dad8",
     "name": "Jacob's Door",
     "manufacturer": "Ecolink",
