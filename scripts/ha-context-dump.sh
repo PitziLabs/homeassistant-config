@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+readonly WORKTREE="/config/.context-mirror"
+readonly CONTEXT_DIR="${WORKTREE}/context"
+readonly REPO_OWNER="PitziLabs"
+readonly REPO_NAME="homeassistant-config"
+readonly SECRETS_FILE="/config/secrets.yaml"
 readonly LOG_FILE="/config/ha-context-dump.log"
 readonly LOG_MAX_BYTES=1048576
-readonly STAGING_DIR="/config/context-staging"
 readonly STORAGE="/config/.storage"
 
 log() {
@@ -30,7 +34,35 @@ main() {
   rotate_log
   log INFO "Starting HA context dump"
 
-  mkdir -p "$STAGING_DIR"
+  # One-time cleanup of Card A staging dir; remove after a few snapshots have run.
+  if [[ -d /config/context-staging ]]; then
+    rm -rf /config/context-staging
+    log INFO "Removed legacy /config/context-staging/ directory"
+  fi
+
+  # Validate prerequisites
+  if [[ ! -d "$WORKTREE" ]]; then
+    log ERROR "Worktree not found at $WORKTREE — run: git worktree add /config/.context-mirror -b context-mirror main"
+    exit 1
+  fi
+  if [[ ! -f "$SECRETS_FILE" ]]; then
+    log ERROR "Secrets file not found at $SECRETS_FILE"
+    exit 1
+  fi
+  for cmd in jq git curl; do
+    if ! command -v "$cmd" &>/dev/null; then
+      log ERROR "Required command not found: $cmd"
+      exit 1
+    fi
+  done
+
+  # Reset worktree to origin/main
+  log INFO "Resetting worktree to origin/main"
+  git -C "$WORKTREE" fetch origin main
+  git -C "$WORKTREE" checkout -B context-mirror origin/main
+
+  # Generate context files
+  mkdir -p "$CONTEXT_DIR"
 
   log INFO "Building entities.json"
   jq '
@@ -45,17 +77,15 @@ main() {
         hidden: (.hidden_by != null)
       })
     | sort_by(.entity_id)
-  ' "${STORAGE}/core.entity_registry" > "${STAGING_DIR}/entities.json"
+  ' "${STORAGE}/core.entity_registry" > "${CONTEXT_DIR}/entities.json"
 
-  # areas.json: area_id + name, sorted by name
   log INFO "Building areas.json"
   jq '
     .data.areas
     | map({area_id: .id, name: .name})
     | sort_by(.name)
-  ' "${STORAGE}/core.area_registry" > "${STAGING_DIR}/areas.json"
+  ' "${STORAGE}/core.area_registry" > "${CONTEXT_DIR}/areas.json"
 
-  # devices.json: device metadata with resolved integration domains
   log INFO "Building devices.json"
   jq -n \
     --slurpfile dev "${STORAGE}/core.device_registry" \
@@ -72,13 +102,57 @@ main() {
         integrations: (.config_entries | map($entry_domains[.]) | map(select(. != null)) | unique)
       })
     | sort_by(.name // "")
-    ' > "${STAGING_DIR}/devices.json"
+    ' > "${CONTEXT_DIR}/devices.json"
 
-  # automations-ui.yaml: byte-for-byte copy
   log INFO "Copying automations-ui.yaml"
-  cp /config/automations.yaml "${STAGING_DIR}/automations-ui.yaml"
+  cp /config/automations.yaml "${CONTEXT_DIR}/automations-ui.yaml"
 
-  log INFO "Dump complete — four files written to ${STAGING_DIR}/"
+  # Check for diff — most common case is no change
+  if [[ -z "$(git -C "$WORKTREE" status --porcelain context/)" ]]; then
+    log INFO "No changes since last snapshot; nothing to push"
+    exit 0
+  fi
+
+  # Extract PAT from secrets.yaml
+  GITHUB_PAT=$(awk '/^github_pat:/ {print $2}' "$SECRETS_FILE")
+  if [[ -z "$GITHUB_PAT" ]]; then
+    log ERROR "Could not read github_pat from $SECRETS_FILE"
+    exit 1
+  fi
+
+  # Configure commit identity (worktree-scoped, not global)
+  git -C "$WORKTREE" config user.name "ha-context-sync[bot]"
+  git -C "$WORKTREE" config user.email "ha-context-sync@users.noreply.github.com"
+
+  # Create branch, commit, push
+  stamp=$(date -u +%Y%m%d-%H%M%S)
+  branch="context-sync/${stamp}"
+  git -C "$WORKTREE" checkout -b "$branch"
+  git -C "$WORKTREE" add context/
+  git -C "$WORKTREE" commit -m "context-snapshot: ${stamp}"
+  git -C "$WORKTREE" \
+    -c "http.https://github.com/.extraheader=Authorization: token ${GITHUB_PAT}" \
+    push -u origin "$branch"
+
+  log INFO "Pushed branch $branch"
+
+  # Fire repository_dispatch
+  payload=$(jq -n --arg branch "$branch" \
+    '{event_type: "ha-context-report", client_payload: {branch: $branch}}')
+  response_file=$(mktemp)
+  trap 'rm -f "$response_file"' EXIT
+  http_status=$(curl -s -o "$response_file" -w "%{http_code}" \
+    -X POST \
+    -H "Accept: application/vnd.github+json" \
+    -H "Authorization: token ${GITHUB_PAT}" \
+    "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches" \
+    -d "$payload")
+  if [[ "$http_status" != "204" ]]; then
+    log ERROR "Dispatch returned HTTP $http_status: $(head -c 200 "$response_file")"
+    exit 1
+  fi
+  log INFO "Dispatch fired for $branch (HTTP 204)"
+  log INFO "Snapshot pushed — context-snapshot PR will open shortly"
 }
 
 main
