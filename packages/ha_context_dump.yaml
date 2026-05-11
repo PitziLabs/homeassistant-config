@@ -1,0 +1,22 @@
+shell_command:
+  ha_context_dump: "/bin/bash /config/scripts/ha-context-dump.sh"
+
+input_button:
+  ha_context_dump_now:
+    name: "Dump HA Context for CC"
+    icon: mdi:database-export
+
+automation:
+  - id: ha_context_dump_trigger
+    alias: "HA Context Dump: Trigger on Button Press"
+    triggers:
+      - trigger: state
+        entity_id: input_button.ha_context_dump_now
+    actions:
+      - action: shell_command.ha_context_dump
+      - action: persistent_notification.create
+        data:
+          message: "Dump complete — check /config/context-staging/"
+          title: "HA Context Dump"
+          notification_id: ha_context_dump_done
+    mode: single

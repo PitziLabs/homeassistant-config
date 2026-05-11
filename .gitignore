@@ -41,3 +41,8 @@ esphome/archive/
 
 # GitOps sync artifacts
 .gitops-sync.lock
+
+# Card A: HA context dump local staging
+context-staging/
+ha-context-dump.log
+ha-context-dump.log.*
