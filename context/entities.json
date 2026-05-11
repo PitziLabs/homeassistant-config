@@ -152,6 +152,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.office_lights",
+    "friendly_name": "Office lights",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.sonoff_button_1_double_press_kitchen_family_room_off",
     "friendly_name": "Sonoff Button 1: Double press → Downstairs OFF",
     "area_id": null,
