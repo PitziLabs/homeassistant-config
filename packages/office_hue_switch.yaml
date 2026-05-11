@@ -4,12 +4,16 @@
 #   device_id: 0ca521afbbfd4474f24f6203d59ab398
 #   area:      office
 #
+# Wiring: the module sits behind a maintained-contact rocker light switch, so
+# the only events it emits are `command: on` (rocker flipped up) and
+# `command: off` (rocker flipped down). There is no press/hold/release.
+#
 # Behavior:
-#   - Top rocker press  → if office lights are off, apply scene 1.
-#                         Otherwise advance the counter (wraps 5 → 1) and
-#                         apply the matching scene.
-#   - Top rocker hold   → jump straight to scene 1 (Bright) at full output.
-#   - Bottom rocker     → all office lights off; reset counter.
+#   - Rocker up   → if office lights are off, apply scene 1.
+#                   Otherwise advance the counter (wraps 5 → 1) and apply the
+#                   matching scene. Flipping the rocker down and back up is
+#                   how you cycle scenes.
+#   - Rocker down → all office lights off; reset counter.
 #
 # Scenes:
 #   1 Bright   — all 6 lights, 100% / 4000K  (general illumination)
@@ -29,7 +33,7 @@ counter:
 
 automation:
   - id: office_hue_switch_top_cycle
-    alias: 'Office Hue Switch: Top → cycle office scenes'
+    alias: 'Office Hue Switch: Rocker up → cycle office scenes'
     triggers:
       - trigger: event
         event_type: zha_event
@@ -167,36 +171,8 @@ automation:
     mode: queued
     max: 5
 
-  - id: office_hue_switch_top_hold_bright
-    alias: 'Office Hue Switch: Top hold → Bright scene'
-    triggers:
-      - trigger: event
-        event_type: zha_event
-        event_data:
-          device_id: 0ca521afbbfd4474f24f6203d59ab398
-          command: move_with_on_off
-    actions:
-      - action: counter.configure
-        target:
-          entity_id: counter.office_scene_index
-        data:
-          value: 1
-      - action: light.turn_on
-        target:
-          entity_id:
-            - light.bookcase_lamp
-            - light.corner_lamp
-            - light.door_lamp
-            - light.desk_lamp_2
-            - light.desk_lamp_2_2
-            - light.table_lamp
-        data:
-          brightness_pct: 100
-          kelvin: 4000
-    mode: single
-
   - id: office_hue_switch_bottom_off
-    alias: 'Office Hue Switch: Bottom → all office lights off'
+    alias: 'Office Hue Switch: Rocker down → all office lights off'
     triggers:
       - trigger: event
         event_type: zha_event
