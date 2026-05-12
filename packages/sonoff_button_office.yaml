@@ -16,19 +16,23 @@
 # Hue rocker (packages/office_hue_switch.yaml) so the two remotes do not stomp
 # on each other's scene library.
 #
+# Every scene applies the same values to all six lamps simultaneously — no
+# per-lamp tiers. Candlelight computes one random RGB + brightness per tick
+# and applies it to all six in unison.
+#
 # Scene catalog:
 #   1 Bright    — all 6, 100% / 4000K  (general illumination)
 #   2 Relax     — all 6, 40%  / 2200K  (warm, low)
-#   3 Focus     — desks 100% 5000K, table+bookcase 70% 3500K, corners+door off
-#   4 Red       — bookcase/corner/door/table RGB 255,0,0 @ 100%, desks off
-#   5 Blue      — bookcase/corner/door/table RGB 0,0,255 @ 100%, desks off
-#   6 Candle    — bookcase/corner/door/table flicker warm RGB, desks off
+#   3 Focus     — all 6, 100% / 5000K  (bright, cool)
+#   4 Red       — all 6, RGB 255,0,0 @ 100%
+#   5 Blue      — all 6, RGB 0,0,255 @ 100%
+#   6 Candle    — all 6 flicker in unison with random warm RGB
 #
-# Candlelight loop runs in script.office_sonoff_candle_loop (mode: restart) and
-# exits when counter.office_sonoff_scene leaves '6'. Every non-candle scene path
-# calls script.turn_off on the candle loop before applying, so transitioning out
-# is clean. Transitioning into candle calls script.turn_on so the apply script
-# fires-and-forgets — it never waits on the infinite while-loop.
+# Candlelight runs in script.office_sonoff_candle_loop (mode: restart) and
+# exits when counter.office_sonoff_scene leaves '6'. Every non-candle scene
+# calls script.turn_off on the candle loop before applying, so transitioning
+# out is clean. Transitioning into candle calls script.turn_on so the apply
+# script fires-and-forgets — it never waits on the infinite while-loop.
 
 counter:
   office_sonoff_scene:
@@ -81,24 +85,15 @@ script:
               - action: light.turn_on
                 target:
                   entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                    - light.door_lamp
                     - light.desk_lamp_2
                     - light.desk_lamp_2_2
+                    - light.table_lamp
                 data:
                   brightness_pct: 100
                   color_temp_kelvin: 5000
-              - action: light.turn_on
-                target:
-                  entity_id:
-                    - light.table_lamp
-                    - light.bookcase_lamp
-                data:
-                  brightness_pct: 70
-                  color_temp_kelvin: 3500
-              - action: light.turn_off
-                target:
-                  entity_id:
-                    - light.corner_lamp
-                    - light.door_lamp
           - conditions: "{{ states('counter.office_sonoff_scene') == '4' }}"
             sequence:
               - action: light.turn_on
@@ -107,15 +102,12 @@ script:
                     - light.bookcase_lamp
                     - light.corner_lamp
                     - light.door_lamp
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
                     - light.table_lamp
                 data:
                   rgb_color: [255, 0, 0]
                   brightness_pct: 100
-              - action: light.turn_off
-                target:
-                  entity_id:
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
           - conditions: "{{ states('counter.office_sonoff_scene') == '5' }}"
             sequence:
               - action: light.turn_on
@@ -124,22 +116,14 @@ script:
                     - light.bookcase_lamp
                     - light.corner_lamp
                     - light.door_lamp
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
                     - light.table_lamp
                 data:
                   rgb_color: [0, 0, 255]
                   brightness_pct: 100
-              - action: light.turn_off
-                target:
-                  entity_id:
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
           - conditions: "{{ states('counter.office_sonoff_scene') == '6' }}"
             sequence:
-              - action: light.turn_off
-                target:
-                  entity_id:
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
               - action: script.turn_on
                 target:
                   entity_id: script.office_sonoff_candle_loop
@@ -154,45 +138,26 @@ script:
               entity_id: counter.office_sonoff_scene
               state: '6'
           sequence:
+            - variables:
+                flicker_r: "{{ range(200, 256) | random }}"
+                flicker_g: "{{ range(60, 130) | random }}"
+                flicker_b: "{{ range(0, 30) | random }}"
+                flicker_brightness: "{{ range(40, 101) | random }}"
             - action: light.turn_on
               target:
-                entity_id: light.bookcase_lamp
+                entity_id:
+                  - light.bookcase_lamp
+                  - light.corner_lamp
+                  - light.door_lamp
+                  - light.desk_lamp_2
+                  - light.desk_lamp_2_2
+                  - light.table_lamp
               data:
                 rgb_color:
-                  - "{{ range(200, 256) | random }}"
-                  - "{{ range(60, 130) | random }}"
-                  - "{{ range(0, 30) | random }}"
-                brightness_pct: "{{ range(40, 101) | random }}"
-                transition: 0.4
-            - action: light.turn_on
-              target:
-                entity_id: light.corner_lamp
-              data:
-                rgb_color:
-                  - "{{ range(200, 256) | random }}"
-                  - "{{ range(60, 130) | random }}"
-                  - "{{ range(0, 30) | random }}"
-                brightness_pct: "{{ range(40, 101) | random }}"
-                transition: 0.4
-            - action: light.turn_on
-              target:
-                entity_id: light.door_lamp
-              data:
-                rgb_color:
-                  - "{{ range(200, 256) | random }}"
-                  - "{{ range(60, 130) | random }}"
-                  - "{{ range(0, 30) | random }}"
-                brightness_pct: "{{ range(40, 101) | random }}"
-                transition: 0.4
-            - action: light.turn_on
-              target:
-                entity_id: light.table_lamp
-              data:
-                rgb_color:
-                  - "{{ range(200, 256) | random }}"
-                  - "{{ range(60, 130) | random }}"
-                  - "{{ range(0, 30) | random }}"
-                brightness_pct: "{{ range(40, 101) | random }}"
+                  - "{{ flicker_r }}"
+                  - "{{ flicker_g }}"
+                  - "{{ flicker_b }}"
+                brightness_pct: "{{ flicker_brightness }}"
                 transition: 0.4
             - delay:
                 milliseconds: "{{ range(300, 900) | random }}"
