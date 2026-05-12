@@ -1,0 +1,263 @@
+# Sonoff Button 2 (SNZB-01) → Office lights
+#
+# Device IEEE: 18:69:0a:ff:fe:13:a1:01
+#
+# SNZB-01 ZHA events (cluster 6):
+#   command: toggle  → single press
+#   command: 'on'    → double press
+#   command: 'off'   → long press (hold)
+#
+# Bindings:
+#   single press → apply the current scene (turn lights on without changing it)
+#   double press → all office lights off (counter persists across off/on)
+#   long press   → advance scene counter (wraps 6 → 1) and apply
+#
+# The counter is independent of `counter.office_scene_index` used by the in-wall
+# Hue rocker (packages/office_hue_switch.yaml) so the two remotes do not stomp
+# on each other's scene library.
+#
+# Scene catalog:
+#   1 Bright    — all 6, 100% / 4000K  (general illumination)
+#   2 Relax     — all 6, 40%  / 2200K  (warm, low)
+#   3 Focus     — desks 100% 5000K, table+bookcase 70% 3500K, corners+door off
+#   4 Red       — bookcase/corner/door/table RGB 255,0,0 @ 100%, desks off
+#   5 Blue      — bookcase/corner/door/table RGB 0,0,255 @ 100%, desks off
+#   6 Candle    — bookcase/corner/door/table flicker warm RGB, desks off
+#
+# Candlelight loop runs in script.office_sonoff_candle_loop (mode: restart) and
+# exits when counter.office_sonoff_scene leaves '6'. Every non-candle scene path
+# calls script.turn_off on the candle loop before applying, so transitioning out
+# is clean. Transitioning into candle calls script.turn_on so the apply script
+# fires-and-forgets — it never waits on the infinite while-loop.
+
+counter:
+  office_sonoff_scene:
+    name: Office Sonoff Scene
+    minimum: 1
+    maximum: 6
+    initial: 1
+    step: 1
+    restore: true
+
+script:
+  office_sonoff_apply_scene:
+    alias: 'Office Sonoff: Apply current scene'
+    mode: restart
+    sequence:
+      - action: script.turn_off
+        target:
+          entity_id: script.office_sonoff_candle_loop
+      - choose:
+          - conditions: "{{ states('counter.office_sonoff_scene') == '1' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                    - light.door_lamp
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+                    - light.table_lamp
+                data:
+                  brightness_pct: 100
+                  color_temp_kelvin: 4000
+          - conditions: "{{ states('counter.office_sonoff_scene') == '2' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                    - light.door_lamp
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+                    - light.table_lamp
+                data:
+                  brightness_pct: 40
+                  color_temp_kelvin: 2200
+          - conditions: "{{ states('counter.office_sonoff_scene') == '3' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+                data:
+                  brightness_pct: 100
+                  color_temp_kelvin: 5000
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.table_lamp
+                    - light.bookcase_lamp
+                data:
+                  brightness_pct: 70
+                  color_temp_kelvin: 3500
+              - action: light.turn_off
+                target:
+                  entity_id:
+                    - light.corner_lamp
+                    - light.door_lamp
+          - conditions: "{{ states('counter.office_sonoff_scene') == '4' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                    - light.door_lamp
+                    - light.table_lamp
+                data:
+                  rgb_color: [255, 0, 0]
+                  brightness_pct: 100
+              - action: light.turn_off
+                target:
+                  entity_id:
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+          - conditions: "{{ states('counter.office_sonoff_scene') == '5' }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.bookcase_lamp
+                    - light.corner_lamp
+                    - light.door_lamp
+                    - light.table_lamp
+                data:
+                  rgb_color: [0, 0, 255]
+                  brightness_pct: 100
+              - action: light.turn_off
+                target:
+                  entity_id:
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+          - conditions: "{{ states('counter.office_sonoff_scene') == '6' }}"
+            sequence:
+              - action: light.turn_off
+                target:
+                  entity_id:
+                    - light.desk_lamp_2
+                    - light.desk_lamp_2_2
+              - action: script.turn_on
+                target:
+                  entity_id: script.office_sonoff_candle_loop
+
+  office_sonoff_candle_loop:
+    alias: 'Office Sonoff: Candlelight flicker loop'
+    mode: restart
+    sequence:
+      - repeat:
+          while:
+            - condition: state
+              entity_id: counter.office_sonoff_scene
+              state: '6'
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.bookcase_lamp
+              data:
+                rgb_color:
+                  - "{{ range(200, 256) | random }}"
+                  - "{{ range(60, 130) | random }}"
+                  - "{{ range(0, 30) | random }}"
+                brightness_pct: "{{ range(40, 101) | random }}"
+                transition: 0.4
+            - action: light.turn_on
+              target:
+                entity_id: light.corner_lamp
+              data:
+                rgb_color:
+                  - "{{ range(200, 256) | random }}"
+                  - "{{ range(60, 130) | random }}"
+                  - "{{ range(0, 30) | random }}"
+                brightness_pct: "{{ range(40, 101) | random }}"
+                transition: 0.4
+            - action: light.turn_on
+              target:
+                entity_id: light.door_lamp
+              data:
+                rgb_color:
+                  - "{{ range(200, 256) | random }}"
+                  - "{{ range(60, 130) | random }}"
+                  - "{{ range(0, 30) | random }}"
+                brightness_pct: "{{ range(40, 101) | random }}"
+                transition: 0.4
+            - action: light.turn_on
+              target:
+                entity_id: light.table_lamp
+              data:
+                rgb_color:
+                  - "{{ range(200, 256) | random }}"
+                  - "{{ range(60, 130) | random }}"
+                  - "{{ range(0, 30) | random }}"
+                brightness_pct: "{{ range(40, 101) | random }}"
+                transition: 0.4
+            - delay:
+                milliseconds: "{{ range(300, 900) | random }}"
+
+automation:
+  - id: sonoff_button_2_office_on
+    alias: 'Sonoff Button 2: Single press → Office lights ON (current scene)'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_ieee: 18:69:0a:ff:fe:13:a1:01
+          command: toggle
+    conditions: []
+    actions:
+      - action: script.office_sonoff_apply_scene
+    mode: single
+
+  - id: sonoff_button_2_office_off
+    alias: 'Sonoff Button 2: Double press → Office lights OFF'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_ieee: 18:69:0a:ff:fe:13:a1:01
+          command: 'on'
+    conditions: []
+    actions:
+      - action: script.turn_off
+        target:
+          entity_id: script.office_sonoff_candle_loop
+      - action: light.turn_off
+        target:
+          entity_id:
+            - light.bookcase_lamp
+            - light.corner_lamp
+            - light.door_lamp
+            - light.desk_lamp_2
+            - light.desk_lamp_2_2
+            - light.table_lamp
+    mode: single
+
+  - id: sonoff_button_2_office_cycle
+    alias: 'Sonoff Button 2: Long press → cycle office scenes'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_ieee: 18:69:0a:ff:fe:13:a1:01
+          command: 'off'
+    conditions: []
+    actions:
+      - if:
+          - condition: state
+            entity_id: counter.office_sonoff_scene
+            state: '6'
+        then:
+          - action: counter.set_value
+            target:
+              entity_id: counter.office_sonoff_scene
+            data:
+              value: 1
+        else:
+          - action: counter.increment
+            target:
+              entity_id: counter.office_sonoff_scene
+      - action: script.office_sonoff_apply_scene
+    mode: single
