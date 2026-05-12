@@ -3848,6 +3848,14 @@
     "hidden": false
   },
   {
+    "entity_id": "script.office_switch_set_mode_single_rocker",
+    "friendly_name": "Office Switch: set device_mode = 0 (single rocker)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
     "entity_id": "script.office_switch_set_mode_via_attr_hex",
     "friendly_name": "Office Switch: try attribute write 0x0034 = 3 (no mfg code)",
     "area_id": null,
