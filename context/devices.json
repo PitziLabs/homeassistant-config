@@ -440,16 +440,6 @@
     ]
   },
   {
-    "device_id": "51c8fa3a3f8821645df2da203b3edbbd",
-    "name": "Hue Bridge",
-    "manufacturer": "Signify Netherlands B.V.",
-    "model": "Hue Bridge",
-    "area_id": null,
-    "integrations": [
-      "hue"
-    ]
-  },
-  {
     "device_id": "2d6cd400df2e3424cb883cc78bce43d7",
     "name": "Hue Tap Dial",
     "manufacturer": "Signify Netherlands B.V.",
@@ -597,16 +587,6 @@
     "area_id": "basement",
     "integrations": [
       "sonos"
-    ]
-  },
-  {
-    "device_id": "395a1fe75120d1096fd9aa564c2d0f40",
-    "name": "Office",
-    "manufacturer": "Signify Netherlands B.V.",
-    "model": "Room",
-    "area_id": "office",
-    "integrations": [
-      "hue"
     ]
   },
   {
