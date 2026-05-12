@@ -144,7 +144,7 @@ script:
       - parallel:
           - sequence:
               - delay:
-                  milliseconds: "{{ range(0, 700) | random }}"
+                  milliseconds: "{{ range(0, 300) | random }}"
               - repeat:
                   while:
                     - condition: state
@@ -156,16 +156,16 @@ script:
                         entity_id: light.bookcase_lamp
                       data:
                         rgb_color:
-                          - "{{ range(200, 256) | random }}"
-                          - "{{ range(60, 130) | random }}"
-                          - "{{ range(0, 30) | random }}"
-                        brightness_pct: "{{ range(40, 101) | random }}"
-                        transition: 0.4
+                          - "{{ range(230, 256) | random }}"
+                          - "{{ range(85, 111) | random }}"
+                          - "{{ range(5, 21) | random }}"
+                        brightness_pct: "{{ range(65, 96) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(300, 900) | random }}"
+                        milliseconds: "{{ range(120, 350) | random }}"
           - sequence:
               - delay:
-                  milliseconds: "{{ range(0, 700) | random }}"
+                  milliseconds: "{{ range(0, 300) | random }}"
               - repeat:
                   while:
                     - condition: state
@@ -177,16 +177,16 @@ script:
                         entity_id: light.corner_lamp
                       data:
                         rgb_color:
-                          - "{{ range(200, 256) | random }}"
-                          - "{{ range(60, 130) | random }}"
-                          - "{{ range(0, 30) | random }}"
-                        brightness_pct: "{{ range(40, 101) | random }}"
-                        transition: 0.4
+                          - "{{ range(230, 256) | random }}"
+                          - "{{ range(85, 111) | random }}"
+                          - "{{ range(5, 21) | random }}"
+                        brightness_pct: "{{ range(65, 96) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(300, 900) | random }}"
+                        milliseconds: "{{ range(120, 350) | random }}"
           - sequence:
               - delay:
-                  milliseconds: "{{ range(0, 700) | random }}"
+                  milliseconds: "{{ range(0, 300) | random }}"
               - repeat:
                   while:
                     - condition: state
@@ -198,16 +198,16 @@ script:
                         entity_id: light.door_lamp
                       data:
                         rgb_color:
-                          - "{{ range(200, 256) | random }}"
-                          - "{{ range(60, 130) | random }}"
-                          - "{{ range(0, 30) | random }}"
-                        brightness_pct: "{{ range(40, 101) | random }}"
-                        transition: 0.4
+                          - "{{ range(230, 256) | random }}"
+                          - "{{ range(85, 111) | random }}"
+                          - "{{ range(5, 21) | random }}"
+                        brightness_pct: "{{ range(65, 96) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(300, 900) | random }}"
+                        milliseconds: "{{ range(120, 350) | random }}"
           - sequence:
               - delay:
-                  milliseconds: "{{ range(0, 700) | random }}"
+                  milliseconds: "{{ range(0, 300) | random }}"
               - repeat:
                   while:
                     - condition: state
@@ -219,16 +219,16 @@ script:
                         entity_id: light.desk_lamp_2
                       data:
                         rgb_color:
-                          - "{{ range(200, 256) | random }}"
-                          - "{{ range(60, 130) | random }}"
-                          - "{{ range(0, 30) | random }}"
-                        brightness_pct: "{{ range(40, 101) | random }}"
-                        transition: 0.4
+                          - "{{ range(230, 256) | random }}"
+                          - "{{ range(85, 111) | random }}"
+                          - "{{ range(5, 21) | random }}"
+                        brightness_pct: "{{ range(65, 96) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(300, 900) | random }}"
+                        milliseconds: "{{ range(120, 350) | random }}"
           - sequence:
               - delay:
-                  milliseconds: "{{ range(0, 700) | random }}"
+                  milliseconds: "{{ range(0, 300) | random }}"
               - repeat:
                   while:
                     - condition: state
@@ -240,16 +240,16 @@ script:
                         entity_id: light.desk_lamp_2_2
                       data:
                         rgb_color:
-                          - "{{ range(200, 256) | random }}"
-                          - "{{ range(60, 130) | random }}"
-                          - "{{ range(0, 30) | random }}"
-                        brightness_pct: "{{ range(40, 101) | random }}"
-                        transition: 0.4
+                          - "{{ range(230, 256) | random }}"
+                          - "{{ range(85, 111) | random }}"
+                          - "{{ range(5, 21) | random }}"
+                        brightness_pct: "{{ range(65, 96) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(300, 900) | random }}"
+                        milliseconds: "{{ range(120, 350) | random }}"
           - sequence:
               - delay:
-                  milliseconds: "{{ range(0, 700) | random }}"
+                  milliseconds: "{{ range(0, 300) | random }}"
               - repeat:
                   while:
                     - condition: state
@@ -261,13 +261,13 @@ script:
                         entity_id: light.table_lamp
                       data:
                         rgb_color:
-                          - "{{ range(200, 256) | random }}"
-                          - "{{ range(60, 130) | random }}"
-                          - "{{ range(0, 30) | random }}"
-                        brightness_pct: "{{ range(40, 101) | random }}"
-                        transition: 0.4
+                          - "{{ range(230, 256) | random }}"
+                          - "{{ range(85, 111) | random }}"
+                          - "{{ range(5, 21) | random }}"
+                        brightness_pct: "{{ range(65, 96) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(300, 900) | random }}"
+                        milliseconds: "{{ range(120, 350) | random }}"
 
 automation:
   - id: sonoff_button_2_office_cycle
