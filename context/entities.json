@@ -209,7 +209,7 @@
   },
   {
     "entity_id": "automation.sonoff_button_2_double_press_office_lights_off",
-    "friendly_name": "Sonoff Button 2: Double press → Office lights OFF",
+    "friendly_name": "Sonoff Button 2: Double or long press → Office lights OFF",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -225,7 +225,7 @@
   },
   {
     "entity_id": "automation.sonoff_button_2_long_press_cycle_office_scenes",
-    "friendly_name": "Sonoff Button 2: Long press → cycle office scenes",
+    "friendly_name": "Sonoff Button 2: Single press → office on / cycle scenes",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
