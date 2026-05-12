@@ -333,10 +333,10 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card, 
 - **Alarm color semantics (kiosk hero):** green = disarmed, amber = arming/armed_home/armed_away, red = pending/triggered, with a pulse animation on triggered. State-driven via `button-card` `state` blocks.
 - **PR creation includes arming auto-merge.** When implementation is complete,
   open a pull request as the final step — do not stop at "pushed the branch."
-  PR title should match or clearly refine the issue title. PR body must include
-  `Closes #<number>` so merge closes the issue, plus a short summary of what
-  changed and why. Immediately after opening the PR, arm auto-merge with the
-  number returned from `gh pr create` (or `gh pr view --json number -q .number`):
+  PR body must open with an `## Origin` section (see PR Authoring Without Issues),
+  plus a short summary of what changed and why. Immediately after opening the PR,
+  arm auto-merge with the number returned from `gh pr create` (or
+  `gh pr view --json number -q .number`):
 
 ```bash
     gh pr merge PR_NUMBER --auto --squash --delete-branch
@@ -347,6 +347,56 @@ Auto-merge is a per-PR action, not a repo-wide default — without this command
   a non-`--auto` merge; let the required status checks (`YAML Lint`,
   `claude-review`) gate the merge and fire it when green. Skip auto-merge only
   if the PR is a draft — it won't arm on drafts and will error.
+
+---
+
+## PR Authoring Without Issues
+
+Changes to this repo are dispatched by talking to Claude Code directly. There
+is no issue step. The PR itself is the canonical record of intent.
+
+### PR description
+
+Every PR opens with an `## Origin` section as the first body content,
+immediately after the one-line summary. This section discloses how the change
+came about and serves as the durable record of what was asked for.
+
+- If the prompt was under ~500 characters, quote it verbatim in a blockquote.
+  The directness is the point — don't paraphrase, don't tidy it up.
+- If the prompt was longer or emerged from a back-and-forth conversation,
+  write a 2–4 sentence narrative summary capturing what was asked for, what
+  constraints were specified, and what trade-offs were flagged. Link the
+  conversation if a transcript is available; otherwise summarize only what
+  was actually communicated.
+- Do not speculate about context you weren't given. Summarize only what's in
+  the prompt or conversation you saw.
+
+### Commit message
+
+Every commit carries a `Prompt-Origin:` trailer mirroring the PR's Origin
+section. For short prompts, quote verbatim in a YAML block scalar. For long
+prompts, summarize.
+
+Example:
+
+```
+Reconfigure Sonoff button 2 for office lighting control
+
+Single-click toggles on, double-click off, hold cycles scenes.
+New scenes: full-red, full-blue, flickering-candle, white-bright, white-relax.
+
+Prompt-Origin: |
+  Reconfigure sonoff button 2 to control my office lights.
+  Single click on, double click off, hold for scene cycle.
+  Give me a full brightness red scene, a full brightness blue scene,
+  a flickering candlelight scene, and various levels of white
+  (bright, relax, etc.)
+Authored-By: Claude Code
+Co-Authored-By: Chris Pitzi <chris@...>
+```
+
+The PR description is the human-readable record; the commit trailer is the
+durable, `git log`-greppable one. Both should agree.
 
 ---
 
