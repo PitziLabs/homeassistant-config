@@ -208,8 +208,32 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.sonoff_button_2_double_press_office_lights_off",
+    "friendly_name": "Sonoff Button 2: Double press → Office lights OFF",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.sonoff_button_2_double_press_outdoor_lights_off",
     "friendly_name": "Sonoff Button 2: Double press → Outdoor lights OFF",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.sonoff_button_2_long_press_cycle_office_scenes",
+    "friendly_name": "Sonoff Button 2: Long press → cycle office scenes",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.sonoff_button_2_single_press_office_lights_on_current_scene",
+    "friendly_name": "Sonoff Button 2: Single press → Office lights ON (current scene)",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -2952,6 +2976,14 @@
     "hidden": false
   },
   {
+    "entity_id": "counter.office_sonoff_scene",
+    "friendly_name": "Office Sonoff Scene",
+    "area_id": null,
+    "device_id": null,
+    "platform": "counter",
+    "hidden": false
+  },
+  {
     "entity_id": "cover.garage_door_1_door",
     "friendly_name": "Door",
     "area_id": null,
@@ -3845,6 +3877,22 @@
     "area_id": null,
     "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
     "platform": "roku",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.office_sonoff_apply_scene",
+    "friendly_name": "Office Sonoff: Apply current scene",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.office_sonoff_candle_loop",
+    "friendly_name": "Office Sonoff: Candlelight flicker loop",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
     "hidden": false
   },
   {
