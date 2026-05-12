@@ -25,11 +25,10 @@
 # Every scene except Candle applies the same values to all six lamps
 # simultaneously — no per-lamp tiers. Candlelight runs six independent per-lamp
 # flicker loops in parallel: each lamp holds a fixed warm-amber hue
-# (rgb 255,100,15) and only the brightness flickers, with a per-tick random
-# brightness in 65-95%, a per-tick random delay of 120-350ms, and a random
-# 0-300ms startup phase so the lamps don't all brighten or dim on the same
-# beat. Transitions are instant (transition: 0) so each tick reads as a
-# hard step — true flicker rather than a smooth pulse.
+# (rgb 255,100,15) and only the brightness flickers in a tight 75-92% band,
+# with a 0.2s transition between ticks (smooth modulation, not snap), a
+# per-tick random delay of 180-400ms, and a random 0-300ms startup phase
+# so the lamps don't all brighten or dim on the same beat.
 #
 # Scene catalog:
 #   1 Bright    — all 6, 100% / 4000K  (general illumination)
@@ -158,10 +157,10 @@ script:
                         entity_id: light.bookcase_lamp
                       data:
                         rgb_color: [255, 100, 15]
-                        brightness_pct: "{{ range(65, 96) | random }}"
-                        transition: 0
+                        brightness_pct: "{{ range(75, 93) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(120, 350) | random }}"
+                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -176,10 +175,10 @@ script:
                         entity_id: light.corner_lamp
                       data:
                         rgb_color: [255, 100, 15]
-                        brightness_pct: "{{ range(65, 96) | random }}"
-                        transition: 0
+                        brightness_pct: "{{ range(75, 93) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(120, 350) | random }}"
+                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -194,10 +193,10 @@ script:
                         entity_id: light.door_lamp
                       data:
                         rgb_color: [255, 100, 15]
-                        brightness_pct: "{{ range(65, 96) | random }}"
-                        transition: 0
+                        brightness_pct: "{{ range(75, 93) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(120, 350) | random }}"
+                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -212,10 +211,10 @@ script:
                         entity_id: light.desk_lamp_2
                       data:
                         rgb_color: [255, 100, 15]
-                        brightness_pct: "{{ range(65, 96) | random }}"
-                        transition: 0
+                        brightness_pct: "{{ range(75, 93) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(120, 350) | random }}"
+                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -230,10 +229,10 @@ script:
                         entity_id: light.desk_lamp_2_2
                       data:
                         rgb_color: [255, 100, 15]
-                        brightness_pct: "{{ range(65, 96) | random }}"
-                        transition: 0
+                        brightness_pct: "{{ range(75, 93) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(120, 350) | random }}"
+                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -248,10 +247,10 @@ script:
                         entity_id: light.table_lamp
                       data:
                         rgb_color: [255, 100, 15]
-                        brightness_pct: "{{ range(65, 96) | random }}"
-                        transition: 0
+                        brightness_pct: "{{ range(75, 93) | random }}"
+                        transition: 0.2
                     - delay:
-                        milliseconds: "{{ range(120, 350) | random }}"
+                        milliseconds: "{{ range(180, 400) | random }}"
 
 automation:
   - id: sonoff_button_2_office_cycle
