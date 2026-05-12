@@ -92,7 +92,7 @@ automation:
                 entity_id: binary_sensor.office_lights_on
                 state: 'off'
             sequence:
-              - action: counter.configure
+              - action: counter.set_value
                 target:
                   entity_id: counter.office_scene_index
                 data:
@@ -103,7 +103,7 @@ automation:
                 entity_id: counter.office_scene_index
                 state: '5'
             then:
-              - action: counter.configure
+              - action: counter.set_value
                 target:
                   entity_id: counter.office_scene_index
                 data:
@@ -243,7 +243,7 @@ automation:
             - light.desk_lamp_2
             - light.desk_lamp_2_2
             - light.table_lamp
-      - action: counter.configure
+      - action: counter.set_value
         target:
           entity_id: counter.office_scene_index
         data:
