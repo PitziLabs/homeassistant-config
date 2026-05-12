@@ -5,17 +5,36 @@
 #   area:      office
 #
 # Wiring: the module sits behind a maintained-contact rocker light switch.
-# Observed events (live capture, 2026-05-11):
 #
-#   Rocker flips UP   → cluster 6 (on/off): `attribute_updated` then `command: on`
-#                       cluster 0xFC00: `left_hold` (repeats until rocker leaves)
-#   Rocker flips DOWN → cluster 6 (on/off): `attribute_updated` then `command: off`
-#                       cluster 0xFC00: `left_long_release` (once)
-#                       (then `right_*` would repeat in the same shape)
+# Observed events depend on the RDM001's internal `device_mode` attribute
+# (see packages/office_hue_switch_modeset.yaml). Two patterns seen on this
+# device today:
 #
-# We trigger on the cluster-6 `command: on` / `command: off` events — they fire
-# exactly once per rocker transition and are reliable across the device's
-# operating modes. The `*_hold` flood on the manufacturer cluster is ignored.
+#   Mode 0 (single rocker — desired):
+#     Rocker UP   → cluster 6: `attribute_updated` then `command: on`
+#                   cluster 0xFC00: `left_hold` (repeats until rocker leaves)
+#     Rocker DOWN → cluster 6: `attribute_updated` then `command: off`
+#                   cluster 0xFC00: `left_long_release` (once)
+#
+#   Mode 3 (dual push button — default after factory reset):
+#     Rocker UP   → cluster 6: `attribute_updated` then `command` alternates
+#                   between `on` / `off_with_effect` / `on_with_recall_global_scene`
+#                   on each press (firmware tracks an internal toggle).
+#                   cluster 0xFC00: `left_hold` (repeats).
+#     Rocker DOWN → cluster 0xFC00: `left_long_release` (once).
+#                   NOTE: no cluster-6 command fires on DOWN in this mode.
+#
+# Triggers below are belt-and-suspenders for both modes:
+#   - UP path: matches any of the cluster-6 commands the device might emit.
+#     In mode 0 only `on` fires; in mode 3 it alternates through the others.
+#     Since exactly one cluster-6 command fires per flip-up in either mode,
+#     adding the extras can't cause double-firing.
+#   - DOWN path: matches both cluster-6 `off` (mode 0) and cluster-64512
+#     `left_long_release` (mode 3). In mode 0 both fire on each down — the
+#     automation is `mode: single` so the second is discarded.
+#
+# `*_hold` events on the manufacturer cluster are intentionally not matched
+# (they repeat every ~750ms while the rocker sits in its up position).
 #
 # Behavior:
 #   - Rocker up (command: on)   → if office lights are off, apply scene 1.
@@ -44,12 +63,27 @@ automation:
   - id: office_hue_switch_top_cycle
     alias: 'Office Hue Switch: Rocker up → cycle office scenes'
     triggers:
+      # Mode 0 single-rocker, or first press in mode 3:
       - trigger: event
         event_type: zha_event
         event_data:
           device_id: 0ca521afbbfd4474f24f6203d59ab398
           cluster_id: 6
           command: 'on'
+      # Mode 3 dual-push-button — firmware alternates these commands on each
+      # press. Exactly one fires per flip-up, so no double-trigger risk.
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 0ca521afbbfd4474f24f6203d59ab398
+          cluster_id: 6
+          command: 'off_with_effect'
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 0ca521afbbfd4474f24f6203d59ab398
+          cluster_id: 6
+          command: 'on_with_recall_global_scene'
     actions:
       # Decide which scene index to land on before applying it.
       - choose:
@@ -184,12 +218,21 @@ automation:
   - id: office_hue_switch_bottom_off
     alias: 'Office Hue Switch: Rocker down → all office lights off'
     triggers:
+      # Mode 0 single-rocker: cluster 6 'off' fires on every flip-down.
       - trigger: event
         event_type: zha_event
         event_data:
           device_id: 0ca521afbbfd4474f24f6203d59ab398
           cluster_id: 6
           command: 'off'
+      # Mode 3 dual-push-button: only the Hue manufacturer cluster fires.
+      # `mode: single` (below) makes the redundant trigger a no-op in mode 0.
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 0ca521afbbfd4474f24f6203d59ab398
+          cluster_id: 64512
+          command: 'left_long_release'
     actions:
       - action: light.turn_off
         target:
