@@ -9,7 +9,7 @@
 #
 # Bindings (mirror the in-wall Hue rocker's behavior):
 #   single press → if lights are off, reset counter to 1 and apply scene 1;
-#                  otherwise advance the counter (wraps 11 → 1) and apply.
+#                  otherwise advance the counter (wraps 13 → 1) and apply.
 #                  i.e. first click turns on, subsequent clicks cycle scenes.
 #   double press → all office lights off (counter persists)
 #   long press   → all office lights off (counter persists)
@@ -22,39 +22,47 @@
 # Hue rocker (packages/office_hue_switch.yaml) so the two remotes do not stomp
 # on each other's scene library.
 #
-# Every non-candle scene applies static values to all six lamps simultaneously.
-# The candle scenes (6-11) all share one parallel flicker loop in
-# `script.office_sonoff_candle_loop`. Each lamp holds a fixed hue determined by
-# the current counter value (looked up via a palette dict on every tick), so
-# cycling between candle hues changes color seamlessly without restarting the
-# loop. Only brightness flickers, in a tight 75-92% band, with a 0.2s
-# transition between ticks, a per-tick random delay of 180-400ms, and a random
-# 0-300ms startup phase so the lamps don't all brighten or dim on the same beat.
+# Every non-flicker scene applies static values to all six lamps simultaneously.
+# The flicker scenes (6-13) all share one parallel driver loop in
+# `script.office_sonoff_candle_loop`. The loop just dispatches per-lamp ticks
+# every 180-400 ms to `script.office_lamp_tick`, which renders the current
+# scene's frame for that lamp. Brightness always flickers in a tight 75-92%
+# band with a 0.2 s transition; what differs per scene is how the color is
+# computed:
+#
+#   - Candle scenes (6-11): fixed hue per scene, looked up from a palette dict.
+#   - Rainbow Sync (12): hue derived from wall-clock time, same on all lamps.
+#   - Rainbow Cascade (13): hue derived from wall-clock time + a per-lamp
+#     60° cascade offset, so the rainbow ripples across the room.
+#
+# Each per-lamp branch also waits a random 0-300 ms startup phase so the
+# lamps don't all brighten or dim on the same beat.
 #
 # Scene catalog:
-#   1  Bright         — all 6, 100% / 4000K  (general illumination)
-#   2  Relax          — all 6, 40%  / 2200K  (warm, low)
-#   3  Focus          — all 6, 100% / 5000K  (bright, cool)
-#   4  Red            — all 6, RGB 255,0,0 @ 100%   (static)
-#   5  Blue           — all 6, RGB 0,0,255 @ 100%   (static)
-#   6  Amber Candle   — flicker rgb(255, 100, 15)
-#   7  Red Candle     — flicker rgb(255, 20,  5)
-#   8  Yellow Candle  — flicker rgb(255, 220, 30)
-#   9  Green Candle   — flicker rgb(40,  220, 60)
-#   10 Blue Candle    — flicker rgb(30,  80,  255)
-#   11 Purple Candle  — flicker rgb(180, 30,  255)
+#   1  Bright            — all 6, 100% / 4000K  (general illumination)
+#   2  Relax             — all 6, 40%  / 2200K  (warm, low)
+#   3  Focus             — all 6, 100% / 5000K  (bright, cool)
+#   4  Red               — all 6, RGB 255,0,0 @ 100%   (static)
+#   5  Blue              — all 6, RGB 0,0,255 @ 100%   (static)
+#   6  Amber Candle      — flicker rgb(255, 100, 15)
+#   7  Red Candle        — flicker rgb(255,  20,  5)
+#   8  Yellow Candle     — flicker rgb(255, 220, 30)
+#   9  Green Candle      — flicker rgb(40,  220, 60)
+#   10 Blue Candle       — flicker rgb(30,   80, 255)
+#   11 Purple Candle     — flicker rgb(180,  30, 255)
+#   12 Rainbow Sync      — flicker; hue cycles every 30 s, all lamps in unison
+#   13 Rainbow Cascade   — flicker; hue cycles every 30 s, each lamp offset 60°
 #
-# Candlelight runs in script.office_sonoff_candle_loop (mode: restart) and
-# exits when counter.office_sonoff_scene drops to 5 or below. Every non-candle
-# scene calls script.turn_off on the candle loop before applying. Transitioning
-# into any candle scene calls script.turn_on so the apply script fires-and-
-# forgets — it never waits on the infinite while-loop.
+# The flicker driver (mode: restart) exits when counter.office_sonoff_scene
+# drops to 5 or below. Every non-flicker scene calls script.turn_off on it
+# before applying. Transitioning into any flicker scene calls script.turn_on so
+# the apply script fires-and-forgets — it never waits on the infinite loop.
 
 counter:
   office_sonoff_scene:
     name: Office Sonoff Scene
     minimum: 1
-    maximum: 11
+    maximum: 13
     initial: 1
     step: 1
     restore: true
@@ -148,8 +156,75 @@ script:
                 target:
                   entity_id: script.office_sonoff_candle_loop
 
+  # Per-lamp tick: renders one frame of whatever flicker scene is active to one
+  # lamp. Pulled out as a sub-script so the candle loop's six parallel branches
+  # stay short and so adding a new flicker scene needs only a new branch in the
+  # choose: block below, not a new template in each branch.
+  office_lamp_tick:
+    alias: 'Office Sonoff: render one tick for one lamp'
+    mode: parallel
+    max: 12
+    fields:
+      target_entity:
+        description: 'Light entity to update (e.g. light.bookcase_lamp)'
+      cascade_offset:
+        description: 'Hue offset (degrees) for Rainbow Cascade — ignored by other scenes'
+        default: 0
+    variables:
+      scene: "{{ states('counter.office_sonoff_scene') | int(0) }}"
+      brightness: "{{ range(75, 93) | random }}"
+    sequence:
+      - choose:
+          # Scene 12 — Rainbow Sync: all lamps share the same hue, driven by
+          # wall-clock time. 12 deg/sec → full cycle every 30 s.
+          - conditions: "{{ scene == 12 }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: "{{ target_entity }}"
+                data:
+                  hs_color:
+                    - "{{ (now().timestamp() * 12) % 360 }}"
+                    - 100
+                  brightness_pct: "{{ brightness }}"
+                  transition: 0.2
+          # Scene 13 — Rainbow Cascade: each lamp offset by `cascade_offset` so
+          # the rainbow ripples across the room rather than moving in unison.
+          - conditions: "{{ scene == 13 }}"
+            sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: "{{ target_entity }}"
+                data:
+                  hs_color:
+                    - "{{ ((now().timestamp() * 12) + cascade_offset) % 360 }}"
+                    - 100
+                  brightness_pct: "{{ brightness }}"
+                  transition: 0.2
+        default:
+          # Scenes 6-11 — fixed-hue candles, color from palette dict.
+          - action: light.turn_on
+            target:
+              entity_id: "{{ target_entity }}"
+            data:
+              rgb_color: >-
+                {% set palette = {
+                  '6':  [255, 100, 15],
+                  '7':  [255, 20,  5],
+                  '8':  [255, 220, 30],
+                  '9':  [40,  220, 60],
+                  '10': [30,  80,  255],
+                  '11': [180, 30,  255]
+                } %}
+                {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
+              brightness_pct: "{{ brightness }}"
+              transition: 0.2
+
+  # Six parallel per-lamp loops. Each branch is just startup-phase delay,
+  # then a tight while-loop of (call tick, sleep random delay). All scene
+  # rendering logic lives in office_lamp_tick.
   office_sonoff_candle_loop:
-    alias: 'Office Sonoff: Candlelight flicker loop'
+    alias: 'Office Sonoff: Flicker loop driver'
     mode: restart
     sequence:
       - parallel:
@@ -162,22 +237,10 @@ script:
                       entity_id: counter.office_sonoff_scene
                       above: 5
                   sequence:
-                    - action: light.turn_on
-                      target:
-                        entity_id: light.bookcase_lamp
+                    - action: script.office_lamp_tick
                       data:
-                        rgb_color: >-
-                          {% set palette = {
-                            '6':  [255, 100, 15],
-                            '7':  [255, 20,  5],
-                            '8':  [255, 220, 30],
-                            '9':  [40,  220, 60],
-                            '10': [30,  80,  255],
-                            '11': [180, 30,  255]
-                          } %}
-                          {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
-                        brightness_pct: "{{ range(75, 93) | random }}"
-                        transition: 0.2
+                        target_entity: light.bookcase_lamp
+                        cascade_offset: 0
                     - delay:
                         milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
@@ -189,22 +252,10 @@ script:
                       entity_id: counter.office_sonoff_scene
                       above: 5
                   sequence:
-                    - action: light.turn_on
-                      target:
-                        entity_id: light.corner_lamp
+                    - action: script.office_lamp_tick
                       data:
-                        rgb_color: >-
-                          {% set palette = {
-                            '6':  [255, 100, 15],
-                            '7':  [255, 20,  5],
-                            '8':  [255, 220, 30],
-                            '9':  [40,  220, 60],
-                            '10': [30,  80,  255],
-                            '11': [180, 30,  255]
-                          } %}
-                          {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
-                        brightness_pct: "{{ range(75, 93) | random }}"
-                        transition: 0.2
+                        target_entity: light.corner_lamp
+                        cascade_offset: 60
                     - delay:
                         milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
@@ -216,22 +267,10 @@ script:
                       entity_id: counter.office_sonoff_scene
                       above: 5
                   sequence:
-                    - action: light.turn_on
-                      target:
-                        entity_id: light.door_lamp
+                    - action: script.office_lamp_tick
                       data:
-                        rgb_color: >-
-                          {% set palette = {
-                            '6':  [255, 100, 15],
-                            '7':  [255, 20,  5],
-                            '8':  [255, 220, 30],
-                            '9':  [40,  220, 60],
-                            '10': [30,  80,  255],
-                            '11': [180, 30,  255]
-                          } %}
-                          {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
-                        brightness_pct: "{{ range(75, 93) | random }}"
-                        transition: 0.2
+                        target_entity: light.door_lamp
+                        cascade_offset: 120
                     - delay:
                         milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
@@ -243,22 +282,10 @@ script:
                       entity_id: counter.office_sonoff_scene
                       above: 5
                   sequence:
-                    - action: light.turn_on
-                      target:
-                        entity_id: light.desk_lamp_2
+                    - action: script.office_lamp_tick
                       data:
-                        rgb_color: >-
-                          {% set palette = {
-                            '6':  [255, 100, 15],
-                            '7':  [255, 20,  5],
-                            '8':  [255, 220, 30],
-                            '9':  [40,  220, 60],
-                            '10': [30,  80,  255],
-                            '11': [180, 30,  255]
-                          } %}
-                          {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
-                        brightness_pct: "{{ range(75, 93) | random }}"
-                        transition: 0.2
+                        target_entity: light.desk_lamp_2
+                        cascade_offset: 180
                     - delay:
                         milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
@@ -270,22 +297,10 @@ script:
                       entity_id: counter.office_sonoff_scene
                       above: 5
                   sequence:
-                    - action: light.turn_on
-                      target:
-                        entity_id: light.desk_lamp_2_2
+                    - action: script.office_lamp_tick
                       data:
-                        rgb_color: >-
-                          {% set palette = {
-                            '6':  [255, 100, 15],
-                            '7':  [255, 20,  5],
-                            '8':  [255, 220, 30],
-                            '9':  [40,  220, 60],
-                            '10': [30,  80,  255],
-                            '11': [180, 30,  255]
-                          } %}
-                          {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
-                        brightness_pct: "{{ range(75, 93) | random }}"
-                        transition: 0.2
+                        target_entity: light.desk_lamp_2_2
+                        cascade_offset: 240
                     - delay:
                         milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
@@ -297,22 +312,10 @@ script:
                       entity_id: counter.office_sonoff_scene
                       above: 5
                   sequence:
-                    - action: light.turn_on
-                      target:
-                        entity_id: light.table_lamp
+                    - action: script.office_lamp_tick
                       data:
-                        rgb_color: >-
-                          {% set palette = {
-                            '6':  [255, 100, 15],
-                            '7':  [255, 20,  5],
-                            '8':  [255, 220, 30],
-                            '9':  [40,  220, 60],
-                            '10': [30,  80,  255],
-                            '11': [180, 30,  255]
-                          } %}
-                          {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
-                        brightness_pct: "{{ range(75, 93) | random }}"
-                        transition: 0.2
+                        target_entity: light.table_lamp
+                        cascade_offset: 300
                     - delay:
                         milliseconds: "{{ range(180, 400) | random }}"
 
@@ -342,7 +345,7 @@ automation:
           - if:
               - condition: state
                 entity_id: counter.office_sonoff_scene
-                state: '11'
+                state: '13'
             then:
               - action: counter.set_value
                 target:
