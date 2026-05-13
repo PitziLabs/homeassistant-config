@@ -1,5 +1,15 @@
 [
   {
+    "device_id": "57333f5f1ad6daa922872b1dd0ec6cc3",
+    "name": "Advanced SSH & Web Terminal",
+    "manufacturer": "Home Assistant Community Apps",
+    "model": "Home Assistant App",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
     "device_id": "1bd5818602f5c504d5bdadb697437577",
     "name": "Backup",
     "manufacturer": "Home Assistant",
@@ -927,16 +937,6 @@
     "area_id": "office",
     "integrations": [
       "zha"
-    ]
-  },
-  {
-    "device_id": "c55bc7f41a255958ae37e152328b47a1",
-    "name": "Terminal & SSH",
-    "manufacturer": "Official apps",
-    "model": "Home Assistant App",
-    "area_id": null,
-    "integrations": [
-      "hassio"
     ]
   },
   {

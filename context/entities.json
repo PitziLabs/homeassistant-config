@@ -8824,6 +8824,14 @@
     "hidden": false
   },
   {
+    "entity_id": "update.advanced_ssh_web_terminal_update",
+    "friendly_name": "Update",
+    "area_id": null,
+    "device_id": "57333f5f1ad6daa922872b1dd0ec6cc3",
+    "platform": "hassio",
+    "hidden": false
+  },
+  {
     "entity_id": "update.apexcharts_card_update",
     "friendly_name": "apexcharts-card update",
     "area_id": null,
@@ -9149,14 +9157,6 @@
     "area_id": null,
     "device_id": "572144c6b5b3e480f73704f239f7355f",
     "platform": "zha",
-    "hidden": false
-  },
-  {
-    "entity_id": "update.terminal_ssh_update",
-    "friendly_name": "Update",
-    "area_id": null,
-    "device_id": "c55bc7f41a255958ae37e152328b47a1",
-    "platform": "hassio",
     "hidden": false
   },
   {
