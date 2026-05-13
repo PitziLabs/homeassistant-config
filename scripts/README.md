@@ -33,3 +33,25 @@ GitOps auto-deploy script. Called every 5 minutes by the `gitops_sync_poll` auto
 ### Why this approach
 
 Polling from inside HA (rather than pushing from a GitHub Actions webhook) avoids exposing the HA instance to inbound internet traffic and sidesteps NAT traversal entirely. The tradeoff is a maximum 5-minute latency on deploys — acceptable for a home automation context. The Supervisor API validation step (`/core/check`) runs the same config validator as a normal HA startup, so a bad merge is caught before the service is disrupted.
+
+## `import-home-to-storage.sh`
+
+One-shot helper that copies the git-managed `dashboards/home.yaml` into a
+storage-mode (UI-managed) Lovelace dashboard at `url_path: home-ui`. After it
+runs, the next `ha-context-dump.sh` snapshot picks the dashboard up in
+`context/dashboards-storage.json`, which makes it visible to assistants
+working against `context/`.
+
+Must run inside the HA Core container (so `SUPERVISOR_TOKEN`, `aiohttp`, and
+`PyYAML` are available):
+
+```bash
+docker exec homeassistant /config/scripts/import-home-to-storage.sh
+```
+
+Overridable via env vars: `SOURCE_YAML`, `URL_PATH`, `TITLE`, `ICON`,
+`HA_WS_URL`. Idempotent — re-running overwrites the saved config but does not
+duplicate the registry entry. The git-managed `dashboards/home.yaml` and its
+`lovelace.dashboards` registration in `configuration.yaml` are left in place;
+both dashboards coexist (`/dashboard-home/home` from YAML, `/home-ui` from
+storage) until cutover is decided.
