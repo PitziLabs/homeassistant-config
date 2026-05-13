@@ -185,7 +185,7 @@
   },
   {
     "entity_id": "automation.sonoff_button_1_double_press_kitchen_family_room_off",
-    "friendly_name": "Sonoff Button 1: Double press → Downstairs OFF",
+    "friendly_name": "Sonoff Button 1: Double press → Downstairs + Hallways OFF",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -201,7 +201,7 @@
   },
   {
     "entity_id": "automation.sonoff_button_1_single_press_kitchen_family_room_on",
-    "friendly_name": "Sonoff Button 1: Single press → Downstairs ON",
+    "friendly_name": "Sonoff Button 1: Single press → Downstairs + Hallways ON",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -209,7 +209,7 @@
   },
   {
     "entity_id": "automation.sonoff_button_2_double_press_office_lights_off",
-    "friendly_name": "Sonoff Button 2: Double or long press → Office lights OFF",
+    "friendly_name": "Sonoff Button 2: Double press → Office lights OFF",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -226,6 +226,14 @@
   {
     "entity_id": "automation.sonoff_button_2_long_press_cycle_office_scenes",
     "friendly_name": "Sonoff Button 2: Single press → office on / cycle scenes",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.sonoff_button_2_long_press_jump_to_scene_1_bright",
+    "friendly_name": "Sonoff Button 2: Long press → jump to scene 1 (Bright)",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -3880,6 +3888,14 @@
     "hidden": false
   },
   {
+    "entity_id": "script.office_lamp_tick",
+    "friendly_name": "Office Sonoff: render one tick for one lamp",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
     "entity_id": "script.office_sonoff_apply_scene",
     "friendly_name": "Office Sonoff: Apply current scene",
     "area_id": null,
@@ -3889,7 +3905,7 @@
   },
   {
     "entity_id": "script.office_sonoff_candle_loop",
-    "friendly_name": "Office Sonoff: Candlelight flicker loop",
+    "friendly_name": "Office Sonoff: Flicker loop driver",
     "area_id": null,
     "device_id": null,
     "platform": "script",
