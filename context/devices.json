@@ -570,6 +570,16 @@
     ]
   },
   {
+    "device_id": "3504eda3610de47f0931ce02e7a510a1",
+    "name": "Node 4",
+    "manufacturer": null,
+    "model": null,
+    "area_id": null,
+    "integrations": [
+      "zwave_js"
+    ]
+  },
+  {
     "device_id": "d723e430ed6d2075e0600b409be85201",
     "name": "Office",
     "manufacturer": "Sonos",
@@ -597,6 +607,16 @@
     "area_id": "office",
     "integrations": [
       "zha"
+    ]
+  },
+  {
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "name": "Office Switch",
+    "manufacturer": "Zooz",
+    "model": "ZEN77",
+    "area_id": "office",
+    "integrations": [
+      "zwave_js"
     ]
   },
   {

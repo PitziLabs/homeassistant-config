@@ -2312,11 +2312,35 @@
     "hidden": false
   },
   {
+    "entity_id": "button.node_4_ping",
+    "friendly_name": "Ping",
+    "area_id": null,
+    "device_id": "3504eda3610de47f0931ce02e7a510a1",
+    "platform": "zwave_js",
+    "hidden": false
+  },
+  {
     "entity_id": "button.office_switch_identify",
     "friendly_name": "Identify",
     "area_id": null,
     "device_id": "0ca521afbbfd4474f24f6203d59ab398",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.office_switch_identify_2",
+    "friendly_name": "Identify",
+    "area_id": null,
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "platform": "zwave_js",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.office_switch_ping",
+    "friendly_name": "Ping",
+    "area_id": null,
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "platform": "zwave_js",
     "hidden": false
   },
   {
@@ -3040,6 +3064,22 @@
     "hidden": false
   },
   {
+    "entity_id": "event.office_switch_scene_001",
+    "friendly_name": "Scene 001",
+    "area_id": null,
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "platform": "zwave_js",
+    "hidden": false
+  },
+  {
+    "entity_id": "event.office_switch_scene_002",
+    "friendly_name": "Scene 002",
+    "area_id": null,
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "platform": "zwave_js",
+    "hidden": false
+  },
+  {
     "entity_id": "input_button.ha_context_dump_now",
     "friendly_name": "Dump HA Context for CC",
     "area_id": null,
@@ -3205,6 +3245,14 @@
     "area_id": null,
     "device_id": "03ebc1371a65dd35fbc10846dd9811ce",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "light.office_switch",
+    "friendly_name": "",
+    "area_id": null,
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "platform": "zwave_js",
     "hidden": false
   },
   {
@@ -5152,6 +5200,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.node_4_node_status",
+    "friendly_name": "Node status",
+    "area_id": null,
+    "device_id": "3504eda3610de47f0931ce02e7a510a1",
+    "platform": "zwave_js",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.office_audio_input_format",
     "friendly_name": "Audio input format",
     "area_id": null,
@@ -5165,6 +5221,14 @@
     "area_id": null,
     "device_id": "0ca521afbbfd4474f24f6203d59ab398",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.office_switch_node_status",
+    "friendly_name": "Node status",
+    "area_id": null,
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "platform": "zwave_js",
     "hidden": false
   },
   {
@@ -9021,6 +9085,14 @@
     "area_id": null,
     "device_id": "0ca521afbbfd4474f24f6203d59ab398",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.office_switch_firmware_2",
+    "friendly_name": "Firmware",
+    "area_id": null,
+    "device_id": "51a69e120926a13bba9cfaac7a2937e7",
+    "platform": "zwave_js",
     "hidden": false
   },
   {
