@@ -15,6 +15,10 @@ pipeline (see `.github/workflows/ha-context-sync.yml`).
 | `areas.json` | `.storage/core.area_registry` | Sorted JSON array of areas with `area_id`, `name`. |
 | `devices.json` | `.storage/core.device_registry` joined with `.storage/core.config_entries` | Sorted JSON array of devices with `device_id`, `name`, `manufacturer`, `model`, `area_id`, `integrations` (array of integration domains). |
 | `automations-ui.yaml` | `/config/automations.yaml` | Byte-for-byte snapshot of the UI-editable automations file. |
+| `scripts.json` | `.storage/script` | Sorted JSON array of storage-mode script definitions. Empty (`[]`) when the script integration is YAML-mode (UI editor writes to `/config/scripts.yaml`). Populated when ha-mcp prototypes scripts into `.storage/`. |
+| `scenes.json` | `.storage/scenes` | Sorted JSON array of storage-mode scene definitions. Empty (`[]`) when the scene integration is YAML-mode (`/config/scenes.yaml`). |
+| `helpers.json` | `.storage/{input_boolean,input_number,input_text,input_select,input_datetime,timer,counter,schedule}` | Object keyed by helper domain, each value a sorted JSON array of helper items. Missing-domain values are `[]` so the shape is presence-stable across instances. |
+| `dashboards-storage.json` | `.storage/lovelace_dashboards`, `.storage/lovelace`, `.storage/lovelace.*` | Object with `dashboards` (registry of storage-mode dashboards) and `configs` (per-dashboard config keyed by storage filename). YAML-mode dashboards under `dashboards/*.yaml` are NOT captured here — they're already source-of-truth in git. |
 
 ## Refresh cadence
 

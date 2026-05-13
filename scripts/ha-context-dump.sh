@@ -30,6 +30,18 @@ rotate_log() {
   fi
 }
 
+# Read the items array from a storage-collection-style .storage file
+# (shape: {data: {items: [...]}}). Emit [] if the file is absent so
+# downstream artifacts are always well-formed and presence-stable.
+storage_items() {
+  local path="$1"
+  if [[ -f "$path" ]]; then
+    jq '.data.items // [] | sort_by(.id // "")' "$path"
+  else
+    printf '[]\n'
+  fi
+}
+
 main() {
   rotate_log
   log INFO "Starting HA context dump"
@@ -106,6 +118,65 @@ main() {
 
   log INFO "Copying automations-ui.yaml"
   cp /config/automations.yaml "${CONTEXT_DIR}/automations-ui.yaml"
+
+  # Storage-mode scripts. The script integration is YAML-mode on this instance
+  # (UI editor writes to /config/scripts.yaml), so .storage/script typically
+  # does not exist and the artifact will be []. When the ha-mcp server begins
+  # prototyping scripts into .storage/, this captures them automatically.
+  log INFO "Building scripts.json"
+  storage_items "${STORAGE}/script" > "${CONTEXT_DIR}/scripts.json"
+
+  # Storage-mode scenes. Same caveat as scripts — scene integration is YAML-mode
+  # by default (/config/scenes.yaml), so the artifact is typically [].
+  log INFO "Building scenes.json"
+  storage_items "${STORAGE}/scenes" > "${CONTEXT_DIR}/scenes.json"
+
+  # Helpers — single combined artifact for reviewability. Each helper integration
+  # uses its domain name as the storage key (e.g. .storage/input_boolean). The
+  # output is an object keyed by helper type so a single jq query can list all
+  # helpers of a given kind.
+  log INFO "Building helpers.json"
+  local helpers='{}'
+  local helper_types=(
+    input_boolean
+    input_number
+    input_text
+    input_select
+    input_datetime
+    timer
+    counter
+    schedule
+  )
+  for t in "${helper_types[@]}"; do
+    local items
+    items=$(storage_items "${STORAGE}/${t}")
+    helpers=$(jq --argjson items "$items" --arg key "$t" '. + {($key): $items}' <<<"$helpers")
+  done
+  printf '%s\n' "$helpers" > "${CONTEXT_DIR}/helpers.json"
+
+  # Storage-mode Lovelace dashboards. The dashboard registry lives at
+  # .storage/lovelace_dashboards; the default dashboard config is .storage/lovelace
+  # and additional storage-mode dashboards are .storage/lovelace.<url_path>.
+  # YAML-mode dashboards (this repo's home/kiosk/homelab-status) are not stored
+  # in .storage/ — they remain in dashboards/*.yaml and are absent here.
+  log INFO "Building dashboards-storage.json"
+  local dashboards_registry
+  dashboards_registry=$(storage_items "${STORAGE}/lovelace_dashboards")
+  local configs='{}'
+  if [[ -f "${STORAGE}/lovelace" ]]; then
+    configs=$(jq --slurpfile lv "${STORAGE}/lovelace" \
+      '. + {lovelace: ($lv[0].data.config // {})}' <<<"$configs")
+  fi
+  shopt -s nullglob
+  for f in "${STORAGE}"/lovelace.*; do
+    local key
+    key=$(basename "$f")
+    configs=$(jq --slurpfile lv "$f" --arg key "$key" \
+      '. + {($key): ($lv[0].data.config // {})}' <<<"$configs")
+  done
+  shopt -u nullglob
+  jq -n --argjson dashboards "$dashboards_registry" --argjson configs "$configs" \
+    '{dashboards: $dashboards, configs: $configs}' > "${CONTEXT_DIR}/dashboards-storage.json"
 
   # Check for diff — most common case is no change
   if [[ -z "$(git -C "$WORKTREE" status --porcelain context/)" ]]; then
