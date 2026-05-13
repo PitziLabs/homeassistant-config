@@ -5,5 +5,18 @@
       "Bash(yamllint *)",
       "Bash(shellcheck *)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/block-context-writes.sh\""
+          }
+        ]
+      }
+    ]
   }
 }
