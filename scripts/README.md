@@ -42,16 +42,44 @@ runs, the next `ha-context-dump.sh` snapshot picks the dashboard up in
 `context/dashboards-storage.json`, which makes it visible to assistants
 working against `context/`.
 
-Must run inside the HA Core container (so `SUPERVISOR_TOKEN`, `aiohttp`, and
-`PyYAML` are available):
+Must run inside the HA Core container (Python 3, `aiohttp`, and `PyYAML` are
+part of Core's runtime; the SSH add-on's Alpine shell has none of them):
 
 ```bash
 docker exec homeassistant /config/scripts/import-home-to-storage.sh
 ```
 
-Overridable via env vars: `SOURCE_YAML`, `URL_PATH`, `TITLE`, `ICON`,
-`HA_WS_URL`. Idempotent — re-running overwrites the saved config but does not
-duplicate the registry entry. The git-managed `dashboards/home.yaml` and its
-`lovelace.dashboards` registration in `configuration.yaml` are left in place;
-both dashboards coexist (`/dashboard-home/home` from YAML, `/home-ui` from
-storage) until cutover is decided.
+### Authentication
+
+Core's websocket auth does NOT accept `SUPERVISOR_TOKEN` in current HA
+versions (that token is for outbound Core-to-Supervisor calls, not inbound
+Core API). A long-lived access token is required:
+
+1. In the HA UI: profile avatar (bottom-left) → **Security** tab →
+   **Long-Lived Access Tokens** → **Create Token** → copy the value (shown
+   only once).
+2. Add it to `/config/secrets.yaml` so future runs need no env flag:
+   ```yaml
+   ha_token: "Bearer <paste-the-token-here>"
+   ```
+   The `Bearer ` prefix matches the project convention for stored
+   Authorization header values (see CLAUDE.md > "Script auth conventions").
+   The script strips the prefix before sending to the websocket.
+
+The script resolves the token in this order: `HA_TOKEN` env var → `ha_token`
+in `secrets.yaml` → `SUPERVISOR_TOKEN` (last-resort fallback that will
+almost certainly fail). For a one-shot run without modifying `secrets.yaml`:
+
+```bash
+docker exec -e HA_TOKEN='<paste-token-here>' homeassistant /config/scripts/import-home-to-storage.sh
+```
+
+### Overrides and behavior
+
+Env vars: `SOURCE_YAML`, `URL_PATH`, `TITLE`, `ICON`, `HA_WS_URL`,
+`SECRETS_YAML`, `HA_TOKEN`. Idempotent — re-running overwrites the saved
+config but does not duplicate the registry entry. The git-managed
+`dashboards/home.yaml` and its `lovelace.dashboards` registration in
+`configuration.yaml` are left in place; both dashboards coexist
+(`/dashboard-home/home` from YAML, `/home-ui` from storage) until cutover
+is decided.
