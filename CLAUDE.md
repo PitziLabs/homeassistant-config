@@ -403,9 +403,10 @@ durable, `git log`-greppable one. Both should agree.
 ## HA Runtime State Context (`context/`)
 
 The `context/` directory is an auto-generated, read-only snapshot of HA runtime
-state — entity registry, area registry, device registry, and the UI-editable
-`automations.yaml`. It is populated by `scripts/ha-context-dump.sh` and refreshed
-every 6 hours (or on manual button press) via the autonomous context-sync pipeline.
+state — entity registry, area registry, device registry, the UI-editable
+`automations.yaml`, plus storage-mode scripts, scenes, helpers, and dashboards.
+It is populated by `scripts/ha-context-dump.sh` and refreshed every 6 hours
+(or on manual button press) via the autonomous context-sync pipeline.
 
 **Before writing any automation, script, dashboard, or other config that references
 entity IDs, area IDs, or device IDs, consult the relevant `context/` files:**
@@ -418,6 +419,23 @@ entity IDs, area IDs, or device IDs, consult the relevant `context/` files:**
   Useful when an automation needs to scope to a particular hardware type.
 - `context/automations-ui.yaml` — UI-managed automations. Reference this to avoid
   proposing automations that duplicate existing UI-authored ones.
+- `context/scripts.json` — storage-mode scripts (e.g. anything prototyped via the
+  ha-mcp server into `.storage/script`). Consult before codifying a prototyped
+  script into a `packages/` file so the live definition is copied, not guessed.
+  Empty (`[]`) when the script integration is YAML-mode and nothing has been
+  prototyped; the canonical UI-mode source is then `/config/scripts.yaml`.
+- `context/scenes.json` — storage-mode scenes. Same conventions as
+  `context/scripts.json`. YAML-mode fallback is `/config/scenes.yaml`.
+- `context/helpers.json` — object keyed by helper domain (`input_boolean`,
+  `input_number`, `input_text`, `input_select`, `input_datetime`, `timer`,
+  `counter`, `schedule`). Consult before referencing a helper entity in
+  automation YAML, and before proposing a new helper that might already exist.
+- `context/dashboards-storage.json` — storage-mode Lovelace dashboards
+  (`dashboards` registry + per-dashboard `configs`). The three YAML dashboards
+  this repo ships (`dashboards/home.yaml`, `dashboards/kiosk.yaml`,
+  `dashboards/homelab-status.yaml`) are NOT captured here — git is already
+  their source of truth. This artifact captures dashboards created or modified
+  via the HA UI that may need codifying into `dashboards/*.yaml`.
 
 **Never modify files in `context/`.** They are overwritten on the next snapshot.
 If a stale entity_id appears there, the fix is to correct the source of truth
@@ -459,8 +477,29 @@ that might duplicate or conflict):
 
     grep -A 20 "light.meeting_light" context/automations-ui.yaml
 
-`context/areas.json` and `context/automations-ui.yaml` are small enough (<150KB
-combined) that reading them in full is fine when needed.
+**List all helpers of a given domain** (before proposing a new one):
+
+    jq '.input_boolean[] | .id' context/helpers.json
+    jq '.timer[]' context/helpers.json
+
+**Check whether a helper id is already taken:**
+
+    jq '[.[][] | .id] | index("guest_mode")' context/helpers.json
+
+**Look up a storage-mode script or scene by alias:**
+
+    jq '.[] | select(.alias == "Morning routine")' context/scripts.json
+    jq '.[] | select(.name == "Movie night")' context/scenes.json
+
+**List storage-mode dashboards** (anything that may need codifying into
+`dashboards/*.yaml`):
+
+    jq '.dashboards[] | {url_path, title}' context/dashboards-storage.json
+
+`context/areas.json`, `context/automations-ui.yaml`, `context/scripts.json`,
+`context/scenes.json`, `context/helpers.json`, and (typically)
+`context/dashboards-storage.json` are small enough that reading them in full is
+fine when needed.
 
 ### Handling stale or missing context
 

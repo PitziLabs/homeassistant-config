@@ -227,7 +227,17 @@ Seven sections:
 ├── packages/
 │   └── ha_version_sync.yaml  HA version dispatch to GitHub on startup
 ├── scripts/
-│   └── gitops-sync.sh        GitOps deploy: fetch → validate → smart reload or rollback
+│   ├── gitops-sync.sh        GitOps deploy: fetch → validate → smart reload or rollback
+│   └── ha-context-dump.sh    Perception loop: snapshot .storage/ registries to context/
+├── context/                  Auto-generated HA runtime state (read-only, never edit)
+│   ├── entities.json         Entity registry (entity_id → area/device/platform)
+│   ├── areas.json            Area registry
+│   ├── devices.json          Device registry joined with config_entries
+│   ├── automations-ui.yaml   UI-authored automations snapshot
+│   ├── scripts.json          Storage-mode scripts (populated by ha-mcp prototyping)
+│   ├── scenes.json           Storage-mode scenes
+│   ├── helpers.json          Helpers by domain (input_*, timer, counter, schedule)
+│   └── dashboards-storage.json  Storage-mode Lovelace dashboards
 ├── dashboards/
 │   ├── home.yaml             Mobile/tablet Home dashboard
 │   ├── kiosk.yaml            Kiosk wall-display dashboard (custom:grid-layout)
