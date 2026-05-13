@@ -7,32 +7,30 @@
 #   command: 'on'    → double press
 #   command: 'off'   → long press (hold)
 #
-# Bindings (mirror the in-wall Hue rocker's behavior):
+# Bindings:
 #   single press → if lights are off, reset counter to 1 and apply scene 1;
-#                  otherwise advance the counter (wraps 13 → 1) and apply.
+#                  otherwise advance the counter (wraps 11 → 1) and apply.
 #                  i.e. first click turns on, subsequent clicks cycle scenes.
 #   double press → all office lights off (counter persists)
-#   long press   → all office lights off (counter persists)
-#
-# Long press is intentionally just an alternative OFF — the hold dwell is too
-# long to be useful for the more frequent cycle action, so single press is the
-# cycler.
+#   long press   → jump straight to scene 1 (Bright), reset counter to 1.
+#                  Useful for bailing out of a colored/flicker scene without
+#                  click-cycling through the rest of the catalog.
 #
 # The counter is independent of `counter.office_scene_index` used by the in-wall
 # Hue rocker (packages/office_hue_switch.yaml) so the two remotes do not stomp
 # on each other's scene library.
 #
-# Every non-flicker scene applies static values to all six lamps simultaneously.
-# The flicker scenes (6-13) all share one parallel driver loop in
-# `script.office_sonoff_candle_loop`. The loop just dispatches per-lamp ticks
+# Static scenes (1-3) apply uniform values to all six lamps simultaneously.
+# Flicker scenes (4-11) all share one parallel driver loop in
+# `script.office_sonoff_candle_loop`. The loop dispatches per-lamp ticks
 # every 180-400 ms to `script.office_lamp_tick`, which renders the current
 # scene's frame for that lamp. Brightness always flickers in a tight 75-92%
 # band with a 0.2 s transition; what differs per scene is how the color is
 # computed:
 #
-#   - Candle scenes (6-11): fixed hue per scene, looked up from a palette dict.
-#   - Rainbow Sync (12): hue derived from wall-clock time, same on all lamps.
-#   - Rainbow Cascade (13): hue derived from wall-clock time + a per-lamp
+#   - Candle scenes (4-9): fixed hue per scene, looked up from a palette dict.
+#   - Rainbow Sync (10): hue derived from wall-clock time, same on all lamps.
+#   - Rainbow Cascade (11): hue derived from wall-clock time + a per-lamp
 #     60° cascade offset, so the rainbow ripples across the room.
 #
 # Each per-lamp branch also waits a random 0-300 ms startup phase so the
@@ -42,27 +40,29 @@
 #   1  Bright            — all 6, 100% / 4000K  (general illumination)
 #   2  Relax             — all 6, 40%  / 2200K  (warm, low)
 #   3  Focus             — all 6, 100% / 5000K  (bright, cool)
-#   4  Red               — all 6, RGB 255,0,0 @ 100%   (static)
-#   5  Blue              — all 6, RGB 0,0,255 @ 100%   (static)
-#   6  Amber Candle      — flicker rgb(255, 100, 15)
-#   7  Red Candle        — flicker rgb(255,  20,  5)
-#   8  Yellow Candle     — flicker rgb(255, 220, 30)
-#   9  Green Candle      — flicker rgb(40,  220, 60)
-#   10 Blue Candle       — flicker rgb(30,   80, 255)
-#   11 Purple Candle     — flicker rgb(180,  30, 255)
-#   12 Rainbow Sync      — flicker; hue cycles every 30 s, all lamps in unison
-#   13 Rainbow Cascade   — flicker; hue cycles every 30 s, each lamp offset 60°
+#   4  Amber Candle      — flicker rgb(255, 100, 15)
+#   5  Red Candle        — flicker rgb(255,  20,  5)
+#   6  Yellow Candle     — flicker rgb(255, 220, 30)
+#   7  Green Candle      — flicker rgb(40,  220, 60)
+#   8  Blue Candle       — flicker rgb(30,   80, 255)
+#   9  Purple Candle     — flicker rgb(180,  30, 255)
+#   10 Rainbow Sync      — flicker; hue cycles every 30 s, all lamps in unison
+#   11 Rainbow Cascade   — flicker; hue cycles every 30 s, each lamp offset 60°
+#
+# The static Red and Blue scenes from earlier iterations were retired — the
+# candle/rainbow variants cover colored lighting and clicking past two extra
+# steady-color scenes to reach the more useful effects was friction.
 #
 # The flicker driver (mode: restart) exits when counter.office_sonoff_scene
-# drops to 5 or below. Every non-flicker scene calls script.turn_off on it
-# before applying. Transitioning into any flicker scene calls script.turn_on so
-# the apply script fires-and-forgets — it never waits on the infinite loop.
+# drops to 3 or below. Every static scene calls script.turn_off on it before
+# applying. Transitioning into any flicker scene calls script.turn_on so the
+# apply script fires-and-forgets — it never waits on the infinite loop.
 
 counter:
   office_sonoff_scene:
     name: Office Sonoff Scene
     minimum: 1
-    maximum: 13
+    maximum: 11
     initial: 1
     step: 1
     restore: true
@@ -118,39 +118,11 @@ script:
                 data:
                   brightness_pct: 100
                   color_temp_kelvin: 5000
-          - conditions: "{{ states('counter.office_sonoff_scene') == '4' }}"
-            sequence:
-              - action: light.turn_on
-                target:
-                  entity_id:
-                    - light.bookcase_lamp
-                    - light.corner_lamp
-                    - light.door_lamp
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
-                    - light.table_lamp
-                data:
-                  rgb_color: [255, 0, 0]
-                  brightness_pct: 100
-          - conditions: "{{ states('counter.office_sonoff_scene') == '5' }}"
-            sequence:
-              - action: light.turn_on
-                target:
-                  entity_id:
-                    - light.bookcase_lamp
-                    - light.corner_lamp
-                    - light.door_lamp
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
-                    - light.table_lamp
-                data:
-                  rgb_color: [0, 0, 255]
-                  brightness_pct: 100
-          # Scenes 6-11 are all flicker variants; the loop reads its target
+          # Scenes 4-11 are all flicker variants; the loop reads its target
           # color from a palette dict keyed on the counter, so we just turn
-          # it on for any scene >= 6 and cycling between candle hues changes
+          # it on for any scene >= 4 and cycling between hues changes
           # color seamlessly on the next tick.
-          - conditions: "{{ states('counter.office_sonoff_scene') | int(0) >= 6 }}"
+          - conditions: "{{ states('counter.office_sonoff_scene') | int(0) >= 4 }}"
             sequence:
               - action: script.turn_on
                 target:
@@ -175,9 +147,9 @@ script:
       brightness: "{{ range(75, 93) | random }}"
     sequence:
       - choose:
-          # Scene 12 — Rainbow Sync: all lamps share the same hue, driven by
+          # Scene 10 — Rainbow Sync: all lamps share the same hue, driven by
           # wall-clock time. 12 deg/sec → full cycle every 30 s.
-          - conditions: "{{ scene == 12 }}"
+          - conditions: "{{ scene == 10 }}"
             sequence:
               - action: light.turn_on
                 target:
@@ -188,9 +160,9 @@ script:
                     - 100
                   brightness_pct: "{{ brightness }}"
                   transition: 0.2
-          # Scene 13 — Rainbow Cascade: each lamp offset by `cascade_offset` so
+          # Scene 11 — Rainbow Cascade: each lamp offset by `cascade_offset` so
           # the rainbow ripples across the room rather than moving in unison.
-          - conditions: "{{ scene == 13 }}"
+          - conditions: "{{ scene == 11 }}"
             sequence:
               - action: light.turn_on
                 target:
@@ -202,19 +174,19 @@ script:
                   brightness_pct: "{{ brightness }}"
                   transition: 0.2
         default:
-          # Scenes 6-11 — fixed-hue candles, color from palette dict.
+          # Scenes 4-9 — fixed-hue candles, color from palette dict.
           - action: light.turn_on
             target:
               entity_id: "{{ target_entity }}"
             data:
               rgb_color: >-
                 {% set palette = {
-                  '6':  [255, 100, 15],
-                  '7':  [255, 20,  5],
-                  '8':  [255, 220, 30],
-                  '9':  [40,  220, 60],
-                  '10': [30,  80,  255],
-                  '11': [180, 30,  255]
+                  '4': [255, 100, 15],
+                  '5': [255, 20,  5],
+                  '6': [255, 220, 30],
+                  '7': [40,  220, 60],
+                  '8': [30,   80, 255],
+                  '9': [180,  30, 255]
                 } %}
                 {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
               brightness_pct: "{{ brightness }}"
@@ -235,7 +207,7 @@ script:
                   while:
                     - condition: numeric_state
                       entity_id: counter.office_sonoff_scene
-                      above: 5
+                      above: 3
                   sequence:
                     - action: script.office_lamp_tick
                       data:
@@ -250,7 +222,7 @@ script:
                   while:
                     - condition: numeric_state
                       entity_id: counter.office_sonoff_scene
-                      above: 5
+                      above: 3
                   sequence:
                     - action: script.office_lamp_tick
                       data:
@@ -265,7 +237,7 @@ script:
                   while:
                     - condition: numeric_state
                       entity_id: counter.office_sonoff_scene
-                      above: 5
+                      above: 3
                   sequence:
                     - action: script.office_lamp_tick
                       data:
@@ -280,7 +252,7 @@ script:
                   while:
                     - condition: numeric_state
                       entity_id: counter.office_sonoff_scene
-                      above: 5
+                      above: 3
                   sequence:
                     - action: script.office_lamp_tick
                       data:
@@ -295,7 +267,7 @@ script:
                   while:
                     - condition: numeric_state
                       entity_id: counter.office_sonoff_scene
-                      above: 5
+                      above: 3
                   sequence:
                     - action: script.office_lamp_tick
                       data:
@@ -310,7 +282,7 @@ script:
                   while:
                     - condition: numeric_state
                       entity_id: counter.office_sonoff_scene
-                      above: 5
+                      above: 3
                   sequence:
                     - action: script.office_lamp_tick
                       data:
@@ -345,7 +317,7 @@ automation:
           - if:
               - condition: state
                 entity_id: counter.office_sonoff_scene
-                state: '13'
+                state: '11'
             then:
               - action: counter.set_value
                 target:
@@ -360,20 +332,13 @@ automation:
     mode: single
 
   - id: sonoff_button_2_office_off
-    alias: 'Sonoff Button 2: Double or long press → Office lights OFF'
+    alias: 'Sonoff Button 2: Double press → Office lights OFF'
     triggers:
-      # Double press
       - trigger: event
         event_type: zha_event
         event_data:
           device_ieee: 18:69:0a:ff:fe:13:a1:01
           command: 'on'
-      # Long press
-      - trigger: event
-        event_type: zha_event
-        event_data:
-          device_ieee: 18:69:0a:ff:fe:13:a1:01
-          command: 'off'
     conditions: []
     actions:
       - action: script.turn_off
@@ -388,4 +353,22 @@ automation:
             - light.desk_lamp_2
             - light.desk_lamp_2_2
             - light.table_lamp
+    mode: single
+
+  - id: sonoff_button_2_office_jump_to_bright
+    alias: 'Sonoff Button 2: Long press → jump to scene 1 (Bright)'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_ieee: 18:69:0a:ff:fe:13:a1:01
+          command: 'off'
+    conditions: []
+    actions:
+      - action: counter.set_value
+        target:
+          entity_id: counter.office_sonoff_scene
+        data:
+          value: 1
+      - action: script.office_sonoff_apply_scene
     mode: single
