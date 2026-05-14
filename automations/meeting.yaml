@@ -15,7 +15,7 @@
       brightness: 255
       transition: 1
     target:
-      device_id: caa9c445375f8b67c1a29b11c8ae61c3
+      entity_id: light.meeting_light
   mode: single
 - id: meeting_status_off
   alias: 'Meeting: Status OFF — hallway green'
@@ -29,7 +29,7 @@
     data:
       transition: 1
     target:
-      device_id: caa9c445375f8b67c1a29b11c8ae61c3
+      entity_id: light.meeting_light
   mode: single
 - id: meeting_button_offline
   alias: 'Meeting: Button offline — hallway off'
@@ -43,7 +43,7 @@
   actions:
   - action: light.turn_off
     target:
-      device_id: caa9c445375f8b67c1a29b11c8ae61c3
+      entity_id: light.meeting_light
     data:
       transition: 2
   mode: single
@@ -70,7 +70,7 @@
           brightness: 255
           transition: 1
         target:
-          device_id: caa9c445375f8b67c1a29b11c8ae61c3
+          entity_id: light.meeting_light
     - conditions:
       - condition: state
         entity_id: switch.meeting_button_in_meeting
@@ -80,5 +80,5 @@
         data:
           transition: 1
         target:
-          device_id: caa9c445375f8b67c1a29b11c8ae61c3
+          entity_id: light.meeting_light
   mode: single
