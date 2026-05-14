@@ -184,6 +184,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.office_switch_mirror_to_office_lights",
+    "friendly_name": "Office Switch: mirror to office lights",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.sonoff_button_1_double_press_kitchen_family_room_off",
     "friendly_name": "Sonoff Button 1: Double press → Downstairs + Hallways OFF",
     "area_id": null,
