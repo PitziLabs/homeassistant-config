@@ -1,0 +1,247 @@
+# Hue Tap Dial (RDM002) → Play Room lights
+#
+# Device: "Hue Tap Dial" (Signify RDM002) via ZHA
+#   device_id: 2d6cd400df2e3424cb883cc78bce43d7
+#   area:      play_room
+#
+# Wired-power note: the four Hue bulbs (light.playroom_1..4) are downstream of
+# a TP-Link Kasa HS200 in-wall switch (switch.play_room_outlet). If the wall
+# switch is off the bulbs lose mains and drop off the Zigbee mesh. Every
+# scene-on action below calls `script.playroom_lights_power_on` first, which
+# flips the outlet on (if needed) and waits for the bulbs to rejoin before
+# applying the scene. `light.turn_off` does NOT cut the outlet — the bulbs
+# stay powered-but-off so the dial can wake them again later without a
+# rejoin delay.
+#
+# Button layout (top → bottom):
+#   1 (top)    → Bright       100% / 4000K  (general illumination)
+#   2          → Relax         40% / 2200K  (warm, low)
+#   3          → Concentrate  100% / 5000K  (cool, bright)
+#   4 (bottom) → Off           — bulbs off, outlet stays on
+#
+# Dial rotation:
+#   Clockwise (step up)        → brightness +25 (~10%) on all 4 lights
+#   Counter-clockwise (step dn) → brightness -25 on all 4 lights
+#   Rotating with all lights off is a no-op — press a button first.
+#
+# ZHA event signatures (PhilipsRDM002 quirk, zha-device-handlers):
+#   Buttons fire on cluster 0xFC00 (64512) with commands of the form
+#   `button_N_short_release` where N is 1-4. Older or alternate quirk
+#   builds emit `N_short_release` (no `button_` prefix). Both shapes are
+#   matched defensively so the automation survives quirk updates.
+#   The dial fires `step` / `step_with_on_off` on cluster 8 (Level Control),
+#   args[0] = direction (0 = up, 1 = down) per Zigbee spec.
+#
+# If you ever need to see exactly what this dial emits, watch
+# Developer Tools → Events → listen for `zha_event` and rotate / press.
+
+script:
+  playroom_lights_power_on:
+    alias: 'Playroom: ensure outlet on and bulbs reachable'
+    mode: single
+    sequence:
+      - if:
+          - condition: state
+            entity_id: switch.play_room_outlet
+            state: 'off'
+        then:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.play_room_outlet
+          # Hue bulbs need a moment to rejoin the Zigbee mesh after mains
+          # is restored. Wait until all 4 report a usable state, capped at
+          # 8s so a single missing bulb can't block the scene apply forever.
+          - wait_template: >-
+              {{ states('light.playroom_1') not in ['unavailable', 'unknown']
+                 and states('light.playroom_2') not in ['unavailable', 'unknown']
+                 and states('light.playroom_3') not in ['unavailable', 'unknown']
+                 and states('light.playroom_4') not in ['unavailable', 'unknown'] }}
+            timeout: '00:00:08'
+            continue_on_timeout: true
+
+  playroom_brightness_step:
+    alias: 'Playroom: step brightness on all four lights'
+    mode: queued
+    max: 10
+    fields:
+      delta:
+        description: 'Brightness delta in the 0-255 scale (+25 ≈ +10%).'
+        selector:
+          number:
+            min: -255
+            max: 255
+    sequence:
+      # Bulbs are unreachable when the wall switch is off; bail rather than
+      # racing a power-on. User can press a button to wake the room.
+      - condition: state
+        entity_id: switch.play_room_outlet
+        state: 'on'
+      - variables:
+          # Pick the highest current brightness across the on bulbs as the
+          # reference point so a single dimmed bulb doesn't drag the whole
+          # room down on the next rotation. Off bulbs contribute 0.
+          current: >-
+            {% set vals = [
+              state_attr('light.playroom_1', 'brightness')|default(0)|int(0) if is_state('light.playroom_1', 'on') else 0,
+              state_attr('light.playroom_2', 'brightness')|default(0)|int(0) if is_state('light.playroom_2', 'on') else 0,
+              state_attr('light.playroom_3', 'brightness')|default(0)|int(0) if is_state('light.playroom_3', 'on') else 0,
+              state_attr('light.playroom_4', 'brightness')|default(0)|int(0) if is_state('light.playroom_4', 'on') else 0
+            ] %}
+            {{ vals | max }}
+          target: "{{ [[ (current | int(0)) + (delta | int(0)), 1 ] | max, 255 ] | min }}"
+      - if:
+          - condition: template
+            value_template: "{{ (current | int(0)) + (delta | int(0)) > 0 }}"
+        then:
+          - action: light.turn_on
+            target:
+              entity_id:
+                - light.playroom_1
+                - light.playroom_2
+                - light.playroom_3
+                - light.playroom_4
+            data:
+              brightness: "{{ target }}"
+              transition: 0.3
+        else:
+          - action: light.turn_off
+            target:
+              entity_id:
+                - light.playroom_1
+                - light.playroom_2
+                - light.playroom_3
+                - light.playroom_4
+            data:
+              transition: 0.3
+
+automation:
+  - id: hue_tap_dial_button_1_bright
+    alias: 'Hue Tap Dial: Button 1 → Bright (100% / 4000K)'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: button_1_short_release
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: '1_short_release'
+    actions:
+      - action: script.playroom_lights_power_on
+      - action: light.turn_on
+        target:
+          entity_id:
+            - light.playroom_1
+            - light.playroom_2
+            - light.playroom_3
+            - light.playroom_4
+        data:
+          brightness_pct: 100
+          color_temp_kelvin: 4000
+          transition: 1
+    mode: single
+
+  - id: hue_tap_dial_button_2_relax
+    alias: 'Hue Tap Dial: Button 2 → Relax (40% / 2200K)'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: button_2_short_release
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: '2_short_release'
+    actions:
+      - action: script.playroom_lights_power_on
+      - action: light.turn_on
+        target:
+          entity_id:
+            - light.playroom_1
+            - light.playroom_2
+            - light.playroom_3
+            - light.playroom_4
+        data:
+          brightness_pct: 40
+          color_temp_kelvin: 2200
+          transition: 1
+    mode: single
+
+  - id: hue_tap_dial_button_3_concentrate
+    alias: 'Hue Tap Dial: Button 3 → Concentrate (100% / 5000K)'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: button_3_short_release
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: '3_short_release'
+    actions:
+      - action: script.playroom_lights_power_on
+      - action: light.turn_on
+        target:
+          entity_id:
+            - light.playroom_1
+            - light.playroom_2
+            - light.playroom_3
+            - light.playroom_4
+        data:
+          brightness_pct: 100
+          color_temp_kelvin: 5000
+          transition: 1
+    mode: single
+
+  - id: hue_tap_dial_button_4_off
+    alias: 'Hue Tap Dial: Button 4 → all playroom lights off'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: button_4_short_release
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          command: '4_short_release'
+    actions:
+      - action: light.turn_off
+        target:
+          entity_id:
+            - light.playroom_1
+            - light.playroom_2
+            - light.playroom_3
+            - light.playroom_4
+        data:
+          transition: 1
+    mode: single
+
+  - id: hue_tap_dial_rotation_brightness
+    alias: 'Hue Tap Dial: dial rotation → playroom brightness'
+    triggers:
+      - trigger: event
+        event_type: zha_event
+        event_data:
+          device_id: 2d6cd400df2e3424cb883cc78bce43d7
+          cluster_id: 8
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.event.data.command in ['step', 'step_with_on_off', 'move', 'move_with_on_off'] }}"
+      - condition: template
+        value_template: "{{ trigger.event.data.args is iterable and trigger.event.data.args | length > 0 }}"
+    actions:
+      - action: script.playroom_brightness_step
+        data:
+          # Zigbee Level Control step_mode: 0 = up, 1 = down.
+          # ~10% per click feels right with the dial's typical detent count.
+          delta: "{{ -25 if trigger.event.data.args[0] == 1 else 25 }}"
+    mode: queued
+    max: 10
