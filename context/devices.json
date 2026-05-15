@@ -20,6 +20,16 @@
     ]
   },
   {
+    "device_id": "776ef515c715beeb3c62f2229ca16d43",
+    "name": "Basement 1",
+    "manufacturer": "Belkin",
+    "model": "LightSwitch",
+    "area_id": "basement",
+    "integrations": [
+      "wemo"
+    ]
+  },
+  {
     "device_id": "302467d56935e72646a7bb0175a41d8f",
     "name": "Basement TV",
     "manufacturer": "TCL",
@@ -67,6 +77,16 @@
     "area_id": null,
     "integrations": [
       "withings"
+    ]
+  },
+  {
+    "device_id": "f090c7c3434162e57c3d8a9cee321fae",
+    "name": "Bonus room",
+    "manufacturer": "Belkin",
+    "model": "LightSwitch",
+    "area_id": null,
+    "integrations": [
+      "wemo"
     ]
   },
   {
