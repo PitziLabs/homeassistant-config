@@ -8144,6 +8144,14 @@
     "hidden": false
   },
   {
+    "entity_id": "switch.basement_1",
+    "friendly_name": "Basement 1",
+    "area_id": null,
+    "device_id": "776ef515c715beeb3c62f2229ca16d43",
+    "platform": "wemo",
+    "hidden": false
+  },
+  {
     "entity_id": "switch.basement_crossfade",
     "friendly_name": "Crossfade",
     "area_id": null,
@@ -8213,6 +8221,14 @@
     "area_id": null,
     "device_id": "8bf1e839ce7964732ace6d4f811bef3c",
     "platform": "sonos",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.bonus_room",
+    "friendly_name": "Bonus room",
+    "area_id": null,
+    "device_id": "f090c7c3434162e57c3d8a9cee321fae",
+    "platform": "wemo",
     "hidden": false
   },
   {
