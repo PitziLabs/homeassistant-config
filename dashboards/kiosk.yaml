@@ -552,10 +552,10 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
             - type: custom:button-card
@@ -596,10 +596,10 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
             - type: custom:button-card
@@ -640,10 +640,10 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
             - type: custom:button-card
@@ -684,10 +684,10 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
             # === Garage door covers (state: closed/open) ===
@@ -733,10 +733,10 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
             - type: custom:button-card
@@ -781,10 +781,10 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
             # === Motion sensors (binary_sensor; on=detected=red pulse, off=clear=gray) ===
@@ -821,10 +821,10 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
             - type: custom:button-card
@@ -860,18 +860,18 @@ views:
                   - color: 'var(--kiosk-text-secondary)'
                   - padding-top: '8px'
                 state:
-                  - font-size: '24px'
+                  - font-size: '22px'
                   - text-transform: 'uppercase'
                   - font-weight: '600'
-                  - letter-spacing: '1px'
+                  - letter-spacing: '0.5px'
                   - padding-top: '4px'
 
       # ============================================================
-      # LIGHTS COLUMN — 20 lights, grouped into 5 room sections.
+      # LIGHTS COLUMN — 18 lights, grouped into 5 room sections.
       # (light.meeting_light is hoisted to the top-right meeting cell.)
-      # Sections render as a vertical-stack of (section header + 4-col grid).
-      # 4 cols keeps the column from outgrowing its cell and triggering
-      # a page-level scrollbar.
+      # Sections render as a vertical-stack of (section header + grid).
+      # Default 4 cols keeps the column from outgrowing its cell and
+      # triggering a page-level scrollbar; Outdoor uses 5 cols.
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: lights }
@@ -904,10 +904,10 @@ views:
                     border-radius: 0 !important;
                   }
                   ha-card .card-content {
-                    padding: 2px 4px 1px 4px !important;
-                    font-size: 9px !important;
+                    padding: 4px 6px 2px 6px !important;
+                    font-size: 13px !important;
                     font-weight: 700 !important;
-                    letter-spacing: 1.5px !important;
+                    letter-spacing: 2px !important;
                     color: var(--kiosk-accent-lights) !important;
                     border-bottom: 1px solid rgba(227, 179, 65, 0.25) !important;
                   }
@@ -916,9 +916,8 @@ views:
               columns: 4
               square: false
               cards:
-                - { type: 'custom:mushroom-light-card', entity: light.family_room, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.floor_lamp_composite, name: Floor Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.floor_lamp_composite, name: Floor, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
 
             # --- Kitchen ---
             - <<: *light_section_header
@@ -938,11 +937,10 @@ views:
               columns: 4
               square: false
               cards:
-                - { type: 'custom:mushroom-light-card', entity: light.office, name: Office, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
                 - { type: 'custom:mushroom-light-card', entity: light.bookcase_lamp, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
                 - { type: 'custom:mushroom-light-card', entity: light.corner_lamp, name: Corner, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
                 - { type: 'custom:mushroom-light-card', entity: light.door_lamp, name: Door, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.office_lamp, name: Lamp, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.table_lamp, name: Table, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
                 - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
                 - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
 
@@ -1295,10 +1293,10 @@ views:
                       styles:
                         card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
                   styles:
-                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
-                    name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
-                    state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
-                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
+                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '8px 14px' }]
+                    name: [{ font-size: '15px' }, { font-weight: '500' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
+                    state: [{ font-size: '17px' }, { font-weight: '600' }, { text-transform: 'uppercase' }, { letter-spacing: '0.5px' }, { justify-self: 'start' }]
+                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '12px' }]
 
                 - type: custom:button-card
                   entity: media_player.basement_tv
@@ -1322,10 +1320,10 @@ views:
                       styles:
                         card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
                   styles:
-                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
-                    name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
-                    state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
-                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
+                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '8px 14px' }]
+                    name: [{ font-size: '15px' }, { font-weight: '500' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
+                    state: [{ font-size: '17px' }, { font-weight: '600' }, { text-transform: 'uppercase' }, { letter-spacing: '0.5px' }, { justify-self: 'start' }]
+                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '12px' }]
 
                 - type: custom:button-card
                   entity: media_player.play_room_tv
@@ -1349,7 +1347,7 @@ views:
                       styles:
                         card: [{ background-color: 'rgba(88, 166, 255, 0.12)' }]
                   styles:
-                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '6px 10px' }]
-                    name: [{ font-size: '11px' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
-                    state: [{ font-size: '12px' }, { text-transform: 'capitalize' }, { justify-self: 'start' }]
-                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '8px' }]
+                    card: [{ height: '70px' }, { background: 'var(--kiosk-bg-tile)' }, { border-radius: '8px' }, { border: 'none' }, { padding: '8px 14px' }]
+                    name: [{ font-size: '15px' }, { font-weight: '500' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
+                    state: [{ font-size: '17px' }, { font-weight: '600' }, { text-transform: 'uppercase' }, { letter-spacing: '0.5px' }, { justify-self: 'start' }]
+                    grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '12px' }]
