@@ -120,6 +120,46 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.hue_tap_dial_button_1_bright_100_4000k",
+    "friendly_name": "Hue Tap Dial: Button 1 → Bright (100% / 4000K)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_2_relax_40_2200k",
+    "friendly_name": "Hue Tap Dial: Button 2 → Relax (40% / 2200K)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_3_concentrate_100_5000k",
+    "friendly_name": "Hue Tap Dial: Button 3 → Concentrate (100% / 5000K)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_4_all_playroom_lights_off",
+    "friendly_name": "Hue Tap Dial: Button 4 → all playroom lights off",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_dial_rotation_playroom_brightness",
+    "friendly_name": "Hue Tap Dial: dial rotation → playroom brightness",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.meeting_button_offline_hallway_off",
     "friendly_name": "Meeting: Button offline — hallway off",
     "area_id": null,
@@ -4002,6 +4042,22 @@
   {
     "entity_id": "script.office_switch_set_mode_via_command_2",
     "friendly_name": "Office Switch: try mfg command 0x02 with mode=3 (dual rocker)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.playroom_brightness_step",
+    "friendly_name": "Playroom: step brightness on all four lights",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.playroom_lights_power_on",
+    "friendly_name": "Playroom: ensure outlet on and bulbs reachable",
     "area_id": null,
     "device_id": null,
     "platform": "script",
@@ -7893,6 +7949,54 @@
     "area_id": null,
     "device_id": "c159bb5e739ec1604ba3631bc5315b06",
     "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.withings_active_calories_burnt_today",
+    "friendly_name": "Active calories burnt today",
+    "area_id": null,
+    "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
+    "platform": "withings",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.withings_active_time_today",
+    "friendly_name": "Active time today",
+    "area_id": null,
+    "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
+    "platform": "withings",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.withings_distance_travelled_today",
+    "friendly_name": "Distance travelled today",
+    "area_id": null,
+    "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
+    "platform": "withings",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.withings_elevation_change_today",
+    "friendly_name": "Elevation change today",
+    "area_id": null,
+    "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
+    "platform": "withings",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.withings_steps_today",
+    "friendly_name": "Steps today",
+    "area_id": null,
+    "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
+    "platform": "withings",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.withings_total_calories_burnt_today",
+    "friendly_name": "Total calories burnt today",
+    "area_id": null,
+    "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
+    "platform": "withings",
     "hidden": false
   },
   {
