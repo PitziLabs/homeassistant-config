@@ -232,6 +232,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.playroom_area_fix_trigger_on_button_press",
+    "friendly_name": "Playroom Area Fix: trigger on button press",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.sonoff_button_1_double_press_kitchen_family_room_off",
     "friendly_name": "Sonoff Button 1: Double press → Downstairs + Hallways OFF",
     "area_id": null,
@@ -3125,6 +3133,14 @@
     "area_id": null,
     "device_id": "51a69e120926a13bba9cfaac7a2937e7",
     "platform": "zwave_js",
+    "hidden": false
+  },
+  {
+    "entity_id": "input_button.assign_playroom_areas",
+    "friendly_name": "Fix Play Room device areas",
+    "area_id": null,
+    "device_id": null,
+    "platform": "input_button",
     "hidden": false
   },
   {
