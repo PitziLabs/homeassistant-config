@@ -1,1 +1,2 @@
 gitops_sync: "bash /config/scripts/gitops-sync.sh"
+assign_playroom_areas: "bash /config/scripts/assign-playroom-areas.sh"

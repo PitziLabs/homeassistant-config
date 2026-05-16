@@ -1,0 +1,38 @@
+# One-shot button to fix the orphaned Play Room device→area assignments.
+#
+# Playroom 3, Playroom 4, and the Play Room outlet landed in the device
+# registry with area_id=null. The fix lives in
+# scripts/assign-playroom-areas.sh (websocket → config/device_registry/update).
+# This package exposes a button so it can be triggered from the HA mobile
+# app once GitOps deploys the change.
+#
+# After pressing the button and confirming via context-sync that the
+# devices now show area_id=play_room, this package, the shell_command
+# entry, and the script can all be removed in a follow-up PR.
+
+input_button:
+  assign_playroom_areas:
+    name: "Fix Play Room device areas"
+    icon: mdi:map-marker-plus
+
+automation:
+  - id: assign_playroom_areas_trigger
+    alias: "Playroom Area Fix: trigger on button press"
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: input_button.assign_playroom_areas
+    actions:
+      - action: shell_command.assign_playroom_areas
+        response_variable: result
+      - action: persistent_notification.create
+        data:
+          title: "Play Room area fix"
+          notification_id: assign_playroom_areas_done
+          message: >-
+            shell_command returned code {{ result.returncode }}.
+            {% if result.returncode == 0 %}
+            Press input_button.ha_context_dump_now to refresh context/devices.json.
+            {% else %}
+            stderr: {{ result.stderr }}
+            {% endif %}
