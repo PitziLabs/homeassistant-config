@@ -277,9 +277,9 @@ Seven sections:
 
 This repository is one piece of a broader infrastructure portfolio at [github.com/PitziLabs](https://github.com/PitziLabs):
 
-- **[aws-lab-infra](https://github.com/PitziLabs/aws-lab-infra)** — Terraform-managed three-tier AWS environment (VPC, ECS Fargate, RDS, ElastiCache, CI/CD)
+- **[foundry-platform-demo](https://github.com/PitziLabs/foundry-platform-demo)** — Terraform-managed three-tier AWS environment (VPC, ECS Fargate, RDS, ElastiCache, CI/CD)
 - **[firewalla-axiom-pipeline](https://github.com/PitziLabs/firewalla-axiom-pipeline)** — Fluent Bit log pipeline shipping Firewalla network telemetry to Axiom
-- **[firewalla-grafana-stack](https://github.com/PitziLabs/firewalla-grafana-stack)** — Self-hosted Grafana + Loki observability for home network monitoring
+- **[homelab-observability](https://github.com/PitziLabs/homelab-observability)** — Grafana Cloud + Alloy observability for the Firewalla home network
 - **[workstation-bootstrap](https://github.com/PitziLabs/workstation-bootstrap)** — Idempotent workstation provisioning for ChromeOS, Xubuntu, and Fedora
 
 ## License
