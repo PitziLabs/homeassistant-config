@@ -122,7 +122,7 @@ Automations are split across two locations with different governance models:
 | `switch.family_room_outlets` | Powers floor lamp (dependency) |
 | `switch.back_porch` | Outdoor |
 | `switch.play_room_outlet` | Indoor |
-| `switch.bonus_room` | Wemo wall switch powering the play room Hue bulbs (device adopted under stale name) |
+| `switch.bonus_room` | Wemo wall switch powering the play room Hue bulbs. Device renamed to "Playroom Lights Power" in HA UI; `entity_id` retained to match adoption-history convention (see `switch.alarm_panel_56ac70_siren`). |
 | `switch.basement_1` | Indoor (often unavailable) |
 
 ### Sonos Media Players
