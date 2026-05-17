@@ -4073,7 +4073,7 @@
   },
   {
     "entity_id": "script.playroom_lights_power_on",
-    "friendly_name": "Playroom: ensure outlet on and bulbs reachable",
+    "friendly_name": "Playroom: ensure wall switch on and bulbs reachable",
     "area_id": null,
     "device_id": null,
     "platform": "script",

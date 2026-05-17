@@ -84,7 +84,7 @@
     "name": "Bonus room",
     "manufacturer": "Belkin",
     "model": "LightSwitch",
-    "area_id": null,
+    "area_id": "play_room",
     "integrations": [
       "wemo"
     ]
@@ -734,7 +734,7 @@
     "name": "Play Room outlet",
     "manufacturer": "TP-Link",
     "model": "HS200",
-    "area_id": null,
+    "area_id": "play_room",
     "integrations": [
       "tplink"
     ]
@@ -764,7 +764,7 @@
     "name": "Playroom 3",
     "manufacturer": "Signify Netherlands B.V.",
     "model": "LCT011",
-    "area_id": null,
+    "area_id": "play_room",
     "integrations": [
       "zha"
     ]
@@ -774,7 +774,7 @@
     "name": "Playroom 4",
     "manufacturer": "Signify Netherlands B.V.",
     "model": "LCT011",
-    "area_id": null,
+    "area_id": "play_room",
     "integrations": [
       "zha"
     ]
