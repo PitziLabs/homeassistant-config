@@ -5,13 +5,15 @@
 #   area:      play_room
 #
 # Wired-power note: the four Hue bulbs (light.playroom_1..4) are downstream of
-# a TP-Link Kasa HS200 in-wall switch (switch.play_room_outlet). If the wall
-# switch is off the bulbs lose mains and drop off the Zigbee mesh. Every
+# a Belkin Wemo in-wall LightSwitch exposed as `switch.bonus_room` (the device
+# was adopted under that label before its actual location was known). If the
+# wall switch is off the bulbs lose mains and drop off the Zigbee mesh. Every
 # scene-on action below calls `script.playroom_lights_power_on` first, which
-# flips the outlet on (if needed) and waits for the bulbs to rejoin before
-# applying the scene. `light.turn_off` does NOT cut the outlet — the bulbs
-# stay powered-but-off so the dial can wake them again later without a
-# rejoin delay.
+# flips the switch on (if needed) and waits for the bulbs to rejoin before
+# applying the scene. `light.turn_off` does NOT cut mains — the bulbs stay
+# powered-but-off so the dial can wake them again later without a rejoin
+# delay. (`switch.play_room_outlet` is a separate TP-Link Kasa HS200 outlet
+# in the same room that does NOT power the bulbs.)
 #
 # Button layout (top → bottom):
 #   1 (top)    → Bright       100% / 4000K  (general illumination)
@@ -37,17 +39,17 @@
 
 script:
   playroom_lights_power_on:
-    alias: 'Playroom: ensure outlet on and bulbs reachable'
+    alias: 'Playroom: ensure wall switch on and bulbs reachable'
     mode: single
     sequence:
       - if:
           - condition: state
-            entity_id: switch.play_room_outlet
+            entity_id: switch.bonus_room
             state: 'off'
         then:
           - action: switch.turn_on
             target:
-              entity_id: switch.play_room_outlet
+              entity_id: switch.bonus_room
           # Hue bulbs need a moment to rejoin the Zigbee mesh after mains
           # is restored. Wait until all 4 report a usable state, capped at
           # 8s so a single missing bulb can't block the scene apply forever.
@@ -74,7 +76,7 @@ script:
       # Bulbs are unreachable when the wall switch is off; bail rather than
       # racing a power-on. User can press a button to wake the room.
       - condition: state
-        entity_id: switch.play_room_outlet
+        entity_id: switch.bonus_room
         state: 'on'
       - variables:
           # Pick the highest current brightness across the on bulbs as the

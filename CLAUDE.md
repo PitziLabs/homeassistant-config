@@ -122,7 +122,7 @@ Automations are split across two locations with different governance models:
 | `switch.family_room_outlets` | Powers floor lamp (dependency) |
 | `switch.back_porch` | Outdoor |
 | `switch.play_room_outlet` | Indoor |
-| `switch.bonus_room` | Indoor (often unavailable) |
+| `switch.bonus_room` | Wemo wall switch powering the play room Hue bulbs (device adopted under stale name) |
 | `switch.basement_1` | Indoor (often unavailable) |
 
 ### Sonos Media Players
