@@ -870,8 +870,16 @@ views:
       # LIGHTS COLUMN — 18 lights, grouped into 5 room sections.
       # (light.meeting_light is hoisted to the top-right meeting cell.)
       # Sections render as a vertical-stack of (section header + grid).
-      # Default 4 cols keeps the column from outgrowing its cell and
-      # triggering a page-level scrollbar; Outdoor uses 5 cols.
+      # Column count is sized PER SECTION to the light count so each
+      # row is fully populated (no empty trailing cells):
+      #   Family   2 lights  → 2 cols
+      #   Kitchen  3 lights  → 3 cols
+      #   Office   6 lights  → 3 cols (3+3)
+      #   Hallways 2 lights  → 2 cols
+      #   Outdoor  5 lights  → 5 cols
+      # Total row count (6) is unchanged from the prior 4-col layout,
+      # so the lights column still fits inside the kiosk cell without
+      # a page-level scrollbar at 1920x1080.
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: lights }
@@ -913,7 +921,7 @@ views:
                   }
                   ha-card .card-content p { margin: 0 !important; }
             - type: grid
-              columns: 4
+              columns: 2
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
@@ -923,7 +931,7 @@ views:
             - <<: *light_section_header
               content: "KITCHEN"
             - type: grid
-              columns: 4
+              columns: 3
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.kitchen_island, name: Island, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
@@ -934,7 +942,7 @@ views:
             - <<: *light_section_header
               content: "OFFICE"
             - type: grid
-              columns: 4
+              columns: 3
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.bookcase_lamp, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
@@ -948,7 +956,7 @@ views:
             - <<: *light_section_header
               content: "HALLWAYS"
             - type: grid
-              columns: 4
+              columns: 2
               square: false
               cards:
                 - { type: 'custom:mushroom-light-card', entity: light.downstairs_hallway, name: Down Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
