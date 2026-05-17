@@ -351,15 +351,68 @@ views:
               card:
                 type: vertical-stack
                 cards:
-                  - type: custom:better-thermostat-ui-card
-                    entity: climate.upstairs
-                    name: Upstairs
-                    humidity: sensor.upstairs_humidity
-                    disable_buttons: true
-                    disable_menu: true
-                    card_mod:
-                      style: |
-                        ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
+                  # Active mode (heat / cool / heat_cool): show the BTUI dial
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: climate.upstairs
+                        state_not: 'off'
+                    card:
+                      type: custom:better-thermostat-ui-card
+                      entity: climate.upstairs
+                      name: Upstairs
+                      humidity: sensor.upstairs_humidity
+                      disable_buttons: true
+                      disable_menu: true
+                      card_mod:
+                        style: |
+                          ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
+
+                  # Standby (HVAC off, e.g. spring/fall): show current temp prominently
+                  # so the dial doesn't render a phantom 0.0 setpoint.
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: climate.upstairs
+                        state: 'off'
+                    card:
+                      type: custom:mushroom-template-card
+                      entity: climate.upstairs
+                      primary: |-
+                        {% set t = state_attr(config.entity, "current_temperature") %}
+                        {{ (t | round(1)) if t is not none else "—" }}°F
+                      secondary: "Upstairs · Standby"
+                      icon: mdi:thermometer
+                      icon_color: blue-grey
+                      fill_container: true
+                      tap_action: { action: none }
+                      card_mod:
+                        style: |
+                          ha-card {
+                            background: transparent !important;
+                            border: none !important;
+                            box-shadow: none !important;
+                            padding: 24px 16px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            height: 100% !important;
+                          }
+                          mushroom-card { width: 100%; }
+                          mushroom-state-info {
+                            --card-primary-font-size: 48px;
+                            --card-primary-font-weight: 600;
+                            --card-primary-color: var(--kiosk-text-primary);
+                            --card-primary-line-height: 1.1;
+                            --card-secondary-font-size: 14px;
+                            --card-secondary-font-weight: 500;
+                            --card-secondary-color: var(--kiosk-text-secondary);
+                            --card-secondary-line-height: 1.3;
+                          }
+                          mushroom-shape-icon {
+                            --icon-size: 56px;
+                            --shape-color: rgba(255, 255, 255, 0.06);
+                          }
 
                   - type: custom:mushroom-chips-card
                     alignment: center
@@ -420,15 +473,68 @@ views:
               card:
                 type: vertical-stack
                 cards:
-                  - type: custom:better-thermostat-ui-card
-                    entity: climate.downstairs
-                    name: Downstairs
-                    humidity: sensor.downstairs_humidity
-                    disable_buttons: true
-                    disable_menu: true
-                    card_mod:
-                      style: |
-                        ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
+                  # Active mode (heat / cool / heat_cool): show the BTUI dial
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: climate.downstairs
+                        state_not: 'off'
+                    card:
+                      type: custom:better-thermostat-ui-card
+                      entity: climate.downstairs
+                      name: Downstairs
+                      humidity: sensor.downstairs_humidity
+                      disable_buttons: true
+                      disable_menu: true
+                      card_mod:
+                        style: |
+                          ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
+
+                  # Standby (HVAC off, e.g. spring/fall): show current temp prominently
+                  # so the dial doesn't render a phantom 0.0 setpoint.
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: climate.downstairs
+                        state: 'off'
+                    card:
+                      type: custom:mushroom-template-card
+                      entity: climate.downstairs
+                      primary: |-
+                        {% set t = state_attr(config.entity, "current_temperature") %}
+                        {{ (t | round(1)) if t is not none else "—" }}°F
+                      secondary: "Downstairs · Standby"
+                      icon: mdi:thermometer
+                      icon_color: blue-grey
+                      fill_container: true
+                      tap_action: { action: none }
+                      card_mod:
+                        style: |
+                          ha-card {
+                            background: transparent !important;
+                            border: none !important;
+                            box-shadow: none !important;
+                            padding: 24px 16px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            height: 100% !important;
+                          }
+                          mushroom-card { width: 100%; }
+                          mushroom-state-info {
+                            --card-primary-font-size: 48px;
+                            --card-primary-font-weight: 600;
+                            --card-primary-color: var(--kiosk-text-primary);
+                            --card-primary-line-height: 1.1;
+                            --card-secondary-font-size: 14px;
+                            --card-secondary-font-weight: 500;
+                            --card-secondary-color: var(--kiosk-text-secondary);
+                            --card-secondary-line-height: 1.3;
+                          }
+                          mushroom-shape-icon {
+                            --icon-size: 56px;
+                            --shape-color: rgba(255, 255, 255, 0.06);
+                          }
 
                   - type: custom:mushroom-chips-card
                     alignment: center
