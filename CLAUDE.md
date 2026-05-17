@@ -400,6 +400,143 @@ durable, `git log`-greppable one. Both should agree.
 
 ---
 
+## HA Runtime Access (Local-HA MCP)
+
+A `Local-HA` MCP server is configured (visible via `claude mcp list`) at
+`http://homeassistant.local:9583/...`. It exposes Home Assistant's REST and
+WebSocket APIs as `mcp__Local-HA__*` tools, giving you direct read **and write**
+access to the running instance. Unlike `context/` — which is a cached snapshot
+refreshed every 6 hours — MCP queries hit the live HA process: state values are
+current to the second, history is accurate, and service calls actually fire.
+
+### Skill discipline (REQUIRED before HA config work)
+
+The server bundles a skill named `home-assistant-best-practices`. **Before**
+creating or editing any automation, script, scene, helper, or dashboard, call
+`mcp__Local-HA__ha_get_skill_home_assistant_best_practices` to fetch the
+reference-file index, then read the specific references that apply via
+`mcp__Local-HA__ha_read_resource`. The skill enforces native conditions over
+Jinja templates, `entity_id` over `device_id`, correct automation modes, and a
+safe-refactoring workflow for renames. Skipping the skill is the single most
+common cause of buggy or fragile HA config — do not skip it.
+
+Reference file URIs:
+
+| URI | Read when |
+|-----|-----------|
+| `skill://home-assistant-best-practices/SKILL.md` | Always — decision workflow + anti-pattern table |
+| `skill://home-assistant-best-practices/references/automation-patterns.md` | Writing triggers, conditions, modes, `wait_for_trigger` |
+| `skill://home-assistant-best-practices/references/helper-selection.md` | Choosing between a built-in helper and a template sensor |
+| `skill://home-assistant-best-practices/references/template-guidelines.md` | Confirming a template IS appropriate; template sensor best practices |
+| `skill://home-assistant-best-practices/references/device-control.md` | Service calls, Zigbee button/remote automations, ZHA vs Z2M |
+| `skill://home-assistant-best-practices/references/safe-refactoring.md` | Renaming entities, replacing helpers, restructuring automations |
+| `skill://home-assistant-best-practices/references/dashboard-guide.md` | Designing/modifying Lovelace dashboards |
+| `skill://home-assistant-best-practices/references/dashboard-cards.md` | Looking up specific card types |
+| `skill://home-assistant-best-practices/references/domain-docs.md` | Integration/domain reference for service calls and attributes |
+| `skill://home-assistant-best-practices/references/examples.yaml` | Compound examples that combine multiple practices |
+
+### Tool selection: MCP vs `context/`
+
+| Need | Prefer |
+|------|--------|
+| Bulk grep over entities/devices/areas (no real-time accuracy needed) | `context/*.json` via `jq` |
+| Current state of a specific entity (e.g. "is the basement door open *right now*?") | `ha_get_state` |
+| Entity lookup with fuzzy or area filtering | `ha_search_entities` (more current than `context/entities.json`) |
+| Search inside automation/script/scene/helper/dashboard configs by *behavior* | `ha_deep_search` (pass `search_types: ['dashboard']` to include cards) |
+| Time-series ("what time did motion fire last night?") | `ha_get_history` |
+| Long-term aggregates ("avg basement humidity for the month") | `ha_get_history(source="statistics")` |
+| Test a Jinja template before committing it to YAML | `ha_eval_template` |
+| System/integration/add-on logs for debugging | `ha_get_logs` (sources: `logbook`, `system`, `error_log`, `supervisor`, `system_service`, `logger`) |
+| Trigger a service to verify behavior end-to-end | `ha_call_service` |
+| Big-picture system overview | `ha_get_overview` (start with `detail_level="minimal"`) |
+| Validate the currently deployed config | `ha_check_config` (validates LIVE config, not your working tree — see below) |
+
+Rule of thumb: **use `context/` for exploration that doesn't need live
+accuracy** (faster, free, grep-friendly); **use MCP when staleness would mislead
+you** or when you need history, logs, templates, or service calls. If `context/`
+and MCP disagree, MCP wins — the snapshot is stale.
+
+### Validation workflow
+
+`ha_check_config` validates the **live deployed config**, not your local
+working tree. HA reads from `/config/` on the HAOS VM; your edits in
+`/home/cpitzi/repos/homeassistant-config/` are invisible to it until gitops-sync
+deploys them. Therefore:
+
+- **Before writing YAML:** use `ha_eval_template` to verify Jinja,
+  `ha_search_entities` / `ha_get_state` to confirm entity IDs exist, and
+  `ha_call_service` to confirm services exist and behave as expected.
+- **PR validation:** trust the `ha-config-check.yml` workflow — it spins up a
+  clean HA instance against the proposed YAML and runs `check_config` there.
+  That is what gates the merge.
+- **Post-deploy sanity check (within 5 minutes of merge):** run
+  `ha_check_config` to confirm the live system is healthy, and
+  `ha_get_logs(source="system", level="ERROR", hours_back=1)` to scan for
+  anything new the validator didn't catch (runtime errors only show up at load
+  time).
+
+### Drift guardrail: `.storage/` writes vs git source-of-truth
+
+The `ha_config_set_*` tools (`ha_config_set_automation`,
+`ha_config_set_script`, `ha_config_set_scene`, `ha_config_set_helper`,
+`ha_config_set_dashboard`) write to HA's `.storage/` directory, which is
+gitignored. Anything you create this way will:
+
+1. **Not appear in git** — it's runtime state, not config-as-code
+2. **Be captured in the next `context/` snapshot** — visible in
+   `context/scripts.json`, `context/scenes.json`, `context/helpers.json`, or
+   `context/dashboards-storage.json` within 6 hours
+3. **Drift** from the git source-of-truth if a corresponding file exists
+
+Repo conventions for where each kind of object lives:
+
+- **Automations** → `/config/automations/*.yaml` (git, merge-list) or
+  `/config/automations.yaml` (UI-editable, reconciled to git manually). **Do
+  not** use `ha_config_set_automation` for anything that should survive a
+  rebuild. Prototype, then write the YAML and PR it.
+- **Scripts** → `/config/scripts.yaml` (placeholder today). If
+  `ha_config_set_script` writes to `.storage/`, the snapshot pipeline surfaces
+  it in `context/scripts.json` — codify into `scripts.yaml` via PR before
+  relying on it long-term.
+- **Scenes** → `/config/scenes.yaml`, same pattern as scripts.
+- **Helpers** → `.storage/` is the normal home (no YAML helpers exist in this
+  repo). Using `ha_config_set_helper` is aligned with existing pattern; the
+  snapshot captures helpers in `context/helpers.json`.
+- **Dashboards** → `/config/dashboards/*.yaml` (git). The three YAML
+  dashboards this repo ships are NOT captured in
+  `context/dashboards-storage.json` — git is their source of truth.
+  `ha_config_set_dashboard` would create a storage-mode dashboard, which is
+  fine for experimentation but should be migrated to YAML for anything the
+  household relies on.
+
+When in doubt: **if a feature should survive a rebuild, it goes in git. If it's
+prototyping or genuinely user-managed (like a one-off helper), `.storage/` is
+fine.** Either way, follow up by re-reading the relevant `context/` snapshot to
+confirm the change landed where you expected.
+
+### Destructive actions — always confirm first
+
+These tools change state visibly or are hard to reverse — get user confirmation
+before invoking, even if the user authorized similar actions earlier in the
+conversation:
+
+- `ha_restart`, `ha_reload_core` — restarts HA Core (briefly disrupts everything)
+- `ha_remove_entity`, `ha_remove_device`, `ha_remove_area_or_floor`,
+  `ha_remove_zone`, `ha_delete_helpers_integrations`
+- `ha_config_remove_*` and `ha_config_delete_*` (automation/script/scene/helper/
+  dashboard/category/label/group)
+- `ha_backup_restore` — restores from a backup, overwriting current state
+- `ha_hacs_download`, `ha_manage_addon` — installs/updates/removes packages
+- `ha_set_integration_enabled` with `enabled=false`
+
+The gitops-sync loop picks up YAML changes and reloads HA automatically; a
+manual `ha_restart` should not be the default reaction to "I want to see my
+change live" — wait for the auto-reload, or call the relevant
+`automation.reload` / `script.reload` / `lovelace.reload_resources` service via
+`ha_call_service` if you're impatient.
+
+---
+
 ## HA Runtime State Context (`context/`)
 
 The `context/` directory is an auto-generated, read-only snapshot of HA runtime
@@ -407,6 +544,12 @@ state — entity registry, area registry, device registry, the UI-editable
 `automations.yaml`, plus storage-mode scripts, scenes, helpers, and dashboards.
 It is populated by `scripts/ha-context-dump.sh` and refreshed every 6 hours
 (or on manual button press) via the autonomous context-sync pipeline.
+
+`context/` and the Local-HA MCP server complement each other: `context/` is a
+fast, grep-friendly snapshot good for bulk exploration; MCP is the live source
+of truth. See the "HA Runtime Access (Local-HA MCP)" section above for the
+selection rules. If the two disagree, trust MCP and recommend a snapshot
+refresh.
 
 **Before writing any automation, script, dashboard, or other config that references
 entity IDs, area IDs, or device IDs, consult the relevant `context/` files:**
