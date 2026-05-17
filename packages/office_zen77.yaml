@@ -34,10 +34,14 @@
 # Both controllers read from and write to the same counter, so tapping
 # either one continues from the same scene index. Single source of truth.
 #
-# Hardware note: ZEN77 Parameter "Smart Bulb Mode" (disable internal relay)
-# must be enabled so the paddle fires Central Scene events without cutting
-# power to the load. Configured manually via Settings > Devices > Office
-# Switch > Configure (out of scope for this PR).
+# Hardware setup (codified): The ZEN77 ships with both Scene Control and
+# Smart Bulb Mode disabled. The `zen77_office_parameter_apply` automation
+# at the bottom of this file enables them via zwave_js.set_config_parameter
+# on every HA start and whenever the node returns to "alive", so a re-pair
+# or backup-restore cannot leave the paddle inert.
+#   * Scene Control = 1     → paddle emits Central Scene Notification reports
+#   * Smart Switch Mode = 1 → internal relay decoupled from paddle (scene-only,
+#                              load stays on so wired Hue bulbs keep power)
 
 automation:
   - id: zen77_office_up_cycle
@@ -125,4 +129,40 @@ automation:
         data:
           value: 1
       - action: script.office_sonoff_apply_scene
+    mode: single
+
+  - id: zen77_office_parameter_apply
+    alias: 'Office ZEN77: apply Z-Wave parameters (Scene Control + Smart Switch Mode)'
+    description: >
+      Idempotently sets the two Zooz ZEN77 configuration parameters that the
+      device ships with disabled:
+        * Scene Control = 1     — enable Central Scene reports on paddle taps
+        * Smart Switch Mode = 1 — decouple the internal relay so the paddle is
+                                  scene-only (load stays on, paddle drives
+                                  scenes via the other three automations).
+      Without these, the up/down/hold automations above are inert: paddle taps
+      either fight us by cutting power, or never generate Central Scene events
+      in the first place. Re-runs on every HA start and whenever the Z-Wave
+      node returns to "alive" (covers radio dropouts and device re-pairs).
+      Note: zwave_js.set_config_parameter is keyed by device_id by design —
+      the service finds the underlying Z-Wave node, not an entity. This is the
+      one place a device_id reference is the correct shape.
+    triggers:
+      - trigger: homeassistant
+        event: start
+      - trigger: state
+        entity_id: sensor.office_switch_node_status
+        to: alive
+    conditions: []
+    actions:
+      - action: zwave_js.set_config_parameter
+        data:
+          device_id: 51a69e120926a13bba9cfaac7a2937e7
+          parameter: Scene Control
+          value: 1
+      - action: zwave_js.set_config_parameter
+        data:
+          device_id: 51a69e120926a13bba9cfaac7a2937e7
+          parameter: Smart Switch Mode
+          value: 1
     mode: single
