@@ -38,18 +38,19 @@ views:
       overflow: hidden
       grid-gap: 8px
       grid-template-columns: 1fr 1fr 1.4fr 1fr
-      grid-template-rows: 200px 1fr
+      grid-template-rows: 240px 1fr
       grid-template-areas: |
         "weather weather alarm   meeting"
         "climate sensors lights  media"
     cards:
 
       # ============================================================
-      # WEATHER + CLOCK (top-left, spans 2 cols)
-      # Horizontal-stack: clock-weather-card LEFT, current conditions
-      # mushroom-template-card RIGHT. clock-weather-card is portrait
-      # by nature; constraining it to ~420px and filling the right
-      # half with a current-conditions summary uses the full 840px.
+      # WEATHER + CLOCK + FORECAST (top-left, spans 2 cols)
+      # Single clock-weather-card with forecast_rows: 3 spans the full
+      # 2-col weather cell. The card includes its own current-conditions
+      # row above the forecast, so the previous right-side mushroom hero
+      # was redundant and has been removed. Top row height was bumped
+      # from 200px → 240px to give the forecast strip room to breathe.
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: weather }
@@ -63,83 +64,19 @@ views:
               background: linear-gradient(135deg, #1e3a5f 0%, #0f1f3a 100%);
             }
         card:
-          type: horizontal-stack
-          cards:
-
-            # LEFT: clock + date + weather condition (the card we know works)
-            - type: custom:clock-weather-card
-              entity: weather.forecast_home
-              forecast_rows: 0
-              time_format: 12
-              date_pattern: "EEEE, MMM d"
-              card_mod:
-                style: |
-                  ha-card {
-                    background: transparent !important;
-                    border: none !important;
-                    box-shadow: none !important;
-                    max-width: 420px;
-                  }
-
-            # RIGHT: hero current-conditions summary
-            - type: custom:mushroom-template-card
-              primary: |-
-                {% set cond = states("weather.forecast_home") %}
-                {{ cond | replace("-", " ") | replace("partlycloudy", "partly cloudy") | title }}
-              secondary: |-
-                {% set t = state_attr("weather.forecast_home", "temperature") %}
-                {% set h = state_attr("weather.forecast_home", "humidity") %}
-                {% set w = state_attr("weather.forecast_home", "wind_speed") %}
-                {{ t | round }}°F · Humidity {{ h | round }}% · Wind {{ w | round }} mph
-              icon: |-
-                {% set cond = states("weather.forecast_home") %}
-                {% if cond == "clear-night" %}mdi:weather-night
-                {% elif cond in ["sunny","clear"] %}mdi:weather-sunny
-                {% elif cond in ["partlycloudy","partly-cloudy","partly-cloudy-day"] %}mdi:weather-partly-cloudy
-                {% elif cond == "partly-cloudy-night" %}mdi:weather-night-partly-cloudy
-                {% elif cond == "cloudy" %}mdi:weather-cloudy
-                {% elif cond in ["rainy","pouring"] %}mdi:weather-pouring
-                {% elif cond == "snowy" %}mdi:weather-snowy
-                {% elif cond == "snowy-rainy" %}mdi:weather-snowy-rainy
-                {% elif cond == "lightning-rainy" %}mdi:weather-lightning-rainy
-                {% elif cond == "lightning" %}mdi:weather-lightning
-                {% elif cond == "fog" %}mdi:weather-fog
-                {% elif cond == "windy" %}mdi:weather-windy
-                {% elif cond == "hail" %}mdi:weather-hail
-                {% else %}mdi:weather-cloudy
-                {% endif %}
-              icon_color: |-
-                {% set cond = states("weather.forecast_home") %}
-                {% if cond == "clear-night" %}deep-purple
-                {% elif cond in ["sunny","clear"] %}amber
-                {% elif "cloud" in cond %}grey
-                {% elif "rain" in cond or cond == "pouring" %}blue
-                {% elif "snow" in cond %}light-blue
-                {% elif cond == "lightning" %}yellow
-                {% else %}grey
-                {% endif %}
-              fill_container: true
-              multiline_secondary: true
-              card_mod:
-                style: |
-                  ha-card {
-                    background: transparent !important;
-                    border: none !important;
-                    box-shadow: none !important;
-                    padding: 16px 20px !important;
-                  }
-                  mushroom-state-info {
-                    --card-primary-font-size: 28px;
-                    --card-primary-font-weight: 600;
-                    --card-primary-color: var(--kiosk-text-primary);
-                    --card-secondary-font-size: 16px;
-                    --card-secondary-font-weight: 500;
-                    --card-secondary-color: var(--kiosk-text-secondary);
-                  }
-                  mushroom-shape-icon {
-                    --icon-size: 80px;
-                    --shape-color: rgba(255, 255, 255, 0.08);
-                  }
+          type: custom:clock-weather-card
+          entity: weather.forecast_home
+          forecast_rows: 3
+          time_format: 12
+          date_pattern: "EEEE, MMM d"
+          card_mod:
+            style: |
+              ha-card {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                height: 100%;
+              }
 
       # ============================================================
       # ALARM HERO (top-right, spans 2 cols)
@@ -161,7 +98,7 @@ views:
           show_name: true
           show_state: true
           show_icon: true
-          size: 35%
+          size: 55%
           layout: icon_name_state
           tap_action: { action: none }
           hold_action: { action: none }
@@ -222,10 +159,12 @@ views:
             grid:
               - grid-template-areas: '"i n" "i s"'
               - grid-template-columns: 'min-content 1fr'
-              - grid-template-rows: 'min-content min-content'
+              - grid-template-rows: '1fr 1fr'
               - column-gap: '24px'
               - row-gap: '4px'
               - align-items: 'center'
+              - align-content: 'center'
+              - height: '100%'
           extra_styles: |
             @keyframes pulse {
               0%, 100% { opacity: 1; transform: scale(1); }
