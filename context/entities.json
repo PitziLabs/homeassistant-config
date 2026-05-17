@@ -296,6 +296,30 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.office_zen77_down_tap_office_lights_off",
+    "friendly_name": "Office ZEN77: Down tap → office lights OFF",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.office_zen77_up_hold_jump_to_scene_1_bright",
+    "friendly_name": "Office ZEN77: Up hold → jump to scene 1 (Bright)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.office_zen77_up_tap_office_on_cycle_scenes",
+    "friendly_name": "Office ZEN77: Up tap → office on / cycle scenes",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.playroom_area_fix_trigger_on_button_press",
     "friendly_name": "Playroom Area Fix: trigger on button press",
     "area_id": null,
