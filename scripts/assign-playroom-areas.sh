@@ -9,6 +9,9 @@
 #   8a93d92e1ef5b0f7e39d20a7d9cfa603 → play_room  (Playroom 3, ZHA Hue bulb)
 #   2cf841bd422c4e20593540bf7eeb2f1b → play_room  (Playroom 4, ZHA Hue bulb)
 #   c13d103ea0a1177f174dba7bd38fbeaa → play_room  (Play Room outlet, Kasa HS200)
+#   f090c7c3434162e57c3d8a9cee321fae → play_room  (Wemo wall switch — labeled
+#                                                  "Bonus room" at adoption,
+#                                                  actually powers the Hue bulbs)
 #
 # Run inside the HA Core container (Python 3 + aiohttp are part of Core):
 #
@@ -85,6 +88,7 @@ ASSIGNMENTS = [
     ("8a93d92e1ef5b0f7e39d20a7d9cfa603", "play_room", "Playroom 3"),
     ("2cf841bd422c4e20593540bf7eeb2f1b", "play_room", "Playroom 4"),
     ("c13d103ea0a1177f174dba7bd38fbeaa", "play_room", "Play Room outlet"),
+    ("f090c7c3434162e57c3d8a9cee321fae", "play_room", "Bonus room (Wemo wall switch)"),
 ]
 
 
