@@ -128,8 +128,40 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.hue_tap_dial_button_1_long_concentrate_100_5000k",
+    "friendly_name": "Hue Tap Dial: Button 1 long → Concentrate (100% / 5000K)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_1_short_bright_daylight_100_4000k",
+    "friendly_name": "Hue Tap Dial: Button 1 short → Bright Daylight (100% / 4000K)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_2_long_relax_40_2200k",
+    "friendly_name": "Hue Tap Dial: Button 2 long → Relax (40% / 2200K)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.hue_tap_dial_button_2_relax_40_2200k",
     "friendly_name": "Hue Tap Dial: Button 2 → Relax (40% / 2200K)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_2_short_sunset_per_bulb_warm_colors",
+    "friendly_name": "Hue Tap Dial: Button 2 short → Sunset (per-bulb warm colors)",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -144,8 +176,40 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.hue_tap_dial_button_3_long_rainbow_per_bulb_vivid_primaries",
+    "friendly_name": "Hue Tap Dial: Button 3 long → Rainbow (per-bulb vivid primaries)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_3_short_ocean_per_bulb_cool_colors",
+    "friendly_name": "Hue Tap Dial: Button 3 short → Ocean (per-bulb cool colors)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.hue_tap_dial_button_4_all_playroom_lights_off",
     "friendly_name": "Hue Tap Dial: Button 4 → all playroom lights off",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_4_long_colorloop_effect",
+    "friendly_name": "Hue Tap Dial: Button 4 long → Colorloop effect",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.hue_tap_dial_button_4_short_all_playroom_lights_off",
+    "friendly_name": "Hue Tap Dial: Button 4 short → all playroom lights off",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -8345,7 +8409,7 @@
   },
   {
     "entity_id": "switch.bonus_room",
-    "friendly_name": "Bonus room",
+    "friendly_name": "Playroom Lights Power",
     "area_id": null,
     "device_id": "f090c7c3434162e57c3d8a9cee321fae",
     "platform": "wemo",
@@ -9096,6 +9160,14 @@
     "hidden": false
   },
   {
+    "entity_id": "update.ha_mcp_tools_update",
+    "friendly_name": "HA MCP Tools update",
+    "area_id": null,
+    "device_id": "5162f4d6a73b227ec91668b5c1ff58ec",
+    "platform": "hacs",
+    "hidden": false
+  },
+  {
     "entity_id": "update.hacs_update",
     "friendly_name": "HACS update",
     "area_id": null,
@@ -9124,6 +9196,14 @@
     "friendly_name": "Update",
     "area_id": null,
     "device_id": "d0b348f9d93f93c5f512d7fb81ff509c",
+    "platform": "hassio",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.home_assistant_mcp_server_update",
+    "friendly_name": "Update",
+    "area_id": null,
+    "device_id": "b6b288d77103d97abd511e5cba763fde",
     "platform": "hassio",
     "hidden": false
   },
@@ -9221,6 +9301,14 @@
     "area_id": null,
     "device_id": "7126a716c726fd2e401080befa872937",
     "platform": "hacs",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.nabu_casa_webhook_proxy_for_ha_mcp_update",
+    "friendly_name": "Update",
+    "area_id": null,
+    "device_id": "34be729fbd82fd26c2264547ce8812ef",
+    "platform": "hassio",
     "hidden": false
   },
   {
