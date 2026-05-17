@@ -1,8 +1,10 @@
 # Home Assistant Configuration — PitziLabs
 
-Production-grade, git-controlled Home Assistant deployment running on Proxmox. Every configuration file is YAML-driven, version-controlled, and deployed through a structured AI-augmented development workflow.
+**Authorship:** The YAML configuration, ESPHome firmware, automations, dashboards, scripts, and documentation in this repo are co-written with [Claude](https://claude.ai) (Anthropic). I direct the work and review the output; Claude writes the code. I'm an infrastructure operator, not a software engineer — please don't read this repo as a portfolio of coding ability.
 
-This isn't a collection of UI screenshots. It's an opinionated infrastructure project with a defined architecture, reproducible deployment patterns, and a development process built around code review and iterative refinement.
+Git-controlled Home Assistant deployment running on Proxmox. Every configuration file is YAML-driven, version-controlled, and deployed through a structured AI-augmented development workflow.
+
+The repo represents an opinionated infrastructure project with a defined architecture and reproducible deployment patterns. The development process is built around code review and iterative refinement, but the implementation is Claude's.
 
 ## What's Here
 
