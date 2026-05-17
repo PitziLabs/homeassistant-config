@@ -80,16 +80,6 @@
     ]
   },
   {
-    "device_id": "f090c7c3434162e57c3d8a9cee321fae",
-    "name": "Bonus room",
-    "manufacturer": "Belkin",
-    "model": "LightSwitch",
-    "area_id": "play_room",
-    "integrations": [
-      "wemo"
-    ]
-  },
-  {
     "device_id": "cb2f82f7e05c0c803d1a769aa47ab3cb",
     "name": "Bookcase Lamp",
     "manufacturer": "Signify Netherlands B.V.",
@@ -320,6 +310,16 @@
     ]
   },
   {
+    "device_id": "5162f4d6a73b227ec91668b5c1ff58ec",
+    "name": "HA MCP Tools",
+    "manufacturer": "homeassistant-ai",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
     "device_id": "f9a51eae4abd5087170b4a6577eb96d7",
     "name": "HACS",
     "manufacturer": "hacs.xyz",
@@ -444,6 +444,16 @@
     "name": "Home Assistant Host",
     "manufacturer": "Home Assistant",
     "model": "Home Assistant Host",
+    "area_id": null,
+    "integrations": [
+      "hassio"
+    ]
+  },
+  {
+    "device_id": "b6b288d77103d97abd511e5cba763fde",
+    "name": "Home Assistant MCP Server",
+    "manufacturer": "Home Assistant MCP Server",
+    "model": "Home Assistant App",
     "area_id": null,
     "integrations": [
       "hassio"
@@ -587,6 +597,16 @@
     "area_id": null,
     "integrations": [
       "hacs"
+    ]
+  },
+  {
+    "device_id": "34be729fbd82fd26c2264547ce8812ef",
+    "name": "Nabu Casa / Webhook Proxy for HA MCP",
+    "manufacturer": "Home Assistant MCP Server",
+    "model": "Home Assistant App",
+    "area_id": null,
+    "integrations": [
+      "hassio"
     ]
   },
   {
@@ -777,6 +797,16 @@
     "area_id": "play_room",
     "integrations": [
       "zha"
+    ]
+  },
+  {
+    "device_id": "f090c7c3434162e57c3d8a9cee321fae",
+    "name": "Playroom Lights Power",
+    "manufacturer": "Belkin",
+    "model": "LightSwitch",
+    "area_id": "play_room",
+    "integrations": [
+      "wemo"
     ]
   },
   {
