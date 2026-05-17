@@ -1,0 +1,128 @@
+# Zooz ZEN77 (Z-Wave 700-series dimmer) → Office lights scene controller
+#
+# Device:
+#   name: Office Switch
+#   manufacturer: Zooz
+#   model: ZEN77
+#   device_id: 51a69e120926a13bba9cfaac7a2937e7
+#   integration: zwave_js
+#   area: office
+#
+# Replaces the retired Signify RDM001 in-wall rocker (recycled).
+#
+# Z-Wave Central Scene events fire as `zwave_js_value_notification`:
+#   property_key_name: '001'    = up paddle
+#   property_key_name: '002'    = down paddle
+#   value: KeyPressed           = single tap
+#   value: KeyHeldDown          = held past ~1s threshold (fires repeatedly)
+#   value: KeyReleased          = released after hold
+#   value: KeyPressed2x..5x     = multi-tap (intentionally unhandled, reserved)
+#
+# Bindings:
+#   up tap   → if lights off, reset counter to 1 and apply scene 1;
+#              otherwise advance counter (wraps 11 → 1) and apply.
+#              i.e. first tap turns on, subsequent taps cycle scenes.
+#   down tap → all 6 office lamps off (counter persists, candle loop killed).
+#   up hold  → jump straight to scene 1 (Bright), reset counter to 1.
+#              Useful for bailing out of a colored/flicker scene without
+#              click-cycling through the rest of the catalog.
+#
+# Shared state with the Sonoff Button 2:
+#   counter:  counter.office_sonoff_scene
+#   apply:    script.office_sonoff_apply_scene
+#   loop:     script.office_sonoff_candle_loop
+# Both controllers read from and write to the same counter, so tapping
+# either one continues from the same scene index. Single source of truth.
+#
+# Hardware note: ZEN77 Parameter "Smart Bulb Mode" (disable internal relay)
+# must be enabled so the paddle fires Central Scene events without cutting
+# power to the load. Configured manually via Settings > Devices > Office
+# Switch > Configure (out of scope for this PR).
+
+automation:
+  - id: zen77_office_up_cycle
+    alias: 'Office ZEN77: Up tap → office on / cycle scenes'
+    triggers:
+      - trigger: event
+        event_type: zwave_js_value_notification
+        event_data:
+          device_id: 51a69e120926a13bba9cfaac7a2937e7
+          command_class_name: Central Scene
+          property_key_name: '001'
+          value: KeyPressed
+    conditions: []
+    actions:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.office_lights_on
+                state: 'off'
+            sequence:
+              - action: counter.set_value
+                target:
+                  entity_id: counter.office_sonoff_scene
+                data:
+                  value: 1
+        default:
+          - if:
+              - condition: state
+                entity_id: counter.office_sonoff_scene
+                state: '11'
+            then:
+              - action: counter.set_value
+                target:
+                  entity_id: counter.office_sonoff_scene
+                data:
+                  value: 1
+            else:
+              - action: counter.increment
+                target:
+                  entity_id: counter.office_sonoff_scene
+      - action: script.office_sonoff_apply_scene
+    mode: single
+
+  - id: zen77_office_down_off
+    alias: 'Office ZEN77: Down tap → office lights OFF'
+    triggers:
+      - trigger: event
+        event_type: zwave_js_value_notification
+        event_data:
+          device_id: 51a69e120926a13bba9cfaac7a2937e7
+          command_class_name: Central Scene
+          property_key_name: '002'
+          value: KeyPressed
+    conditions: []
+    actions:
+      - action: script.turn_off
+        target:
+          entity_id: script.office_sonoff_candle_loop
+      - action: light.turn_off
+        target:
+          entity_id:
+            - light.bookcase_lamp
+            - light.corner_lamp
+            - light.door_lamp
+            - light.desk_lamp_2
+            - light.desk_lamp_2_2
+            - light.table_lamp
+    mode: single
+
+  - id: zen77_office_up_hold_bright
+    alias: 'Office ZEN77: Up hold → jump to scene 1 (Bright)'
+    triggers:
+      - trigger: event
+        event_type: zwave_js_value_notification
+        event_data:
+          device_id: 51a69e120926a13bba9cfaac7a2937e7
+          command_class_name: Central Scene
+          property_key_name: '001'
+          value: KeyHeldDown
+    conditions: []
+    actions:
+      - action: counter.set_value
+        target:
+          entity_id: counter.office_sonoff_scene
+        data:
+          value: 1
+      - action: script.office_sonoff_apply_scene
+    mode: single
