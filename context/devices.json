@@ -814,7 +814,7 @@
     "name": "Rachio",
     "manufacturer": "Rachio",
     "model": "GENERATION3_8ZONE",
-    "area_id": "basement",
+    "area_id": "outside",
     "integrations": [
       "rachio"
     ]
@@ -894,7 +894,7 @@
     "name": "Spotify",
     "manufacturer": "Spotify AB",
     "model": "Spotify premium",
-    "area_id": "downstairs",
+    "area_id": "office",
     "integrations": [
       "spotify"
     ]
