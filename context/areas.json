@@ -36,6 +36,10 @@
     "name": "Living Room"
   },
   {
+    "area_id": "master_bathroom",
+    "name": "Master Bathroom"
+  },
+  {
     "area_id": "master_bedroom",
     "name": "Master Bedroom"
   },
