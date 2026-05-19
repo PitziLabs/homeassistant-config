@@ -115,6 +115,7 @@ Automations are split across two locations with different governance models:
 | Family Room | `light.family_room`, `light.family_room_2`, `light.floor_lamp` |
 | Entry/Upstairs | `light.entry_1`, `light.entry_2`, `light.downstairs_hallway`, `light.upstairs_hallway_light`, `light.meeting_light` |
 | Outdoor | `light.front_door`, `light.front_lantern`, `light.garage_front`, `light.garage_side`, `light.shed` |
+| Master Bathroom | `light.master_bathroom` (Ecosmart 12A19060WRGBWH2 RGBWW A19, Hubspace cloud) |
 
 ### Switches
 | Entity ID | Description |
