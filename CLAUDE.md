@@ -10,6 +10,57 @@ Git-controlled Home Assistant OS deployment running on Proxmox. All configuratio
 
 ---
 
+## Three-Layer State Model
+
+This repo treats Home Assistant state as three coordinated layers. Each has a
+distinct job, and intent flows from right to left:
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ LIVE (MCP)      │     │ SNAPSHOT        │     │ INTENT (YAML)   │
+│ ha-mcp server   │  →  │ context/*.json  │  ←  │ /config/*.yaml  │
+│ read + write    │     │ 6h dump, RO     │     │ git, PR-gated   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+**1. Intent (YAML, this repo)** — `/config/*.yaml` is the durable source of
+truth for everything that should survive a rebuild: `automations/`, `packages/`,
+`dashboards/`, `themes/`, `configuration.yaml`, ESPHome firmware, shell
+scripts. Changes land via PR; the GitOps loop deploys merged main commits
+within 5 minutes. **If a feature should survive a rebuild, it lives here.**
+
+**2. Snapshot (`context/`)** — A generated artifact dumped from the live HA
+instance every 6 hours (or on `input_button.ha_context_dump_now`) via
+`scripts/ha-context-dump.sh`. Captures the entity/device/area registries,
+the UI-managed `automations.yaml`, and storage-mode scripts/scenes/helpers/
+dashboards. **Read-only** — `.claude/hooks/block-context-writes.sh` rejects
+tool calls that would mutate it. The `ha-context-sync.yml` workflow opens
+an auto-merging PR when the snapshot drifts from main, so the registry
+state in git is never more than ~6 hours stale.
+
+**3. Live (HA-MCP)** — The HA MCP server (`homeassistant-ai/ha-mcp` HACS
+integration, running inside HA) exposes the REST and WebSocket APIs as
+`mcp__*__ha_*` tools. State is current to the second; history, logs, and
+service calls are accurate. Writes here (`ha_config_set_*`, `ha_set_entity`,
+`ha_update_device`, area/floor creation) land in `.storage/` (gitignored).
+Use it to **prototype and inspect**, never as a substitute for committing
+YAML.
+
+**Layer selection rule**: read from the cheapest layer that's still accurate
+enough. YAML for *intent* ("what should be true"). `context/` for fast,
+grep-friendly structural lookups. MCP only when staleness would mislead you,
+or when you need history, logs, templates, or service calls.
+
+**Drift resolution**: if `context/` and MCP disagree, MCP wins — the snapshot
+is stale; ask the user to press `input_button.ha_context_dump_now` and re-run.
+If YAML and the live runtime diverge for something that should be in YAML
+(automation, dashboard, package), the YAML is canonical — reconcile by editing
+YAML and letting GitOps redeploy. The "Drift guardrail" subsection under
+*HA Runtime Access* below catalogs which object types live in `.storage/`
+vs YAML.
+
+---
+
 ## Architecture
 
 ### Alarm System (Konnected + ESPHome + Manual Alarm Platform)
@@ -65,24 +116,45 @@ Automations are split across two locations with different governance models:
 
 **RTTTL tone formula:** `d=32,o=4,b=100` — short ticks at octave 4. Differentiation by tick count (1=delay, 2=armed/chime, 3=disarm) and repeat interval.
 
-**`/config/automations/`** — Git-authored. Managed entirely via PR; never touched by the HA UI editor. HA merges these at startup via `!include_dir_merge_list`. Adding a new YAML file here is sufficient — no changes needed to `configuration.yaml`.
+**`/config/automations/`** — Git-authored. Managed entirely via PR; never touched by the HA UI editor. HA merges these at startup via `!include_dir_merge_list`. Adding a new YAML file here is sufficient — no changes needed to `configuration.yaml`. See `automations/README.md` for the governance model.
 
 | File | Automations |
 |------|-------------|
 | `meeting.yaml` | 4 automations: meeting button ON/OFF → hallway light red/off; button unavailable → light off; reconnect → re-sync state |
+| `sonoff_button_kitchen_family.yaml` | 2 automations: Sonoff Button 1 single press → Downstairs + Hallways ON; double press → OFF |
 
-### Template Sensors (`/config/configuration.yaml`)
+Additional device-scoped controllers live in `packages/` rather than
+`automations/` when they bundle helpers, scripts, or rest_commands alongside
+the automation. See *Packages* below.
 
-**Sonos group-aware sensors** (6 total):
+### Template Sensors, Lights, and Triggers (`/config/configuration.yaml`)
+
+All template entities live in the top-level `template:` block of
+`configuration.yaml`. Four groups:
+
+**Sonos group-aware binary sensors** (6 total):
 - `binary_sensor.sonos_{office,kitchen,dining_room,master_bedroom,basement,roam}_leader`
 - ON only when speaker is `playing` AND is first in its own `group_members` list (i.e., the group coordinator)
-- Used by dashboard conditional cards to show only the coordinator's media card when speakers are grouped
+- Drive conditional Sonos cards on the Home view — only the coordinator renders when speakers are grouped
 
-**Per-room light activity sensors** (7 total):
+**Per-room light activity binary sensors** (7 total):
 - `binary_sensor.{kitchen,office,play_room,family_room,entry,outdoor}_lights_on`
 - `binary_sensor.any_switch_on`
-- ON when any light/switch in the room is on
-- Used by the Home (mobile) view for per-room "All off" indicators
+- ON when any light/switch in that room is on; drive per-room "All off" tiles on the Home view
+
+**Per-room "lights on" count sensors** (5 total):
+- `sensor.lights_on_{kitchen,office,family_room,outdoor,hallway}_count`
+- Numeric count of lights currently on in the room; drive headline tiles on the Kiosk and Home views
+
+**Composite light:**
+- `light.floor_lamp_composite` — sequences `switch.family_room_outlets` ON, then `light.floor_lamp` ON (and reverse on off); used in dashboards and `binary_sensor.family_room_lights_on` so the dependent outlet is one tap away
+
+**Trigger-based forecast sensor:**
+- `sensor.weather_forecast_daily` — refreshes via `weather.get_forecasts` every 30 minutes and at startup, exposing the full daily forecast array as an attribute (the core `weather.*` entity only exposes the current state)
+
+**Light groups** (top-level `light:` block, not `template:`):
+- `light.outdoor` — front_door, front_lantern, garage_front, garage_side, shed
+- `light.downstairs` — kitchen_main, kitchen_island, kitchen_table, family_room, family_room_2, floor_lamp
 
 ---
 
@@ -107,15 +179,29 @@ Automations are split across two locations with different governance models:
 | `esphome.konnected_56a4fa_stop_rtttl` | Stop piezo playback |
 
 ### Lights
+
+The authoritative live list is `context/entities.json` — query with `jq`:
+
+    jq '.[] | select(.entity_id | startswith("light.")) | {entity_id, area_id}' context/entities.json
+
+Or by area: `jq '.[] | select(.entity_id | startswith("light.") and .area_id == "office")' context/entities.json`. High-level room map (representative entries, not exhaustive):
+
 | Room | Entities |
 |------|----------|
 | Kitchen | `light.kitchen_main`, `light.kitchen_island`, `light.kitchen_table` |
-| Office | `light.office`, `light.office_lamp`, `light.office_bookcase`, `light.office_corner`, `light.office_door`, `light.desk_lamp`, `light.desk_lamp_2` |
-| Play Room | `light.play_room`, `light.play_room_1`, `light.play_room_2`, `light.play_room_3`, `light.play_room_4` |
-| Family Room | `light.family_room`, `light.family_room_2`, `light.floor_lamp` |
-| Entry/Upstairs | `light.entry_1`, `light.entry_2`, `light.downstairs_hallway`, `light.upstairs_hallway_light`, `light.meeting_light` |
+| Office | `light.bookcase_lamp`, `light.corner_lamp`, `light.door_lamp`, `light.desk_lamp_2`, `light.desk_lamp_2_2`, `light.office_switch` (Zooz ZEN77 controller — see `packages/office_zen77.yaml`) |
+| Play Room | `light.playroom_1` … `light.playroom_4` (Hue bulbs; power-gated by `switch.bonus_room`) |
+| Family Room | `light.family_room_2`, `light.floor_lamp`, `light.floor_lamp_composite` (template — sequences `switch.family_room_outlets` + `light.floor_lamp`) |
+| Basement | `light.basement_lamp_1_light`, `light.basement_lamp_2_light` |
+| Garage | `light.garage_door_1_light`, `light.garage_door_2_light` (ratgdo openers) |
+| Entry/Upstairs | `light.downstairs_hallway`, `light.upstairs_hallway_light`, `light.meeting_light` |
 | Outdoor | `light.front_door`, `light.front_lantern`, `light.garage_front`, `light.garage_side`, `light.shed` |
 | Master Bathroom | `light.master_bathroom` (Ecosmart 12A19060WRGBWH2 RGBWW A19, Hubspace cloud) |
+
+**Entity-ID renames in flight:** older docs referenced `light.play_room_*`,
+`light.office_*`, `light.entry_*`, and `light.family_room` — these have been
+renamed during the device-rename passes. If a YAML reference 404s on reload,
+grep `context/entities.json` for the current ID.
 
 ### Switches
 | Entity ID | Description |
@@ -145,82 +231,23 @@ Automations are split across two locations with different governance models:
 
 ## Dashboard Architecture
 
-Three YAML dashboards registered in `configuration.yaml`. All are fully git-tracked; no UI editing.
+Four YAML dashboards, all registered in `configuration.yaml > lovelace.dashboards`
+and fully git-tracked — no UI editing. **`dashboards/README.md` is the
+authoritative deep dive** (grid math, card-by-card breakdown, HACS card matrix);
+this section is a quick index.
 
-### `dashboards/home.yaml` — Home view
-
-**Home view** (`/dashboard-home/home`) — Mobile/tablet control dashboard
-- Masonry layout (standard, not panel mode)
-- Room-grouped vertical-stacks with conditional lights (show only when ON)
-- Per-room "All off" indicators using template sensors
-- Conditional Sonos media cards (playing coordinators only)
-- Alarm panel with permanent sensor grid (always visible)
-- Activity-driven: lights/switches appear when on, vanish when off
-
-The Home view uses standard HA `tile`, `weather-forecast`, and `media-control` cards plus `mini-media-player` for Sonos.
-
-### `dashboards/kiosk.yaml` — Kiosk view
-
-**Kiosk view** (`/dashboard-kiosk/home`) — 65-inch 1080p wall display
-- View type: `custom:grid-layout` (layout-card AS the view, not nested inside a panel)
-- Cell wrappers: `custom:mod-card` provides the ha-card host so `height: 100%` cascades through the nested shadow DOM
-- Typed cards per panel (no html-template-card):
-  - Climate: `custom:better-thermostat-ui-card` with humidity sensor binding
-  - Sensors: `custom:button-card` with state-driven backgrounds and pulse animations
-  - Lights: `custom:mushroom-light-card` per individual light (20 lights, grouped into 5 room sections inside a vertical-stack)
-  - Media: `custom:mini-media-player` with `artwork: full-cover-fit` for album art
-  - Weather: `custom:clock-weather-card` (combined clock + 4-day forecast)
-  - Alarm: `custom:button-card` hero with state-driven colors and pulse on triggered
-  - Meeting: `custom:button-card` driven by `light.meeting_light` — "In Meeting" red+pulse / "Available" green / "Offline" muted
-- Non-interactive — every card has `tap_action: { action: none }`
-- Kiosk-mode hides sidebar/header for "Kiosk" user
-- No camera (handled in a separate cameras dashboard)
-
-### Grid Layout (Kiosk)
-```
-grid-template-columns: 1fr 1fr 1.4fr 1fr
-grid-template-rows: 200px 1fr
-grid-template-areas:
-  "weather weather alarm   meeting"
-  "climate sensors lights  media"
-```
-- **weather** — clock-weather-card with 4-day forecast (top-left, spans 2 cols)
-- **alarm** — button-card hero (top-row, col 3 — 1.4fr)
-- **meeting** — button-card driven by `light.meeting_light` (top-row, col 4 — 1fr)
-- **climate** — 2 better-thermostat-ui-cards stacked (upstairs + downstairs)
-- **sensors** — 8 button-cards in a 2×4 internal grid (4 doors + 2 garage covers + 2 motion)
-- **lights** — 20 mushroom-light-cards grouped into 5 room sections (Family Room, Kitchen, Office, Hallways, Outdoor) inside a vertical-stack; each section is a markdown header + 4-col grid. The meeting light is hoisted to the top-right `meeting` cell.
-- **media** — 6 mini-media-players in a 2×3 internal grid + TVs row spanning both cols
-
-### HACS Cards Used by Kiosk View
-- `layout-card` — provides `custom:grid-layout` (used as the VIEW type, not nested)
-- `card-mod` — provides `custom:mod-card` cell wrapper + theme-level CSS
-- `button-card` — sensors, alarm hero, heater state, TVs row
-- `mushroom` — `mushroom-light-card` for individual lights
-- `mini-media-player` — Sonos with album art via `artwork: full-cover-fit`
-- `clock-weather-card` — combined clock + forecast in top strip
-- `better-thermostat-ui-card` — circular thermostat dial with humidity
-- `kiosk-mode` — hides sidebar/header for kiosk user
+| File | URL | Purpose |
+|------|-----|---------|
+| `dashboards/home.yaml` | `/dashboard-home/home` | Mobile-first control surface with conditional cards (lights show only when on, Sonos cards only when group coordinator is playing). |
+| `dashboards/kiosk.yaml` | `/dashboard-kiosk/home` | 65-inch 1080p wall display. The view IS a `custom:grid-layout`; each cell is a typed card (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card`. Non-interactive. |
+| `dashboards/homelab-status.yaml` | `/dashboard-homelab-status` | Seven-section infrastructure overview: NAS, Proxmox, smart-home coordinators, battery health, printer toner, GitHub stats, meeting indicator. |
+| `dashboards/command-deck.yaml` | `/dashboard-command-deck/home` | Built-in-cards-only control surface (no HACS dependencies) for the desktop; alarm panel, weather, climate, lights/sensors, media. |
 
 ### Theme Files
-- `/config/themes/noctis_kiosk.yaml` — Active theme. Originally provided global state-based backgrounds for Mushroom cards on the kiosk; the kiosk view no longer relies on it (state styling moved into per-card `card_mod` and `button-card` state blocks). Still loaded as the project's default dark theme.
-- `/config/themes/kiosk_polish.yaml` — Design-token layer applied on top of Noctis Kiosk via `theme: Kiosk Polish` on the kiosk view. Defines `--kiosk-*` CSS variables for column accents, tile/card backgrounds, text tints, alarm-state colors, and Mushroom sizing — `dashboards/kiosk.yaml` references these tokens instead of inlining hex literals.
-- `/config/themes/kiosk_dark.yaml` — Deprecated custom theme (retained for reference).
+- `themes/noctis_kiosk.yaml` — Active project theme. Default dark theme; state-driven background CSS that the kiosk view no longer depends on (state styling moved into per-card `card_mod` and `button-card` blocks).
+- `themes/kiosk_polish.yaml` — Design-token layer (`--kiosk-*` CSS variables) applied on top of Noctis Kiosk via `theme: Kiosk Polish` on the kiosk view. Centralizes column accents, tile/card backgrounds, alarm-state colors, and Mushroom sizing so `dashboards/kiosk.yaml` references tokens rather than hex literals.
+- `themes/kiosk_dark.yaml` — Deprecated, retained for reference.
 - Noctis base theme installed via HACS.
-
-### `dashboards/homelab-status.yaml` — Homelab Status
-
-Seven-section infrastructure overview dashboard (sidebar: Homelab Status, icon: `mdi:server-network`):
-
-| Section | Entities surfaced |
-|---------|-------------------|
-| Neptune NAS (UGREEN DXP2800) | Pool health, disk temps, SMART hours, CPU/RAM/fan, LAN throughput |
-| Proxmox (pve) | Node CPU/memory/disk, HAOS + grafana-stack VM status, backup schedule |
-| Smart Home Coordinators | ZWA-2, ZBT-2, both Konnected panels — WiFi RSSI, firmware uptime |
-| Battery Health | 8-device grid with amber (<40%) / red (<20%) color thresholds |
-| Printer (HP M477fdw) | CMYK toner levels with color-coded warnings |
-| GitHub (cpitzi/prompts) | Commits, issues, PRs, stars, forks, watchers via REST sensor |
-| Meeting Indicator | ESP32 device state, WiFi signal quality, uptime |
 
 ### Kiosk Mode Config (top of dashboards/kiosk.yaml)
 ```yaml
@@ -241,51 +268,83 @@ The "Kiosk" person/user (Settings → People) is a non-admin local account used 
 
 ```
 /config/
-├── configuration.yaml          # Core config: alarm panel, template sensors, frontend, Prometheus
-├── automations.yaml            # UI-authored automations (alarm + door chime + GitOps poller)
-├── shell_commands.yaml         # shell_command.gitops_sync → scripts/gitops-sync.sh
+├── configuration.yaml          # Core config: alarm panel, template sensors/lights, light groups, frontend, Prometheus
+├── automations.yaml            # UI-authored automations (alarm lifecycle + door chime + GitOps poller)
+├── shell_commands.yaml         # gitops_sync, ha_context_dump, assign_playroom_areas
 ├── groups.yaml                 # Door and motion sensor groups
-├── scripts.yaml                # Empty (placeholder)
+├── scripts.yaml                # Empty (placeholder — UI-mode source if anything lands here)
 ├── scenes.yaml                 # Empty (placeholder)
-├── secrets.yaml                # API keys, alarm code, WiFi (gitignored)
+├── secrets.yaml                # API keys, alarm code, WiFi, github_pat (gitignored)
 ├── secrets.yaml.example        # Documents required secret keys
 ├── secrets.fake.yaml           # Safe dummy values for CI check_config validation
 ├── .ha-version                 # Pinned HA version for CI (matches running instance)
 ├── .yamllint.yml               # YAML lint rules (line length 250, indentation 2, etc.)
-├── automations/
-│   └── meeting.yaml            # Git-managed automations: meeting indicator (Rachel's office)
-├── packages/
-│   └── ha_version_sync.yaml    # HA version dispatch to GitHub on startup
-├── scripts/
-│   └── gitops-sync.sh          # GitOps deploy: fetch → validate → reload/restart or rollback
-├── dashboards/
-│   ├── home.yaml               # Mobile/tablet Home dashboard
-│   ├── kiosk.yaml              # 1080p wall-display Kiosk dashboard (custom:grid-layout)
-│   └── homelab-status.yaml     # Homelab Status (NAS, Proxmox, coordinators, battery, printer)
-├── themes/
-│   ├── noctis_kiosk.yaml       # Active theme: global card-mod state-based backgrounds
-│   ├── kiosk_polish.yaml       # Kiosk design tokens (--kiosk-*) layered via view-level theme
-│   └── kiosk_dark.yaml         # Deprecated custom theme (retained for reference)
-├── esphome/
-│   ├── konnected-56ac70.yaml   # Main panel firmware: 4 doors, 2 motion, siren
-│   ├── konnected-56a4fa.yaml   # Secondary panel firmware: piezo RTTTL annunciator
+├── automations/                # Git-managed automations (see automations/README.md)
+│   ├── meeting.yaml            # Meeting indicator (Rachel's office) → hallway light
+│   └── sonoff_button_kitchen_family.yaml  # Sonoff Button 1 → Downstairs + Hallways
+├── packages/                   # HA packages (see packages/README.md)
+│   ├── ha_context_dump.yaml    # Snapshot pipeline: button, periodic trigger, dump action
+│   ├── ha_version_sync.yaml    # HA version dispatch to GitHub on startup
+│   ├── hue_tap_dial_playroom.yaml      # Hue Tap Dial (RDM002) → Play Room scenes
+│   ├── office_zen77.yaml       # Zooz ZEN77 → Office lights scene controller
+│   ├── playroom_area_fix.yaml  # One-shot button → assign_playroom_areas script
+│   └── sonoff_button_office.yaml       # Sonoff Button 2 (SNZB-01) → Office lights
+├── scripts/                    # Bash scripts (see scripts/README.md)
+│   ├── gitops-sync.sh          # GitOps deploy: fetch → validate → smart reload or rollback
+│   ├── ha-context-dump.sh      # Live → context/ snapshot, opens drift PR if changed
+│   ├── assign-playroom-areas.sh        # One-shot WS call: assign orphaned playroom devices
+│   └── import-home-to-storage.sh       # One-shot: clone home.yaml into a storage-mode dash
+├── dashboards/                 # Lovelace YAML dashboards (see dashboards/README.md)
+│   ├── home.yaml               # Mobile/tablet — conditional cards
+│   ├── kiosk.yaml              # 1080p wall display — custom:grid-layout view
+│   ├── homelab-status.yaml     # NAS, Proxmox, coordinators, batteries, printer, GitHub
+│   └── command-deck.yaml       # Built-in-cards-only desktop control surface
+├── themes/                     # Frontend themes (see themes/README.md)
+│   ├── noctis_kiosk.yaml       # Active theme
+│   ├── kiosk_polish.yaml       # Kiosk design tokens (--kiosk-*)
+│   └── kiosk_dark.yaml         # Deprecated
+├── esphome/                    # ESPHome firmware (see esphome/README.md)
+│   ├── konnected-56ac70.yaml   # Main panel: 4 doors, 2 motion, siren
+│   ├── konnected-56a4fa.yaml   # Secondary panel: piezo RTTTL annunciator
 │   ├── secrets.yaml            # ESPHome WiFi + API keys (gitignored)
 │   └── secrets.yaml.example    # Documents required ESPHome secrets
+├── context/                    # Generated runtime-state snapshot (see context/README.md)
+│   ├── entities.json           # Entity registry — entity_id, area_id, device_id
+│   ├── devices.json            # Device registry — manufacturer, model, integrations, area
+│   ├── areas.json              # Area registry
+│   ├── automations-ui.yaml     # Copy of /config/automations.yaml at snapshot time
+│   ├── scripts.json            # Storage-mode scripts
+│   ├── scenes.json             # Storage-mode scenes
+│   ├── helpers.json            # Helpers by domain
+│   └── dashboards-storage.json # Storage-mode dashboards (the 4 YAML dashboards are NOT here)
+├── docs/                       # Long-form design notes outside CLAUDE.md
+│   ├── analyses/               # One-off investigations (registry inventory, etc.)
+│   ├── migrations/             # Migration write-ups (hue-scenes-rebuild, etc.)
+│   └── kiosk-layout.md         # Kiosk grid math + card sizing reference
+├── .claude/                    # Claude Code project config
+│   ├── settings.json           # Permissions allowlist + PreToolUse hook
+│   └── hooks/
+│       └── block-context-writes.sh    # Hook: rejects Edit/Write/Bash that mutates context/
 ├── .github/workflows/
 │   ├── ha-config-check.yml     # CI gate: HA check_config against pinned version
 │   ├── ha-version-sync.yml     # Auto-bump .ha-version on HAOS startup dispatch
+│   ├── ha-context-sync.yml     # Open auto-merging PR when context/ drifts
 │   ├── lint.yml                # YAML lint gate
 │   ├── claude.yml              # Claude Code issue/PR automation
 │   └── claude-code-review.yml  # Automated PR review (bash safety, security, idempotency)
 ├── CLAUDE.md                   # AI-assistant project context (this file)
+├── README.md                   # Human-facing project overview
 └── .gitignore                  # Excludes runtime state, secrets, build artifacts, blueprints
 ```
+
+Each top-level subdirectory has its own `README.md` that goes deeper than this
+overview — defer to those when implementing.
 
 ---
 
 ## GitOps Auto-Deploy (`scripts/gitops-sync.sh`)
 
-`shell_command.gitops_sync` invokes `scripts/gitops-sync.sh` every 5 minutes via a `time_pattern` automation. The script:
+`shell_command.gitops_sync` invokes `scripts/gitops-sync.sh` every 5 minutes via the `gitops_sync_poll` automation in `automations.yaml`. The script:
 
 1. Acquires a lock file (prevents concurrent runs)
 2. Verifies branch is `main` before touching anything
@@ -297,9 +356,27 @@ The "Kiosk" person/user (Settings → People) is a non-admin local account used 
 
 **Log:** `/config/gitops-sync.log` — timestamped, leveled; rotates at 1 MB.
 
-## Packages (`packages/ha_version_sync.yaml`)
+The complementary `ha-context-dump.sh` (driven by `packages/ha_context_dump.yaml`)
+runs in the opposite direction — live HA → `context/` snapshot → drift PR — see
+*Three-Layer State Model* above and `context/README.md` for details.
 
-HA version tracking and auto-sync on startup. Components:
+## Packages
+
+HA packages live in `packages/` and are merged into the top-level config
+namespace via `homeassistant: packages: !include_dir_named packages` in
+`configuration.yaml`. See `packages/README.md` for full package-by-package
+documentation; this is the index:
+
+| Package | Purpose |
+|---------|---------|
+| `ha_version_sync.yaml` | Dispatches the running HA version to GitHub on `homeassistant_started`; the `ha-version-sync.yml` workflow opens an auto-merging PR to bump `.ha-version` when it drifts. |
+| `ha_context_dump.yaml` | Provides `input_button.ha_context_dump_now` (manual) and a `time_pattern: /6h` trigger, both calling `shell_command.ha_context_dump`. Pairs with the `ha-context-sync.yml` workflow. |
+| `hue_tap_dial_playroom.yaml` | Hue Tap Dial (RDM002, ZHA) → Play Room scene controller — button maps + scene cycling. |
+| `office_zen77.yaml` | Zooz ZEN77 Z-Wave switch → Office lights scene controller — Z-Wave parameter apply + scene actions. |
+| `playroom_area_fix.yaml` | One-shot `input_button` that runs `shell_command.assign_playroom_areas` to fix orphaned Play Room device→area assignments via the WS API. |
+| `sonoff_button_office.yaml` | Sonoff SNZB-01 Button 2 → Office lights — single-click on, double-click off, hold cycles scenes. |
+
+### HA Version Sync detail
 
 - **`sensor.ha_core_version`** — `command_line` sensor reading `/config/.HA_VERSION` (HA's own runtime version file, uppercase), refreshed hourly
 - **`rest_command.github_dispatch_version`** — POSTs `ha-version-report` dispatch event with `client_payload.version` to GitHub API (uses `!secret github_pat`)
@@ -336,18 +413,24 @@ Other HACS cards (mushroom, clock-weather-card, mini-media-player, layout-card, 
   open a pull request as the final step — do not stop at "pushed the branch."
   PR body must open with an `## Origin` section (see PR Authoring Without Issues),
   plus a short summary of what changed and why. Immediately after opening the PR,
-  arm auto-merge with the number returned from `gh pr create` (or
-  `gh pr view --json number -q .number`):
+  arm auto-merge with the PR number:
 
-```bash
+  - **Local sessions (gh CLI available):**
+
+    ```bash
     gh pr merge PR_NUMBER --auto --squash --delete-branch
-```
+    ```
 
-Auto-merge is a per-PR action, not a repo-wide default — without this command
+  - **Cloud sessions (no gh CLI):** call `mcp__github__enable_pr_auto_merge`
+    with `mergeMethod: "SQUASH"`. Branch deletion is automatic when the repo's
+    branch-protection rules require it; otherwise call
+    `mcp__github__delete_branch` after merge.
+
+  Auto-merge is a per-PR action, not a repo-wide default — without this step
   the PR will wait for a human click forever. Do not merge the PR yourself with
   a non-`--auto` merge; let the required status checks (`YAML Lint`,
-  `claude-review`) gate the merge and fire it when green. Skip auto-merge only
-  if the PR is a draft — it won't arm on drafts and will error.
+  `check-config`, `claude-review`) gate the merge and fire it when green. Skip
+  auto-merge only if the PR is a draft — it won't arm on drafts and will error.
 
 ---
 
@@ -401,14 +484,20 @@ durable, `git log`-greppable one. Both should agree.
 
 ---
 
-## HA Runtime Access (Local-HA MCP)
+## HA Runtime Access (HA-MCP)
 
-A `Local-HA` MCP server is configured (visible via `claude mcp list`) at
-`http://homeassistant.local:9583/...`. It exposes Home Assistant's REST and
-WebSocket APIs as `mcp__Local-HA__*` tools, giving you direct read **and write**
-access to the running instance. Unlike `context/` — which is a cached snapshot
-refreshed every 6 hours — MCP queries hit the live HA process: state values are
-current to the second, history is accurate, and service calls actually fire.
+The "Live" layer of the *Three-Layer State Model* (see top of this file).
+The HA MCP server is provided by the `homeassistant-ai/ha-mcp` HACS
+integration running inside HA itself; the Claude client connects to it at
+`http://homeassistant.local:9583/...`. Local sessions typically see tools
+prefixed `mcp__Local-HA__*` (or whatever name the user gave the server in
+their MCP client config); cloud sessions surface it under a UUID prefix
+(`mcp__<uuid>__ha_*`). The tool *names* after the prefix are stable —
+`ha_get_state`, `ha_search_entities`, `ha_call_service`, etc.
+
+Unlike `context/` — which is a cached snapshot refreshed every 6 hours —
+MCP queries hit the live HA process: state values are current to the second,
+history is accurate, and service calls actually fire.
 
 ### Skill discipline (REQUIRED before HA config work)
 
@@ -460,9 +549,9 @@ and MCP disagree, MCP wins — the snapshot is stale.
 ### Validation workflow
 
 `ha_check_config` validates the **live deployed config**, not your local
-working tree. HA reads from `/config/` on the HAOS VM; your edits in
-`/home/cpitzi/repos/homeassistant-config/` are invisible to it until gitops-sync
-deploys them. Therefore:
+working tree. HA reads from `/config/` on the HAOS VM; your edits in your
+local checkout (or the cloud-session worktree) are invisible to it until
+gitops-sync deploys them. Therefore:
 
 - **Before writing YAML:** use `ha_eval_template` to verify Jinja,
   `ha_search_entities` / `ha_get_state` to confirm entity IDs exist, and
@@ -540,17 +629,31 @@ change live" — wait for the auto-reload, or call the relevant
 
 ## HA Runtime State Context (`context/`)
 
-The `context/` directory is an auto-generated, read-only snapshot of HA runtime
-state — entity registry, area registry, device registry, the UI-editable
-`automations.yaml`, plus storage-mode scripts, scenes, helpers, and dashboards.
-It is populated by `scripts/ha-context-dump.sh` and refreshed every 6 hours
-(or on manual button press) via the autonomous context-sync pipeline.
+The "Snapshot" layer of the *Three-Layer State Model*. `context/` is an
+auto-generated, **read-only** snapshot of HA runtime state — entity, area,
+and device registries, the UI-editable `automations.yaml`, plus storage-mode
+scripts, scenes, helpers, and dashboards. It is populated by
+`scripts/ha-context-dump.sh` (driven by `packages/ha_context_dump.yaml`)
+and refreshed every 6 hours, plus on demand via
+`input_button.ha_context_dump_now`.
 
-`context/` and the Local-HA MCP server complement each other: `context/` is a
-fast, grep-friendly snapshot good for bulk exploration; MCP is the live source
-of truth. See the "HA Runtime Access (Local-HA MCP)" section above for the
-selection rules. If the two disagree, trust MCP and recommend a snapshot
-refresh.
+**The full pipeline:** the dump script pushes a `context-sync/<timestamp>`
+branch when content changes, then fires a `ha-context-report` repository
+dispatch. The `ha-context-sync.yml` workflow opens a PR from that branch with
+the `context-snapshot` label and arms auto-merge. Both the dump script and the
+workflow use `HA_SYNC_PAT` — same reasoning as `ha-version-sync.yml`
+(GITHUB_TOKEN-opened PRs don't fire downstream workflows).
+
+**Hook guard against accidental writes:** `.claude/hooks/block-context-writes.sh`
+runs as a `PreToolUse` hook on Edit/Write/Bash and rejects anything that would
+mutate `context/`. The snapshot is the runtime's output, not Claude's; if a
+fact in `context/` is wrong, fix the source in HA (via MCP) and let the next
+dump propagate it.
+
+`context/` and the HA-MCP server complement each other: `context/` is a fast,
+grep-friendly snapshot good for bulk exploration; MCP is the live source of
+truth. See *HA Runtime Access (HA-MCP)* above for the selection rules. If the
+two disagree, trust MCP and recommend a snapshot refresh.
 
 **Before writing any automation, script, dashboard, or other config that references
 entity IDs, area IDs, or device IDs, consult the relevant `context/` files:**
@@ -752,7 +855,7 @@ Don't conclude auth works just because `ls-remote` returns a SHA.
 - **Proxmox VM:** Home Assistant OS (local network)
 - **Firewalla Gold SE** — network firewall, Zeek logs, device inventory
 - **Grafana/Loki stack:** LXC container — `firewalla-grafana-stack` repo
-- **Kiosk display:** 65-inch TCL 1080p TV, Chromium kiosk mode, pointed at `/dashboard-home/kiosk`
+- **Kiosk display:** 65-inch TCL 1080p TV, Chromium kiosk mode, pointed at `/dashboard-kiosk/home`
 - **ESPHome Device Builder:** HA add-on, compiles and flashes firmware OTA to Konnected boards
 
 ---
