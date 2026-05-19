@@ -2416,6 +2416,22 @@
     "hidden": false
   },
   {
+    "entity_id": "button.hubspace_api_cpitzi_gmail_com_generate_debug",
+    "friendly_name": "Generate Debug",
+    "area_id": null,
+    "device_id": "0b0a74091bf3033db3d3790944df9711",
+    "platform": "hubspace",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.hubspace_api_cpitzi_gmail_com_generate_raw",
+    "friendly_name": "Generate Raw",
+    "area_id": null,
+    "device_id": "0b0a74091bf3033db3d3790944df9711",
+    "platform": "hubspace",
+    "hidden": false
+  },
+  {
     "entity_id": "button.hue_tap_dial_identify",
     "friendly_name": "Identify",
     "area_id": null,
@@ -2762,6 +2778,54 @@
   {
     "entity_id": "button.ugreen_nas_fan_mode_quiet",
     "friendly_name": "UGREEN NAS Fan Mode: Quiet",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.ugreen_nas_power_action_reboot",
+    "friendly_name": "UGREEN NAS Power Action: Reboot",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.ugreen_nas_power_action_shutdown",
+    "friendly_name": "UGREEN NAS Power Action: Shutdown",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.ugreen_nas_power_action_wake_up",
+    "friendly_name": "UGREEN NAS Power Action: Wake Up",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.ugreen_nas_power_mode_balanced",
+    "friendly_name": "UGREEN NAS Power Mode: Balanced",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.ugreen_nas_power_mode_energy_saving",
+    "friendly_name": "UGREEN NAS Power Mode: Energy Saving",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.ugreen_nas_power_mode_high_performance",
+    "friendly_name": "UGREEN NAS Power Mode: High Performance",
     "area_id": null,
     "device_id": "226fb0693b9856293f743fa446439f3e",
     "platform": "ugreen",
@@ -3248,6 +3312,22 @@
     "hidden": false
   },
   {
+    "entity_id": "light.basement_lamp_1_light",
+    "friendly_name": "Light",
+    "area_id": null,
+    "device_id": "408b1fc93e2e314421a1e463a9072e27",
+    "platform": "hubspace",
+    "hidden": false
+  },
+  {
+    "entity_id": "light.basement_lamp_2_light",
+    "friendly_name": "Light",
+    "area_id": null,
+    "device_id": "cb68ea7df77c3d66c3ffcfd06a319065",
+    "platform": "hubspace",
+    "hidden": false
+  },
+  {
     "entity_id": "light.bookcase_lamp",
     "friendly_name": null,
     "area_id": null,
@@ -3368,6 +3448,14 @@
     "hidden": false
   },
   {
+    "entity_id": "light.hangout_space_light",
+    "friendly_name": "Light",
+    "area_id": null,
+    "device_id": "1b107e9a6eee09cb82e777bd3e3f745c",
+    "platform": "hubspace",
+    "hidden": false
+  },
+  {
     "entity_id": "light.home_assistant_connect_zwa_2_led",
     "friendly_name": "LED",
     "area_id": null,
@@ -3397,6 +3485,14 @@
     "area_id": null,
     "device_id": "8cbd714807a1f0a8f38d97e57dfa1d36",
     "platform": "tplink",
+    "hidden": false
+  },
+  {
+    "entity_id": "light.master_bathroom",
+    "friendly_name": "Master Bathroom",
+    "area_id": null,
+    "device_id": "85a396c41f4525d362a45e5f143214bf",
+    "platform": "hubspace",
     "hidden": false
   },
   {
@@ -3469,6 +3565,14 @@
     "area_id": null,
     "device_id": "7f4822cd40071b7ee1042626c6ab00f0",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "light.spare_light",
+    "friendly_name": "Light",
+    "area_id": null,
+    "device_id": "17510e3a0a8d4e060629e51821afeacc",
+    "platform": "hubspace",
     "hidden": false
   },
   {
@@ -4280,10 +4384,26 @@
     "hidden": false
   },
   {
+    "entity_id": "select.ugreen_nas_fan_mode",
+    "friendly_name": "UGREEN NAS Fan Mode",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
     "entity_id": "select.ugreen_nas_lovelace_device_select",
     "friendly_name": "UGREEN NAS Lovelace Device Select",
     "area_id": null,
     "device_id": null,
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "select.ugreen_nas_power_mode",
+    "friendly_name": "UGREEN NAS Power Mode",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
     "platform": "ugreen",
     "hidden": false
   },
@@ -4373,6 +4493,22 @@
     "area_id": null,
     "device_id": "4911f075d1a94d702cef9bb1e0740abd",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.basement_lamp_1_wifi_rssi",
+    "friendly_name": "wifi-rssi",
+    "area_id": null,
+    "device_id": "408b1fc93e2e314421a1e463a9072e27",
+    "platform": "hubspace",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.basement_lamp_2_wifi_rssi",
+    "friendly_name": "wifi-rssi",
+    "area_id": null,
+    "device_id": "cb68ea7df77c3d66c3ffcfd06a319065",
+    "platform": "hubspace",
     "hidden": false
   },
   {
@@ -5104,6 +5240,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.hangout_space_wifi_rssi",
+    "friendly_name": "wifi-rssi",
+    "area_id": null,
+    "device_id": "1b107e9a6eee09cb82e777bd3e3f745c",
+    "platform": "hubspace",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.haos_17_1_cpu_usage",
     "friendly_name": "CPU usage",
     "area_id": null,
@@ -5333,6 +5477,14 @@
     "area_id": null,
     "device_id": "48d49cbc456a5942edd0ec627baab874",
     "platform": "esphome",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.master_bathroom_wifi_rssi",
+    "friendly_name": "wifi-rssi",
+    "area_id": null,
+    "device_id": "85a396c41f4525d362a45e5f143214bf",
+    "platform": "hubspace",
     "hidden": false
   },
   {
@@ -5957,6 +6109,14 @@
     "area_id": null,
     "device_id": "f68584302c389454da21ee384a4edcbb",
     "platform": "tuya",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.spare_wifi_rssi",
+    "friendly_name": "wifi-rssi",
+    "area_id": null,
+    "device_id": "17510e3a0a8d4e060629e51821afeacc",
+    "platform": "hubspace",
     "hidden": false
   },
   {
@@ -6960,6 +7120,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.ugreen_nas_fan_mode",
+    "friendly_name": "UGREEN NAS Fan Mode",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.ugreen_nas_fan_status_overall",
     "friendly_name": "UGREEN NAS Fan Status (overall)",
     "area_id": null,
@@ -7716,6 +7884,14 @@
     "friendly_name": "UGREEN NAS (Pool 1 | Volume 1) Used Size (raw)",
     "area_id": null,
     "device_id": "29ee23ce4526698869d3f178f7532993",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_power_mode",
+    "friendly_name": "UGREEN NAS Power Mode",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
     "platform": "ugreen",
     "hidden": false
   },
@@ -9260,6 +9436,14 @@
     "friendly_name": "HTML Jinja2 Template card update",
     "area_id": null,
     "device_id": "04d5a7a6c6053a2f943b2bb09bbb81d1",
+    "platform": "hacs",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.hubspace_homeassistant_update",
+    "friendly_name": "Hubspace-Homeassistant update",
+    "area_id": null,
+    "device_id": "f611b1bc74fe783740bd80023270394e",
     "platform": "hacs",
     "hidden": false
   },

@@ -40,6 +40,26 @@
     ]
   },
   {
+    "device_id": "408b1fc93e2e314421a1e463a9072e27",
+    "name": "Basement lamp 1",
+    "manufacturer": "Ecosmart",
+    "model": "A21 Color CCT Light",
+    "area_id": null,
+    "integrations": [
+      "hubspace"
+    ]
+  },
+  {
+    "device_id": "cb68ea7df77c3d66c3ffcfd06a319065",
+    "name": "Basement lamp 2",
+    "manufacturer": "Ecosmart",
+    "model": "A21 Color CCT Light",
+    "area_id": null,
+    "integrations": [
+      "hubspace"
+    ]
+  },
+  {
     "device_id": "4911f075d1a94d702cef9bb1e0740abd",
     "name": "Basement-Kitchen Door",
     "manufacturer": "Ecolink",
@@ -350,6 +370,16 @@
     ]
   },
   {
+    "device_id": "1b107e9a6eee09cb82e777bd3e3f745c",
+    "name": "Hangout space",
+    "manufacturer": "Ecosmart",
+    "model": "A21 Color CCT Light",
+    "area_id": null,
+    "integrations": [
+      "hubspace"
+    ]
+  },
+  {
     "device_id": "0a6647718a0292e693aab2afb449b75d",
     "name": "Hannah's Room",
     "manufacturer": "Ecolink",
@@ -480,6 +510,16 @@
     ]
   },
   {
+    "device_id": "f611b1bc74fe783740bd80023270394e",
+    "name": "Hubspace-Homeassistant",
+    "manufacturer": "jdeath, Expl0dingBanana",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
     "device_id": "2d6cd400df2e3424cb883cc78bce43d7",
     "name": "Hue Tap Dial",
     "manufacturer": "Signify Netherlands B.V.",
@@ -547,6 +587,16 @@
     "area_id": "master_bedroom",
     "integrations": [
       "sonos"
+    ]
+  },
+  {
+    "device_id": "85a396c41f4525d362a45e5f143214bf",
+    "name": "Master bathroom",
+    "manufacturer": "Ecosmart",
+    "model": "12A19060WRGBWH2",
+    "area_id": "master_bathroom",
+    "integrations": [
+      "hubspace"
     ]
   },
   {
@@ -887,6 +937,16 @@
     "area_id": "outside",
     "integrations": [
       "forecast_solar"
+    ]
+  },
+  {
+    "device_id": "17510e3a0a8d4e060629e51821afeacc",
+    "name": "Spare",
+    "manufacturer": "Ecosmart",
+    "model": "12A19060WRGBWH2",
+    "area_id": null,
+    "integrations": [
+      "hubspace"
     ]
   },
   {
@@ -1277,6 +1337,16 @@
     "area_id": null,
     "integrations": [
       "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "0b0a74091bf3033db3d3790944df9711",
+    "name": "hubspace-Cpitzi@gmail.com",
+    "manufacturer": "Hubspace",
+    "model": "Cloud API",
+    "area_id": null,
+    "integrations": [
+      "hubspace"
     ]
   },
   {
