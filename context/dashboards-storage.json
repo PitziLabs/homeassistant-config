@@ -8,6 +8,15 @@
       "show_in_sidebar": true,
       "require_admin": false,
       "mode": "storage"
+    },
+    {
+      "id": "homelab_v2",
+      "url_path": "homelab-v2",
+      "title": "Homelab v2",
+      "require_admin": false,
+      "show_in_sidebar": true,
+      "icon": "mdi:server-network",
+      "mode": "storage"
     }
   ],
   "configs": {
@@ -826,6 +835,899 @@
                     "entity": "switch.basement_1",
                     "name": "Basement"
                   }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "lovelace.homelab_v2": {
+      "views": [
+        {
+          "title": "Mission Control",
+          "path": "mission-control",
+          "icon": "mdi:view-dashboard-variant",
+          "type": "sections",
+          "max_columns": 4,
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "markdown",
+                  "content": "## PitziLabs Homelab\n_Four loops, one platform: **Observability** → **Deployment** → **Governance** → **Perception**._"
+                },
+                {
+                  "type": "custom:mushroom-chips-card",
+                  "alignment": "center",
+                  "chips": [
+                    {
+                      "type": "template",
+                      "icon": "mdi:server",
+                      "icon_color": "{% set nodes = ['sensor.pve_status','sensor.pve2_status_2','sensor.pve3_status','sensor.pve4_status','sensor.pve5_status'] %}{% set online = nodes | select('is_state','online') | list | count %}{% if online == nodes|count %}green{% elif online >= nodes|count - 1 %}orange{% else %}red{% endif %}",
+                      "content": "{% set nodes = ['sensor.pve_status','sensor.pve2_status_2','sensor.pve3_status','sensor.pve4_status','sensor.pve5_status'] %}{{ nodes | select('is_state','online') | list | count }}/{{ nodes | count }} nodes",
+                      "tap_action": {
+                        "action": "navigate",
+                        "navigation_path": "/homelab-v2/compute"
+                      }
+                    },
+                    {
+                      "type": "template",
+                      "icon": "mdi:nas",
+                      "icon_color": "{{ 'green' if is_state('sensor.ugreen_nas_fan_status_overall','Normal') else 'red' }}",
+                      "content": "Neptune {{ states('sensor.ugreen_nas_cpu_temperature') }}°C",
+                      "tap_action": {
+                        "action": "navigate",
+                        "navigation_path": "/homelab-v2/compute"
+                      }
+                    },
+                    {
+                      "type": "template",
+                      "icon": "mdi:source-branch-sync",
+                      "icon_color": "{{ 'green' if is_state('automation.gitops_poll_and_deploy','on') else 'red' }}",
+                      "content": "GitOps {{ relative_time(state_attr('automation.gitops_poll_and_deploy','last_triggered')) if state_attr('automation.gitops_poll_and_deploy','last_triggered') else 'idle' }}",
+                      "tap_action": {
+                        "action": "navigate",
+                        "navigation_path": "/homelab-v2/pipeline"
+                      }
+                    },
+                    {
+                      "type": "template",
+                      "icon": "mdi:eye-refresh",
+                      "icon_color": "{{ 'green' if is_state('automation.context_dump_periodic_snapshot','on') else 'red' }}",
+                      "content": "Context {{ relative_time(state_attr('automation.context_dump_periodic_snapshot','last_triggered')) if state_attr('automation.context_dump_periodic_snapshot','last_triggered') else 'idle' }}",
+                      "tap_action": {
+                        "action": "navigate",
+                        "navigation_path": "/homelab-v2/pipeline"
+                      }
+                    },
+                    {
+                      "type": "template",
+                      "icon": "mdi:shield-home",
+                      "icon_color": "{{ 'green' if is_state('alarm_control_panel.home_alarm','disarmed') else 'orange' }}",
+                      "content": "{{ states('alarm_control_panel.home_alarm') }}",
+                      "tap_action": {
+                        "action": "navigate",
+                        "navigation_path": "/homelab-v2/edge"
+                      }
+                    },
+                    {
+                      "type": "template",
+                      "icon": "mdi:account-voice",
+                      "icon_color": "{{ 'red' if is_state('switch.meeting_button_in_meeting','on') else 'green' }}",
+                      "content": "{{ 'In meeting' if is_state('switch.meeting_button_in_meeting','on') else 'Available' }}",
+                      "tap_action": {
+                        "action": "navigate",
+                        "navigation_path": "/homelab-v2/edge"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Proxmox Cluster",
+                  "icon": "mdi:server"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "pve",
+                  "secondary": "{{ states('sensor.pve_memory_usage_percentage') | float(0) | round(0) }}% mem · {{ states('sensor.pve_cpu_usage') | float(0) | round(1) }}% cpu · up {{ states('sensor.pve_uptime') | float(0) | round(0) }}d",
+                  "icon": "mdi:server",
+                  "icon_color": "{{ 'green' if is_state('sensor.pve_status','online') else 'red' }}",
+                  "badge_icon": "{% if states('sensor.pve_max_disk_usage') | float(0) > 90 %}mdi:alert{% endif %}",
+                  "badge_color": "orange",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/homelab-v2/compute"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "pve2",
+                  "secondary": "{{ states('sensor.pve2_memory_usage_percentage_2') | float(0) | round(0) }}% mem · {{ states('sensor.pve2_cpu_usage_2') | float(0) | round(1) }}% cpu · up {{ states('sensor.pve2_uptime_2') | float(0) | round(0) }}d",
+                  "icon": "mdi:server",
+                  "icon_color": "{{ 'green' if is_state('sensor.pve2_status_2','online') else 'red' }}",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/homelab-v2/compute"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "pve3",
+                  "secondary": "{{ states('sensor.pve3_memory_usage_percentage') | float(0) | round(0) }}% mem · {{ states('sensor.pve3_cpu_usage') | float(0) | round(1) }}% cpu · up {{ states('sensor.pve3_uptime') | float(0) | round(0) }}d",
+                  "icon": "mdi:server",
+                  "icon_color": "{{ 'green' if is_state('sensor.pve3_status','online') else 'red' }}",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/homelab-v2/compute"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "pve4",
+                  "secondary": "{{ 'offline' if is_state('sensor.pve4_status','offline') else states('sensor.pve4_status') }}",
+                  "icon": "mdi:server-off",
+                  "icon_color": "{{ 'red' if is_state('sensor.pve4_status','offline') else 'green' }}",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/homelab-v2/compute"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "pve5",
+                  "secondary": "{{ states('sensor.pve5_memory_usage_percentage') | float(0) | round(0) }}% mem · {{ states('sensor.pve5_cpu_usage') | float(0) | round(1) }}% cpu · up {{ states('sensor.pve5_uptime') | float(0) | round(0) }}d",
+                  "icon": "mdi:server",
+                  "icon_color": "{{ 'green' if is_state('sensor.pve5_status','online') else 'red' }}",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/homelab-v2/compute"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Neptune — UGREEN DXP2800",
+                  "icon": "mdi:nas"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_cpu_usage",
+                  "name": "CPU",
+                  "icon": "mdi:cpu-64-bit",
+                  "color": "blue"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_cpu_temperature",
+                  "name": "CPU Temp",
+                  "icon": "mdi:thermometer",
+                  "color": "{% if states('sensor.ugreen_nas_cpu_temperature') | float(0) > 70 %}red{% elif states('sensor.ugreen_nas_cpu_temperature') | float(0) > 55 %}orange{% else %}teal{% endif %}"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_device_fan",
+                  "name": "Fan RPM",
+                  "icon": "mdi:fan",
+                  "color": "cyan"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_pool_1_volume_1_used_size",
+                  "name": "Used (GB)",
+                  "icon": "mdi:harddisk",
+                  "color": "indigo"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_disk_1_summary",
+                  "name": "Disk 1 (WD Red Plus)",
+                  "icon": "mdi:harddisk",
+                  "color": "{{ 'green' if is_state('sensor.ugreen_nas_disk_1_summary','Normal') else 'red' }}"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_disk_2_summary",
+                  "name": "Disk 2 (Seagate IronWolf)",
+                  "icon": "mdi:harddisk",
+                  "color": "{{ 'green' if is_state('sensor.ugreen_nas_disk_2_summary','Normal') else 'red' }}"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Stack Pulse",
+                  "icon": "mdi:pulse"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Automations",
+                  "secondary": "{{ states.automation | selectattr('state','eq','on') | list | count }}/{{ states.automation | list | count }} active · {{ states.automation | selectattr('state','eq','unavailable') | list | count }} unavailable",
+                  "icon": "mdi:robot",
+                  "icon_color": "{{ 'green' if (states.automation | selectattr('state','eq','unavailable') | list | count) == 0 else 'orange' }}",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/homelab-v2/pipeline"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Updates",
+                  "secondary": "{% set u = states.update | selectattr('state','eq','on') | list | count %}{{ u }} pending",
+                  "icon": "mdi:package-up",
+                  "icon_color": "{{ 'orange' if (states.update | selectattr('state','eq','on') | list | count) > 0 else 'green' }}",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/homelab-v2/pipeline"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Radios",
+                  "secondary": "ZBT-2 · ZWA-2 · paired",
+                  "icon": "mdi:radio-tower",
+                  "icon_color": "teal"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "HA Core",
+                  "secondary": "v2026.5.2 · {{ states('zone.home') }} home",
+                  "icon": "mdi:home-assistant",
+                  "icon_color": "indigo"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Compute",
+          "path": "compute",
+          "icon": "mdi:server",
+          "type": "sections",
+          "max_columns": 3,
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "pve — i7-5557U / 16GiB (HAOS host)",
+                  "icon": "mdi:server"
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.pve_cpu_usage",
+                  "name": "CPU %",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 50,
+                    "red": 80
+                  },
+                  "needle": true
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.pve_memory_usage_percentage",
+                  "name": "Memory %",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 60,
+                    "red": 85
+                  },
+                  "needle": true
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.pve_max_disk_usage",
+                  "name": "Max Disk %",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 70,
+                    "red": 90
+                  },
+                  "needle": true
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve_uptime",
+                  "name": "Uptime (days)",
+                  "icon": "mdi:timer-sand",
+                  "color": "blue-grey"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve_last_backup",
+                  "name": "Last backup",
+                  "icon": "mdi:backup-restore",
+                  "color": "blue-grey"
+                },
+                {
+                  "type": "tile",
+                  "entity": "button.pve_restart",
+                  "name": "Restart",
+                  "icon": "mdi:restart",
+                  "color": "red"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "pve2 — i3-6100U / 7.65GiB (observability + kiosk)",
+                  "icon": "mdi:server"
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.pve2_cpu_usage_2",
+                  "name": "CPU %",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 50,
+                    "red": 80
+                  },
+                  "needle": true
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.pve2_memory_usage_percentage_2",
+                  "name": "Memory %",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 60,
+                    "red": 85
+                  },
+                  "needle": true
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.pve2_max_disk_usage_2",
+                  "name": "Max Disk %",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 70,
+                    "red": 90
+                  },
+                  "needle": true
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve2_uptime_2",
+                  "name": "Uptime (days)",
+                  "icon": "mdi:timer-sand",
+                  "color": "blue-grey"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve2_last_backup_2",
+                  "name": "Last backup",
+                  "icon": "mdi:backup-restore",
+                  "color": "blue-grey"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "pve3, pve4, pve5",
+                  "icon": "mdi:server-network"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve3_status",
+                  "name": "pve3",
+                  "icon": "mdi:server",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve3_cpu_usage",
+                  "name": "pve3 CPU %",
+                  "color": "blue"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve3_memory_usage_percentage",
+                  "name": "pve3 Mem %",
+                  "color": "indigo"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve4_status",
+                  "name": "pve4 ⚠ OFFLINE",
+                  "icon": "mdi:server-off",
+                  "color": "red"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve5_status",
+                  "name": "pve5",
+                  "icon": "mdi:server",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve5_cpu_usage",
+                  "name": "pve5 CPU %",
+                  "color": "blue"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve5_memory_usage_percentage",
+                  "name": "pve5 Mem %",
+                  "color": "indigo"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.pve5_max_disk_usage",
+                  "name": "pve5 Max Disk %",
+                  "color": "deep-orange"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Cluster trends — last 24h",
+                  "icon": "mdi:chart-line"
+                },
+                {
+                  "type": "custom:apexcharts-card",
+                  "header": {
+                    "show": true,
+                    "title": "CPU usage by node (%)",
+                    "show_states": true,
+                    "colorize_states": true
+                  },
+                  "graph_span": "24h",
+                  "series": [
+                    {
+                      "entity": "sensor.pve_cpu_usage",
+                      "name": "pve"
+                    },
+                    {
+                      "entity": "sensor.pve2_cpu_usage_2",
+                      "name": "pve2"
+                    },
+                    {
+                      "entity": "sensor.pve3_cpu_usage",
+                      "name": "pve3"
+                    },
+                    {
+                      "entity": "sensor.pve5_cpu_usage",
+                      "name": "pve5"
+                    }
+                  ]
+                },
+                {
+                  "type": "custom:apexcharts-card",
+                  "header": {
+                    "show": true,
+                    "title": "Memory usage by node (%)",
+                    "show_states": true,
+                    "colorize_states": true
+                  },
+                  "graph_span": "24h",
+                  "series": [
+                    {
+                      "entity": "sensor.pve_memory_usage_percentage",
+                      "name": "pve"
+                    },
+                    {
+                      "entity": "sensor.pve2_memory_usage_percentage_2",
+                      "name": "pve2"
+                    },
+                    {
+                      "entity": "sensor.pve3_memory_usage_percentage",
+                      "name": "pve3"
+                    },
+                    {
+                      "entity": "sensor.pve5_memory_usage_percentage",
+                      "name": "pve5"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Neptune — detail",
+                  "icon": "mdi:nas"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_cpu_usage",
+                  "name": "CPU",
+                  "color": "blue"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_cpu_temperature",
+                  "name": "Temp °C",
+                  "color": "orange"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_device_fan",
+                  "name": "Fan RPM",
+                  "color": "cyan"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_ram_module_size",
+                  "name": "RAM (GB)",
+                  "color": "indigo"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_pool_1_used_size",
+                  "name": "Pool 1 used (TB)",
+                  "color": "indigo"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_pool_1_volume_1_used_size",
+                  "name": "Vol 1 used (GB)",
+                  "color": "indigo"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_overall_lan_download",
+                  "name": "LAN ↓",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_overall_lan_upload",
+                  "name": "LAN ↑",
+                  "color": "amber"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.ugreen_nas_last_boot",
+                  "name": "Last boot",
+                  "color": "blue-grey"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Pipeline",
+          "path": "pipeline",
+          "icon": "mdi:source-branch-sync",
+          "type": "sections",
+          "max_columns": 3,
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "GitOps loop",
+                  "icon": "mdi:source-branch-sync"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "GitOps: Poll and deploy",
+                  "secondary": "Last fired: {{ relative_time(state_attr('automation.gitops_poll_and_deploy','last_triggered')) if state_attr('automation.gitops_poll_and_deploy','last_triggered') else 'never' }} ago",
+                  "icon": "mdi:git",
+                  "icon_color": "{{ 'green' if is_state('automation.gitops_poll_and_deploy','on') else 'red' }}",
+                  "tap_action": {
+                    "action": "more-info",
+                    "entity": "automation.gitops_poll_and_deploy"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Perception loop — Context Store",
+                  "icon": "mdi:eye-refresh"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Periodic snapshot",
+                  "secondary": "Last: {{ relative_time(state_attr('automation.context_dump_periodic_snapshot','last_triggered')) if state_attr('automation.context_dump_periodic_snapshot','last_triggered') else 'never' }} ago",
+                  "icon": "mdi:database-sync",
+                  "icon_color": "{{ 'green' if is_state('automation.context_dump_periodic_snapshot','on') else 'red' }}",
+                  "tap_action": {
+                    "action": "more-info",
+                    "entity": "automation.context_dump_periodic_snapshot"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "On-demand trigger",
+                  "secondary": "Last button press: {{ relative_time(states('input_button.ha_context_dump_now')) if states('input_button.ha_context_dump_now') not in ['unknown','unavailable'] else 'never' }} ago",
+                  "icon": "mdi:gesture-tap-button",
+                  "icon_color": "blue",
+                  "tap_action": {
+                    "action": "call-service",
+                    "service": "input_button.press",
+                    "data": {
+                      "entity_id": "input_button.ha_context_dump_now"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Updates & health",
+                  "icon": "mdi:package-up"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_core_update",
+                  "name": "HA Core"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_operating_system_update",
+                  "name": "HAOS"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_supervisor_update",
+                  "name": "Supervisor"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_mcp_server_update",
+                  "name": "MCP Server"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_connect_zbt_2_dcb4d90d5790_firmware",
+                  "name": "ZBT-2 firmware"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_connect_zwa_2_firmware",
+                  "name": "ZWA-2 firmware"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Automation health",
+                  "icon": "mdi:robot"
+                },
+                {
+                  "type": "markdown",
+                  "content": "**{{ states.automation | selectattr('state','eq','on') | list | count }}** automations on · **{{ states.automation | selectattr('state','eq','unavailable') | list | count }}** unavailable · **{{ states.automation | list | count }}** total"
+                },
+                {
+                  "type": "entity-filter",
+                  "entities": [
+                    "all"
+                  ],
+                  "state_filter": [
+                    "unavailable"
+                  ],
+                  "card": {
+                    "type": "entities",
+                    "title": "Unavailable automations (action needed)"
+                  },
+                  "show_empty": false,
+                  "filter": {
+                    "include": [
+                      {
+                        "domain": "automation"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Edge",
+          "path": "edge",
+          "icon": "mdi:shield-home",
+          "type": "sections",
+          "max_columns": 3,
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Meeting indicator — Rachel's office",
+                  "icon": "mdi:account-voice"
+                },
+                {
+                  "type": "tile",
+                  "entity": "switch.meeting_button_in_meeting",
+                  "name": "In meeting",
+                  "icon": "mdi:bell-ring",
+                  "color": "red",
+                  "features": [
+                    {
+                      "type": "toggle"
+                    }
+                  ]
+                },
+                {
+                  "type": "tile",
+                  "entity": "light.meeting_light",
+                  "name": "Hallway light",
+                  "features": [
+                    {
+                      "type": "light-brightness"
+                    }
+                  ]
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Button connectivity",
+                  "secondary": "WiFi {{ states('sensor.meeting_button_wifi_signal') }} dBm · IP {{ states('sensor.meeting_button_ip_address') }}",
+                  "icon": "mdi:wifi",
+                  "icon_color": "{{ 'green' if states('sensor.meeting_button_wifi_signal') not in ['unavailable','unknown'] else 'red' }}"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Konnected alarm panels (ESPHome)",
+                  "icon": "mdi:shield-home"
+                },
+                {
+                  "type": "tile",
+                  "entity": "alarm_control_panel.home_alarm",
+                  "name": "Home Alarm",
+                  "features": [
+                    {
+                      "type": "alarm-modes",
+                      "modes": [
+                        "armed_home",
+                        "armed_away",
+                        "disarmed"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Main Panel (.41)",
+                  "secondary": "WiFi {{ states('sensor.main_panel_wifi_signal') }} dBm · up {{ (states('sensor.alarm_panel_56ac70_uptime') | float(0) / 86400) | round(1) }}d",
+                  "icon": "mdi:shield-check",
+                  "icon_color": "{{ 'green' if is_state('binary_sensor.main_panel_status','on') else 'red' }}"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Secondary Panel (.175)",
+                  "secondary": "up {{ (states('sensor.alarm_panel_56a4fa_uptime') | float(0) / 86400) | round(1) }}d",
+                  "icon": "mdi:shield-check",
+                  "icon_color": "green"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Door & motion zones",
+                  "icon": "mdi:door"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.main_panel_front_door",
+                  "name": "Front Door"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.main_panel_sliding_door",
+                  "name": "Sliding Door"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.main_panel_basement_door",
+                  "name": "Basement Door"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.main_panel_garage_door",
+                  "name": "Garage Interior Door"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.main_panel_family_room_motion",
+                  "name": "Family Room Motion"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.main_panel_office_motion",
+                  "name": "Office Motion"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Garage doors — ratgdo32 (Security+ 2.0)",
+                  "icon": "mdi:garage"
+                },
+                {
+                  "type": "tile",
+                  "entity": "cover.garage_door_1_door",
+                  "name": "Garage Door 1",
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    }
+                  ]
+                },
+                {
+                  "type": "tile",
+                  "entity": "cover.garage_door_2_door",
+                  "name": "Garage Door 2",
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    }
+                  ]
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.garage_door_1_obstruction",
+                  "name": "Door 1 Obstruction"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.garage_door_2_obstruction",
+                  "name": "Door 2 Obstruction"
                 }
               ]
             }
