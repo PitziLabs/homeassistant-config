@@ -19,7 +19,7 @@
 #
 # Button layout — short press (immediate) / long press (hold):
 #   1 (top)    short → Bright Daylight   100% / 4000K — workhorse white
-#   1          long  → Concentrate       100% / 5000K — cool bright work
+#   1          long  → Color Loop        smooth software color cycle (~2.5s/step)
 #   2          short → Sunset            per-bulb warms (coral/pink/orange/magenta)
 #   2          long  → Relax              40% / 2200K — warm dim
 #   3          short → Ocean             per-bulb cools (cyan/blue/teal/purple)
@@ -31,6 +31,17 @@
 #   Clockwise (step up)         → brightness +25 (~10%) on all 4 lights
 #   Counter-clockwise (step dn) → brightness -25 on all 4 lights
 #   Rotating with all lights off is a no-op — press a button first.
+#
+# Color Loop driver (Button 1 long):
+#   `script.playroom_color_loop` is an infinite `mode: restart` loop — every
+#   ~2.5s it advances a base hue and writes four evenly-spread colors (base,
+#   base+90, base+180, base+270) across the bulbs, so the room shows a rotating
+#   four-colour wash. It is started fire-and-forget via `script.turn_on` (a
+#   direct `action: script.playroom_color_loop` call would block the calling
+#   automation forever) and stopped by `script.turn_off` — every static scene
+#   below calls that stop first so it can't fight the loop. The loop only
+#   writes colour, never brightness, so the dial still dims the room while it
+#   runs. Same pattern as `script.office_sonoff_candle_loop`.
 #
 # ZHA event signatures (PhilipsRDM002 quirk, zha-device-handlers):
 #   Buttons fire on cluster 0xFC00 (64512) with commands of the form
@@ -125,6 +136,61 @@ script:
             data:
               transition: 0.3
 
+  playroom_color_loop:
+    alias: 'Playroom: fast color loop driver'
+    # Infinite loop. mode: restart means a fresh Button-1-long press (or any
+    # script.turn_on) cleanly relaunches it; script.turn_off halts it mid-delay.
+    # Started fire-and-forget via script.turn_on — never called directly as
+    # `action: script.playroom_color_loop`, which would block the caller.
+    mode: restart
+    sequence:
+      - repeat:
+          while:
+            - condition: template
+              value_template: "{{ true }}"
+          sequence:
+            # Advance the base hue ~23° per step. 23 is not a divisor of 360,
+            # so the four-colour pattern drifts rather than snapping back.
+            - variables:
+                base: "{{ (repeat.index * 23) % 360 }}"
+            # Four evenly-spread hues, one per bulb, all rotating together.
+            # transition matches the delay so colours flow with no pause.
+            # No brightness key — the dial keeps independent brightness control.
+            - parallel:
+                - action: light.turn_on
+                  target:
+                    entity_id: light.playroom_1
+                  data:
+                    hs_color:
+                      - "{{ base }}"
+                      - 100
+                    transition: 2.5
+                - action: light.turn_on
+                  target:
+                    entity_id: light.playroom_2
+                  data:
+                    hs_color:
+                      - "{{ (base + 90) % 360 }}"
+                      - 100
+                    transition: 2.5
+                - action: light.turn_on
+                  target:
+                    entity_id: light.playroom_3
+                  data:
+                    hs_color:
+                      - "{{ (base + 180) % 360 }}"
+                      - 100
+                    transition: 2.5
+                - action: light.turn_on
+                  target:
+                    entity_id: light.playroom_4
+                  data:
+                    hs_color:
+                      - "{{ (base + 270) % 360 }}"
+                      - 100
+                    transition: 2.5
+            - delay: "00:00:02.5"
+
 automation:
   # ───────────────────────── BUTTON 1 ─────────────────────────
   - id: hue_tap_dial_button_1_short_bright
@@ -141,6 +207,10 @@ automation:
           device_ieee: '00:17:88:01:0d:35:c4:85'
           command: '1_short_release'
     actions:
+      # Stop the colour loop first so it can't override this static scene.
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
       - action: script.playroom_lights_power_on
       - action: light.turn_on
         target:
@@ -155,8 +225,8 @@ automation:
           transition: 1
     mode: single
 
-  - id: hue_tap_dial_button_1_long_concentrate
-    alias: 'Hue Tap Dial: Button 1 long → Concentrate (100% / 5000K)'
+  - id: hue_tap_dial_button_1_long_color_loop
+    alias: 'Hue Tap Dial: Button 1 long → Fast color loop'
     triggers:
       - trigger: event
         event_type: zha_event
@@ -170,6 +240,9 @@ automation:
           command: '1_long_release'
     actions:
       - action: script.playroom_lights_power_on
+      # Establish a visible brightness and turn the bulbs on. The loop driver
+      # only writes colour, so this is the one place brightness is set on entry
+      # — afterward the dial can dim the room freely while colours cycle.
       - action: light.turn_on
         target:
           entity_id:
@@ -178,9 +251,12 @@ automation:
             - light.playroom_3
             - light.playroom_4
         data:
-          brightness_pct: 100
-          color_temp_kelvin: 5000
+          brightness_pct: 80
           transition: 1
+      # Fire-and-forget: script.turn_on does NOT wait on the infinite loop.
+      - action: script.turn_on
+        target:
+          entity_id: script.playroom_color_loop
     mode: single
 
   # ───────────────────────── BUTTON 2 ─────────────────────────
@@ -198,6 +274,10 @@ automation:
           device_ieee: '00:17:88:01:0d:35:c4:85'
           command: '2_short_release'
     actions:
+      # Stop the colour loop first so it can't override this static scene.
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
       - action: script.playroom_lights_power_on
       # Four warm-palette colors, one per bulb, for a vibrant sunset feel.
       - parallel:
@@ -245,6 +325,10 @@ automation:
           device_ieee: '00:17:88:01:0d:35:c4:85'
           command: '2_long_release'
     actions:
+      # Stop the colour loop first so it can't override this static scene.
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
       - action: script.playroom_lights_power_on
       - action: light.turn_on
         target:
@@ -274,6 +358,10 @@ automation:
           device_ieee: '00:17:88:01:0d:35:c4:85'
           command: '3_short_release'
     actions:
+      # Stop the colour loop first so it can't override this static scene.
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
       - action: script.playroom_lights_power_on
       # Four cool-palette colors, one per bulb, for an aquatic feel.
       - parallel:
@@ -321,6 +409,10 @@ automation:
           device_ieee: '00:17:88:01:0d:35:c4:85'
           command: '3_long_release'
     actions:
+      # Stop the colour loop first so it can't override this static scene.
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
       - action: script.playroom_lights_power_on
       # Four vivid primaries, one per bulb. Big-energy "play time" mode.
       - parallel:
@@ -369,6 +461,10 @@ automation:
           device_ieee: '00:17:88:01:0d:35:c4:85'
           command: '4_short_release'
     actions:
+      # Stop the colour loop first so it can't re-light the bulbs after off.
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
       - action: light.turn_off
         target:
           entity_id:
@@ -394,6 +490,10 @@ automation:
           device_ieee: '00:17:88:01:0d:35:c4:85'
           command: '4_long_release'
     actions:
+      # Stop the fast software loop before handing off to the native effect.
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
       - action: script.playroom_lights_power_on
       # Hue native colorloop effect — bulbs slowly cycle through the full
       # color space. Stops automatically when any of the static-color
