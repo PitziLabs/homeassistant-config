@@ -136,6 +136,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.hue_tap_dial_button_1_long_fast_color_loop",
+    "friendly_name": "Hue Tap Dial: Button 1 long → Fast color loop",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.hue_tap_dial_button_1_short_bright_daylight_100_4000k",
     "friendly_name": "Hue Tap Dial: Button 1 short → Bright Daylight (100% / 4000K)",
     "area_id": null,
@@ -346,6 +354,14 @@
   {
     "entity_id": "automation.sonoff_button_1_kitchen_family_room_lights_to_100",
     "friendly_name": "Sonoff Button 1: Kitchen + Family Room lights to 100%",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.sonoff_button_1_long_press_downstairs_hallways_25",
+    "friendly_name": "Sonoff Button 1: Long press → Downstairs + Hallways 25%",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -4272,6 +4288,14 @@
     "hidden": false
   },
   {
+    "entity_id": "script.playroom_color_loop",
+    "friendly_name": "Playroom: fast color loop driver",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
     "entity_id": "script.playroom_lights_power_on",
     "friendly_name": "Playroom: ensure wall switch on and bulbs reachable",
     "area_id": null,
@@ -7144,6 +7168,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.ugreen_nas_lan_1_dns_server",
+    "friendly_name": "UGREEN NAS LAN 1 DNS Server",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.ugreen_nas_lan_1_download",
     "friendly_name": "UGREEN NAS LAN 1 Download",
     "area_id": null,
@@ -7154,6 +7186,62 @@
   {
     "entity_id": "sensor.ugreen_nas_lan_1_download_raw",
     "friendly_name": "UGREEN NAS LAN 1 Download (raw)",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_lan_1_gateway",
+    "friendly_name": "UGREEN NAS LAN 1 Gateway",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_lan_1_ip",
+    "friendly_name": "UGREEN NAS LAN 1 IP",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_lan_1_mac",
+    "friendly_name": "UGREEN NAS LAN 1 MAC",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_lan_1_model",
+    "friendly_name": "UGREEN NAS LAN 1 Model",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_lan_1_mtu",
+    "friendly_name": "UGREEN NAS LAN 1 MTU",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_lan_1_netmask",
+    "friendly_name": "UGREEN NAS LAN 1 Netmask",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_lan_1_speed",
+    "friendly_name": "UGREEN NAS LAN 1 Speed",
     "area_id": null,
     "device_id": "226fb0693b9856293f743fa446439f3e",
     "platform": "ugreen",
