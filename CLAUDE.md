@@ -120,7 +120,7 @@ Automations are split across two locations with different governance models:
 
 | File | Automations |
 |------|-------------|
-| `meeting.yaml` | 4 automations: meeting button ON/OFF → hallway light red/off; button unavailable → light off; reconnect → re-sync state |
+| `meeting.yaml` | 4 automations: meeting button ON/OFF → hallway light + office `door_lamp` red/restored (`door_lamp` snapshot-and-restored via runtime scene); button unavailable → lights cleared; reconnect → re-sync state |
 | `sonoff_button_kitchen_family.yaml` | 3 automations: Sonoff Button 1 single press → Downstairs + Hallways ON; double press → OFF; long press → all to 25% |
 
 Additional device-scoped controllers live in `packages/` rather than
@@ -280,7 +280,7 @@ The "Kiosk" person/user (Settings → People) is a non-admin local account used 
 ├── .ha-version                 # Pinned HA version for CI (matches running instance)
 ├── .yamllint.yml               # YAML lint rules (line length 250, indentation 2, etc.)
 ├── automations/                # Git-managed automations (see automations/README.md)
-│   ├── meeting.yaml            # Meeting indicator (Rachel's office) → hallway light
+│   ├── meeting.yaml            # Meeting indicator (Rachel's office) → hallway light + office door_lamp
 │   └── sonoff_button_kitchen_family.yaml  # Sonoff Button 1 → Downstairs + Hallways
 ├── packages/                   # HA packages (see packages/README.md)
 │   ├── ha_context_dump.yaml    # Snapshot pipeline: button, periodic trigger, dump action
