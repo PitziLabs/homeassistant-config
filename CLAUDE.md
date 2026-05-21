@@ -121,7 +121,7 @@ Automations are split across two locations with different governance models:
 | File | Automations |
 |------|-------------|
 | `meeting.yaml` | 4 automations: meeting button ON/OFF → hallway light red/off; button unavailable → light off; reconnect → re-sync state |
-| `sonoff_button_kitchen_family.yaml` | 2 automations: Sonoff Button 1 single press → Downstairs + Hallways ON; double press → OFF |
+| `sonoff_button_kitchen_family.yaml` | 3 automations: Sonoff Button 1 single press → Downstairs + Hallways ON; double press → OFF; long press → all to 25% |
 
 Additional device-scoped controllers live in `packages/` rather than
 `automations/` when they bundle helpers, scripts, or rest_commands alongside
