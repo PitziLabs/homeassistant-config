@@ -120,8 +120,11 @@ Automations are split across two locations with different governance models:
 
 | File | Automations |
 |------|-------------|
-| `meeting.yaml` | 4 automations: meeting button ON/OFF → hallway light + office `door_lamp` red/restored (`door_lamp` snapshot-and-restored via runtime scene); button unavailable → lights cleared; reconnect → re-sync state |
 | `sonoff_button_kitchen_family.yaml` | 3 automations: Sonoff Button 1 single press → Downstairs + Hallways ON; double press → OFF; long press → all to 25% |
+
+The **meeting indicator** moved out of `automations/` into `packages/meeting_indicator.yaml`
+once it grew helper scripts and cross-cutting logic with the office scene
+controller — see *Packages* below.
 
 Additional device-scoped controllers live in `packages/` rather than
 `automations/` when they bundle helpers, scripts, or rest_commands alongside
@@ -280,12 +283,12 @@ The "Kiosk" person/user (Settings → People) is a non-admin local account used 
 ├── .ha-version                 # Pinned HA version for CI (matches running instance)
 ├── .yamllint.yml               # YAML lint rules (line length 250, indentation 2, etc.)
 ├── automations/                # Git-managed automations (see automations/README.md)
-│   ├── meeting.yaml            # Meeting indicator (Rachel's office) → hallway light + office door_lamp
 │   └── sonoff_button_kitchen_family.yaml  # Sonoff Button 1 → Downstairs + Hallways
 ├── packages/                   # HA packages (see packages/README.md)
 │   ├── ha_context_dump.yaml    # Snapshot pipeline: button, periodic trigger, dump action
 │   ├── ha_version_sync.yaml    # HA version dispatch to GitHub on startup
 │   ├── hue_tap_dial_playroom.yaml      # Hue Tap Dial (RDM002) → Play Room scenes
+│   ├── meeting_indicator.yaml  # Meeting indicator (Rachel's office) → hallway light + office door_lamp
 │   ├── office_zen77.yaml       # Zooz ZEN77 → Office lights scene controller
 │   ├── playroom_area_fix.yaml  # One-shot button → assign_playroom_areas script
 │   └── sonoff_button_office.yaml       # Sonoff Button 2 (SNZB-01) → Office lights
@@ -372,6 +375,7 @@ documentation; this is the index:
 | `ha_version_sync.yaml` | Dispatches the running HA version to GitHub on `homeassistant_started`; the `ha-version-sync.yml` workflow opens an auto-merging PR to bump `.ha-version` when it drifts. |
 | `ha_context_dump.yaml` | Provides `input_button.ha_context_dump_now` (manual) and a `time_pattern: /6h` trigger, both calling `shell_command.ha_context_dump`. Pairs with the `ha-context-sync.yml` workflow. |
 | `hue_tap_dial_playroom.yaml` | Hue Tap Dial (RDM002, ZHA) → Play Room scene controller — button maps + scene cycling. |
+| `meeting_indicator.yaml` | Meeting indicator for Rachel's office — meeting button drives `light.meeting_light` (hallway) and `light.door_lamp` (office) red. `door_lamp` is owned by the indicator during a meeting (the office scene controller drops it) and rejoins the office scene when the meeting ends. |
 | `office_zen77.yaml` | Zooz ZEN77 Z-Wave switch → Office lights scene controller — Z-Wave parameter apply + scene actions. |
 | `playroom_area_fix.yaml` | One-shot `input_button` that runs `shell_command.assign_playroom_areas` to fix orphaned Play Room device→area assignments via the WS API. |
 | `sonoff_button_office.yaml` | Sonoff SNZB-01 Button 2 → Office lights — single-click on, double-click off, hold cycles scenes. |
