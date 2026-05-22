@@ -37,7 +37,7 @@
 # lamps don't all brighten or dim on the same beat.
 #
 # Scene catalog:
-#   1  Bright            — all 6, 100% / 4000K  (general illumination)
+#   1  Bright            — all 6, 100% / 2700K  (warm general illumination)
 #   2  Relax             — all 6, 40%  / 2200K  (warm, low)
 #   3  Focus             — all 6, 100% / 5000K  (bright, cool)
 #   4  Amber Candle      — flicker rgb(255, 100, 15)
@@ -92,7 +92,7 @@ script:
                   entity_id: '{{ office_lamps }}'
                 data:
                   brightness_pct: 100
-                  color_temp_kelvin: 4000
+                  color_temp_kelvin: 2700
           - conditions: "{{ states('counter.office_sonoff_scene') == '2' }}"
             sequence:
               - action: light.turn_on
