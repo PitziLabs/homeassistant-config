@@ -233,7 +233,7 @@
   },
   {
     "entity_id": "automation.meeting_button_offline_hallway_off",
-    "friendly_name": "Meeting: Button offline — hallway off",
+    "friendly_name": "Meeting: Button offline — hallway off, office restored",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -241,7 +241,7 @@
   },
   {
     "entity_id": "automation.meeting_button_reconnected_re_sync_hallway",
-    "friendly_name": "Meeting: Button reconnected — re-sync hallway",
+    "friendly_name": "Meeting: Button reconnected — re-sync hallway + office",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -249,7 +249,7 @@
   },
   {
     "entity_id": "automation.meeting_status_off_hallway_green",
-    "friendly_name": "Meeting: Status OFF — hallway green",
+    "friendly_name": "Meeting: Status OFF — hallway off, office restored",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -257,7 +257,7 @@
   },
   {
     "entity_id": "automation.meeting_status_on_hallway_red",
-    "friendly_name": "Meeting: Status ON — hallway red",
+    "friendly_name": "Meeting: Status ON — hallway + office red",
     "area_id": null,
     "device_id": null,
     "platform": "automation",

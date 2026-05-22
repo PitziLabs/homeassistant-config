@@ -1120,16 +1120,6 @@
     ]
   },
   {
-    "device_id": "915775ccecd22835605a71e047e57aea",
-    "name": "VM 102",
-    "manufacturer": null,
-    "model": "VM",
-    "area_id": null,
-    "integrations": [
-      "proxmoxve"
-    ]
-  },
-  {
     "device_id": "c159bb5e739ec1604ba3631bc5315b06",
     "name": "VM 105",
     "manufacturer": null,
@@ -1502,6 +1492,16 @@
   {
     "device_id": "8f41a7e0b7047abef06358aef0172be9",
     "name": "xubuntu-workstation",
+    "manufacturer": null,
+    "model": "VM",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "915775ccecd22835605a71e047e57aea",
+    "name": "xubuntu-ws",
     "manufacturer": null,
     "model": "VM",
     "area_id": null,
