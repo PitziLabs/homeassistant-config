@@ -173,8 +173,8 @@ views:
 
       # ============================================================
       # MEETING INDICATOR (top-right corner — Rachel's office light)
-      # State-driven by light.meeting_light, which the meeting.yaml
-      # automations drive red when switch.meeting_button_in_meeting is on.
+      # State-driven by light.meeting_light, which the meeting indicator
+      # (packages/meeting_indicator.yaml) drives red when the meeting button is on.
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: meeting }

@@ -96,19 +96,21 @@ automation:
           property_key_name: '002'
           value: KeyPressed
     conditions: []
+    variables:
+      # While a meeting is active, door_lamp is owned by the meeting indicator
+      # (packages/meeting_indicator.yaml) and stays out of office-off.
+      office_lamps: >-
+        {% set lamps = ['light.bookcase_lamp', 'light.corner_lamp',
+          'light.desk_lamp_2', 'light.desk_lamp_2_2', 'light.table_lamp'] %}
+        {{ lamps if is_state('light.meeting_light', 'on')
+           else lamps + ['light.door_lamp'] }}
     actions:
       - action: script.turn_off
         target:
           entity_id: script.office_sonoff_candle_loop
       - action: light.turn_off
         target:
-          entity_id:
-            - light.bookcase_lamp
-            - light.corner_lamp
-            - light.door_lamp
-            - light.desk_lamp_2
-            - light.desk_lamp_2_2
-            - light.table_lamp
+          entity_id: '{{ office_lamps }}'
     mode: single
 
   - id: zen77_office_up_hold_bright

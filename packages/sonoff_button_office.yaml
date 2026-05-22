@@ -71,6 +71,15 @@ script:
   office_sonoff_apply_scene:
     alias: 'Office Sonoff: Apply current scene'
     mode: restart
+    variables:
+      # Office lamps to drive. While a meeting is active (light.meeting_light
+      # on) light.door_lamp is owned by the meeting indicator and is dropped
+      # from the set — see packages/meeting_indicator.yaml.
+      office_lamps: >-
+        {% set lamps = ['light.bookcase_lamp', 'light.corner_lamp',
+          'light.desk_lamp_2', 'light.desk_lamp_2_2', 'light.table_lamp'] %}
+        {{ lamps if is_state('light.meeting_light', 'on')
+           else lamps + ['light.door_lamp'] }}
     sequence:
       - action: script.turn_off
         target:
@@ -80,13 +89,7 @@ script:
             sequence:
               - action: light.turn_on
                 target:
-                  entity_id:
-                    - light.bookcase_lamp
-                    - light.corner_lamp
-                    - light.door_lamp
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
-                    - light.table_lamp
+                  entity_id: '{{ office_lamps }}'
                 data:
                   brightness_pct: 100
                   color_temp_kelvin: 4000
@@ -94,13 +97,7 @@ script:
             sequence:
               - action: light.turn_on
                 target:
-                  entity_id:
-                    - light.bookcase_lamp
-                    - light.corner_lamp
-                    - light.door_lamp
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
-                    - light.table_lamp
+                  entity_id: '{{ office_lamps }}'
                 data:
                   brightness_pct: 40
                   color_temp_kelvin: 2200
@@ -108,13 +105,7 @@ script:
             sequence:
               - action: light.turn_on
                 target:
-                  entity_id:
-                    - light.bookcase_lamp
-                    - light.corner_lamp
-                    - light.door_lamp
-                    - light.desk_lamp_2
-                    - light.desk_lamp_2_2
-                    - light.table_lamp
+                  entity_id: '{{ office_lamps }}'
                 data:
                   brightness_pct: 100
                   color_temp_kelvin: 5000
@@ -238,6 +229,12 @@ script:
                     - condition: numeric_state
                       entity_id: counter.office_sonoff_scene
                       above: 3
+                    # Stop ticking door_lamp while a meeting owns it.
+                    - condition: not
+                      conditions:
+                        - condition: state
+                          entity_id: light.meeting_light
+                          state: 'on'
                   sequence:
                     - action: script.office_lamp_tick
                       data:
@@ -340,19 +337,21 @@ automation:
           device_ieee: 18:69:0a:ff:fe:13:a1:01
           command: 'on'
     conditions: []
+    variables:
+      # While a meeting is active, door_lamp is owned by the meeting indicator
+      # (packages/meeting_indicator.yaml) and stays out of office-off.
+      office_lamps: >-
+        {% set lamps = ['light.bookcase_lamp', 'light.corner_lamp',
+          'light.desk_lamp_2', 'light.desk_lamp_2_2', 'light.table_lamp'] %}
+        {{ lamps if is_state('light.meeting_light', 'on')
+           else lamps + ['light.door_lamp'] }}
     actions:
       - action: script.turn_off
         target:
           entity_id: script.office_sonoff_candle_loop
       - action: light.turn_off
         target:
-          entity_id:
-            - light.bookcase_lamp
-            - light.corner_lamp
-            - light.door_lamp
-            - light.desk_lamp_2
-            - light.desk_lamp_2_2
-            - light.table_lamp
+          entity_id: '{{ office_lamps }}'
     mode: single
 
   - id: sonoff_button_2_office_jump_to_bright

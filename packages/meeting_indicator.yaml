@@ -1,0 +1,165 @@
+# Meeting indicator — physical "in a meeting" signal for Rachel's office.
+#
+# An ESP32 button (switch.meeting_button_in_meeting) drives two lights:
+#   - light.meeting_light : a dedicated hallway indicator (red on / off).
+#   - light.door_lamp     : one of the six office lamps. While a meeting is
+#                           active it is turned red as an in-room indicator;
+#                           when the meeting ends it rejoins the office scene.
+#
+# door_lamp ownership
+# -------------------
+# door_lamp is normally one of the lamps driven by the office scene controller
+# (packages/office_zen77.yaml + packages/sonoff_button_office.yaml). While a
+# meeting is active the meeting indicator owns it exclusively: the office
+# controller drops door_lamp from every scene/off action for the duration, so
+# cycling the office scene mid-meeting cannot disturb the red. When the meeting
+# ends door_lamp is handed back — it rejoins the current office scene, or turns
+# off if the rest of the office is off.
+#
+# "Is a meeting active?" is read off light.meeting_light: it is on iff the
+# indicator is showing (nothing else ever turns meeting_light on). Both this
+# package and the office controller use that as the shared signal.
+#
+# Two scripts hold the shared logic so the four automations stay thin:
+#   meeting_indicator_show  — turn the hallway light and door_lamp red.
+#   meeting_indicator_clear — turn the hallway light off and hand door_lamp
+#                             back to the office scene controller.
+
+script:
+  meeting_indicator_show:
+    alias: 'Meeting: show indicator'
+    mode: restart
+    sequence:
+      - action: light.turn_on
+        target:
+          entity_id: light.meeting_light
+        data:
+          rgb_color: [255, 0, 0]
+          brightness: 255
+          transition: 1
+      # If the office is mid-flicker, the candle loop's door_lamp branch needs
+      # a beat to see the meeting and stop ticking — otherwise its last tick
+      # could overwrite the red. Wait it out before claiming door_lamp.
+      - if:
+          - condition: state
+            entity_id: script.office_sonoff_candle_loop
+            state: 'on'
+        then:
+          - delay:
+              seconds: 1
+      # Skip door_lamp if the meeting ended during that wait.
+      - if:
+          - condition: state
+            entity_id: switch.meeting_button_in_meeting
+            state: 'on'
+        then:
+          - action: light.turn_on
+            target:
+              entity_id: light.door_lamp
+            data:
+              rgb_color: [255, 0, 0]
+              brightness: 255
+              transition: 1
+
+  meeting_indicator_clear:
+    alias: 'Meeting: clear indicator'
+    mode: restart
+    sequence:
+      - action: light.turn_off
+        target:
+          entity_id: light.meeting_light
+        data:
+          transition: 1
+      - choose:
+          # Rest of the office is off → door_lamp joins them (off).
+          - conditions:
+              - condition: state
+                entity_id:
+                  - light.bookcase_lamp
+                  - light.corner_lamp
+                  - light.desk_lamp_2
+                  - light.desk_lamp_2_2
+                  - light.table_lamp
+                state: 'off'
+            sequence:
+              - action: light.turn_off
+                target:
+                  entity_id: light.door_lamp
+                data:
+                  transition: 1
+        # Rest of the office is on → re-render the current office scene. With
+        # the meeting cleared (meeting_light now off), door_lamp is back in the
+        # controller's lamp set, so this rejoins it to the scene.
+        default:
+          - action: script.office_sonoff_apply_scene
+
+automation:
+  - id: meeting_status_on
+    alias: 'Meeting: Status ON — hallway + office red'
+    triggers:
+      - trigger: state
+        entity_id: switch.meeting_button_in_meeting
+        from: 'off'
+        to: 'on'
+    conditions: []
+    actions:
+      - action: script.meeting_indicator_show
+    mode: single
+
+  - id: meeting_status_off
+    alias: 'Meeting: Status OFF — hallway off, office rejoined'
+    triggers:
+      - trigger: state
+        entity_id: switch.meeting_button_in_meeting
+        from: 'on'
+        to: 'off'
+    conditions: []
+    actions:
+      - action: script.meeting_indicator_clear
+    mode: single
+
+  - id: meeting_button_offline
+    alias: 'Meeting: Button offline — clear indicator'
+    triggers:
+      - trigger: state
+        entity_id: switch.meeting_button_in_meeting
+        to: unavailable
+        for:
+          seconds: 10
+    conditions:
+      # Only act if a meeting was actually showing (button on → unavailable).
+      - condition: state
+        entity_id: light.meeting_light
+        state: 'on'
+    actions:
+      - action: script.meeting_indicator_clear
+    mode: single
+
+  - id: meeting_button_reconnect
+    alias: 'Meeting: Button reconnected — re-sync indicator'
+    triggers:
+      - trigger: state
+        entity_id: switch.meeting_button_in_meeting
+        from: unavailable
+    conditions: []
+    actions:
+      - choose:
+          # Reconnected mid-meeting → (re)assert the indicator.
+          - conditions:
+              - condition: state
+                entity_id: switch.meeting_button_in_meeting
+                state: 'on'
+            sequence:
+              - action: script.meeting_indicator_show
+          # Reconnected to "off" while the indicator is still showing (a blip
+          # too short to have tripped the offline automation) → clear it.
+          - conditions:
+              - condition: state
+                entity_id: switch.meeting_button_in_meeting
+                state: 'off'
+              - condition: state
+                entity_id: light.meeting_light
+                state: 'on'
+            sequence:
+              - action: script.meeting_indicator_clear
+    mode: single
