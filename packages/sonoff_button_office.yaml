@@ -57,6 +57,13 @@
 # drops to 3 or below. Every static scene calls script.turn_off on it before
 # applying. Transitioning into any flicker scene calls script.turn_on so the
 # apply script fires-and-forgets — it never waits on the infinite loop.
+#
+# Live brightness: input_number.office_brightness (10-100, step 10) is the
+# brightness applied by every scene. Static scenes read it directly;
+# flicker tick scales its 75-92% random band by `helper / 100`. apply_scene
+# resets the helper to the new scene's default brightness on every tap/cycle
+# (1=100, 2=40, 3=100, 4-11=100) — pass `reset_brightness: false` to render
+# without touching the helper (used by ZEN77 hold-to-dim/brighten).
 
 counter:
   office_sonoff_scene:
@@ -67,10 +74,26 @@ counter:
     step: 1
     restore: true
 
+input_number:
+  office_brightness:
+    name: Office Brightness
+    min: 10
+    max: 100
+    step: 10
+    unit_of_measurement: '%'
+    icon: mdi:brightness-6
+
 script:
   office_sonoff_apply_scene:
     alias: 'Office Sonoff: Apply current scene'
     mode: restart
+    fields:
+      reset_brightness:
+        description: >-
+          When true (default), resets input_number.office_brightness to the
+          new scene's default before rendering. Pass false from hold-to-dim
+          handlers so the helper drives the render instead.
+        default: true
     variables:
       # Office lamps to drive. While a meeting is active (light.meeting_light
       # on) light.door_lamp is owned by the meeting indicator and is dropped
@@ -81,9 +104,24 @@ script:
         {{ lamps if is_state('light.meeting_light', 'on')
            else lamps + ['light.door_lamp'] }}
     sequence:
-      - action: script.turn_off
-        target:
-          entity_id: script.office_sonoff_candle_loop
+      # Scene-change path: reset helper to scene default and kill any running
+      # candle loop so the choose: block below starts fresh. On hold-to-dim
+      # (reset_brightness:false) we skip both — the helper is already at the
+      # caller's stepped value, and a running flicker loop must keep ticking
+      # so the next ~400 ms tick picks up the new helper value without a
+      # visible kill/restart glitch.
+      - if:
+          - condition: template
+            value_template: "{{ reset_brightness }}"
+        then:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.office_brightness
+            data:
+              value: "{{ 40 if states('counter.office_sonoff_scene') == '2' else 100 }}"
+          - action: script.turn_off
+            target:
+              entity_id: script.office_sonoff_candle_loop
       - choose:
           - conditions: "{{ states('counter.office_sonoff_scene') == '1' }}"
             sequence:
@@ -91,7 +129,7 @@ script:
                 target:
                   entity_id: '{{ office_lamps }}'
                 data:
-                  brightness_pct: 100
+                  brightness_pct: "{{ states('input_number.office_brightness') | int(100) }}"
                   color_temp_kelvin: 2700
           - conditions: "{{ states('counter.office_sonoff_scene') == '2' }}"
             sequence:
@@ -99,7 +137,7 @@ script:
                 target:
                   entity_id: '{{ office_lamps }}'
                 data:
-                  brightness_pct: 40
+                  brightness_pct: "{{ states('input_number.office_brightness') | int(40) }}"
                   color_temp_kelvin: 2200
           - conditions: "{{ states('counter.office_sonoff_scene') == '3' }}"
             sequence:
@@ -107,13 +145,17 @@ script:
                 target:
                   entity_id: '{{ office_lamps }}'
                 data:
-                  brightness_pct: 100
+                  brightness_pct: "{{ states('input_number.office_brightness') | int(100) }}"
                   color_temp_kelvin: 5000
           # Scenes 4-11 are all flicker variants; the loop reads its target
           # color from a palette dict keyed on the counter, so we just turn
           # it on for any scene >= 4 and cycling between hues changes
-          # color seamlessly on the next tick.
-          - conditions: "{{ states('counter.office_sonoff_scene') | int(0) >= 4 }}"
+          # color seamlessly on the next tick. Gated on reset_brightness so
+          # hold-to-dim on a running flicker scene is a no-op (the loop is
+          # already ticking, the helper update reaches it on next iteration).
+          - conditions:
+              - "{{ states('counter.office_sonoff_scene') | int(0) >= 4 }}"
+              - "{{ reset_brightness }}"
             sequence:
               - action: script.turn_on
                 target:
@@ -135,7 +177,9 @@ script:
         default: 0
     variables:
       scene: "{{ states('counter.office_sonoff_scene') | int(0) }}"
-      brightness: "{{ range(75, 93) | random }}"
+      # 75-92% random flicker band scaled by input_number.office_brightness.
+      # At helper=100 (default) the band is unchanged; at helper=50 it's 37-46%.
+      brightness: "{{ ((range(75, 93) | random) * (states('input_number.office_brightness') | int(100)) / 100) | int }}"
     sequence:
       - choose:
           # Scene 10 — Rainbow Sync: all lamps share the same hue, driven by
