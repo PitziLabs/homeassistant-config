@@ -19,13 +19,17 @@
 #   value: KeyPressed2x..5x     = multi-tap (intentionally unhandled, reserved)
 #
 # Bindings:
-#   up tap   → if lights off, reset counter to 1 and apply scene 1;
-#              otherwise advance counter (wraps 11 → 1) and apply.
-#              i.e. first tap turns on, subsequent taps cycle scenes.
-#   down tap → all 6 office lamps off (counter persists, candle loop killed).
-#   up hold  → jump straight to scene 1 (Bright), reset counter to 1.
-#              Useful for bailing out of a colored/flicker scene without
-#              click-cycling through the rest of the catalog.
+#   up tap    → if lights off, reset counter to 1 and apply scene 1;
+#               otherwise advance counter (wraps 11 → 1) and apply.
+#               i.e. first tap turns on, subsequent taps cycle scenes.
+#   down tap  → all 6 office lamps off (counter persists, candle loop killed).
+#   up hold   → brighten the current scene by 10%. KeyHeldDown fires
+#               repeatedly while the paddle is held, so each fire steps
+#               input_number.office_brightness up (capped at 100). apply_scene
+#               is called with reset_brightness:false so the helper drives.
+#   down hold → dim the current scene by 10% (floored at 10).
+#   To bail out of a colored/flicker scene back to scene 1, use the
+#   Sonoff button's long-press, or tap down (off) then up (on → scene 1).
 #
 # Shared state with the Sonoff Button 2:
 #   counter:  counter.office_sonoff_scene
@@ -113,8 +117,8 @@ automation:
           entity_id: '{{ office_lamps }}'
     mode: single
 
-  - id: zen77_office_up_hold_bright
-    alias: 'Office ZEN77: Up hold → jump to scene 1 (Bright)'
+  - id: zen77_office_up_hold_brighten
+    alias: 'Office ZEN77: Up hold → brighten current scene'
     triggers:
       - trigger: event
         event_type: zwave_js_value_notification
@@ -123,15 +127,49 @@ automation:
           command_class_name: Central Scene
           property_key_name: '001'
           value: KeyHeldDown
-    conditions: []
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.office_lights_on
+        state: 'on'
     actions:
-      - action: counter.set_value
+      - action: input_number.set_value
         target:
-          entity_id: counter.office_sonoff_scene
+          entity_id: input_number.office_brightness
         data:
-          value: 1
+          value: "{{ [(states('input_number.office_brightness') | float(100)) + 10, 100] | min }}"
       - action: script.office_sonoff_apply_scene
-    mode: single
+        data:
+          reset_brightness: false
+    # KeyHeldDown fires repeatedly (~every 500 ms) while held. queued lets
+    # each fire step the helper in order; max:20 caps a runaway hold.
+    mode: queued
+    max: 20
+
+  - id: zen77_office_down_hold_dim
+    alias: 'Office ZEN77: Down hold → dim current scene'
+    triggers:
+      - trigger: event
+        event_type: zwave_js_value_notification
+        event_data:
+          device_id: 51a69e120926a13bba9cfaac7a2937e7
+          command_class_name: Central Scene
+          property_key_name: '002'
+          value: KeyHeldDown
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.office_lights_on
+        state: 'on'
+    actions:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.office_brightness
+        data:
+          value: "{{ [(states('input_number.office_brightness') | float(100)) - 10, 10] | max }}"
+      - action: script.office_sonoff_apply_scene
+        data:
+          reset_brightness: false
+    mode: queued
+    max: 20
 
   - id: zen77_office_parameter_apply
     alias: 'Office ZEN77: apply Z-Wave parameters (Scene Control + Smart Switch Mode)'
