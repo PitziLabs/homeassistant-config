@@ -104,6 +104,13 @@ script:
         {{ lamps if is_state('light.meeting_light', 'on')
            else lamps + ['light.door_lamp'] }}
     sequence:
+      # Coerce reset_brightness to its passed value or true. The fields.default
+      # above only seeds the dev-tools service form; at runtime, callers that
+      # invoke this script without `data: { reset_brightness: ... }` leave the
+      # variable undefined, and `{{ reset_brightness }}` renders as "" (falsy).
+      # That made the reset path below silently skip on every tap-to-cycle.
+      - variables:
+          reset_brightness: "{{ reset_brightness | default(true) }}"
       # Scene-change path: reset helper to scene default and kill any running
       # candle loop so the choose: block below starts fresh. On hold-to-dim
       # (reset_brightness:false) we skip both — the helper is already at the
