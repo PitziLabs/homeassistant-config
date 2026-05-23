@@ -233,7 +233,7 @@
   },
   {
     "entity_id": "automation.meeting_button_offline_hallway_off",
-    "friendly_name": "Meeting: Button offline — hallway off, office restored",
+    "friendly_name": "Meeting: Button offline — clear indicator",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -241,7 +241,7 @@
   },
   {
     "entity_id": "automation.meeting_button_reconnected_re_sync_hallway",
-    "friendly_name": "Meeting: Button reconnected — re-sync hallway + office",
+    "friendly_name": "Meeting: Button reconnected — re-sync indicator",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -249,7 +249,7 @@
   },
   {
     "entity_id": "automation.meeting_status_off_hallway_green",
-    "friendly_name": "Meeting: Status OFF — hallway off, office restored",
+    "friendly_name": "Meeting: Status OFF — hallway off, office rejoined",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -312,8 +312,24 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.office_zen77_down_hold_dim_current_scene",
+    "friendly_name": "Office ZEN77: Down hold → dim current scene",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.office_zen77_down_tap_office_lights_off",
     "friendly_name": "Office ZEN77: Down tap → office lights OFF",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
+    "entity_id": "automation.office_zen77_up_hold_brighten_current_scene",
+    "friendly_name": "Office ZEN77: Up hold → brighten current scene",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
@@ -3328,6 +3344,14 @@
     "hidden": false
   },
   {
+    "entity_id": "input_number.office_brightness",
+    "friendly_name": "Office Brightness",
+    "area_id": null,
+    "device_id": null,
+    "platform": "input_number",
+    "hidden": false
+  },
+  {
     "entity_id": "light.basement_lamp_1_light",
     "friendly_name": "Light",
     "area_id": null,
@@ -4213,6 +4237,22 @@
     "area_id": null,
     "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
     "platform": "roku",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.meeting_indicator_clear",
+    "friendly_name": "Meeting: clear indicator",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
+    "hidden": false
+  },
+  {
+    "entity_id": "script.meeting_indicator_show",
+    "friendly_name": "Meeting: show indicator",
+    "area_id": null,
+    "device_id": null,
+    "platform": "script",
     "hidden": false
   },
   {
