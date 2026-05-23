@@ -3,7 +3,14 @@
     "allow": [
       "Bash(git fetch *)",
       "Bash(yamllint *)",
-      "Bash(shellcheck *)"
+      "Bash(shellcheck *)",
+      "mcp__Local-HA__ha_get_state",
+      "mcp__Local-HA__ha_get_logs",
+      "mcp__Local-HA__ha_search_entities",
+      "mcp__Local-HA__ha_get_history",
+      "mcp__Local-HA__ha_read_resource",
+      "mcp__Local-HA__ha_get_skill_home_assistant_best_practices",
+      "mcp__Local-HA__ha_get_device"
     ]
   },
   "hooks": {

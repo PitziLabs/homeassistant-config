@@ -46,3 +46,9 @@ esphome/archive/
 .context-mirror/
 ha-context-dump.log
 ha-context-dump.log.*
+
+# Claude Code session state — ephemeral cowork worktrees
+.claude/worktrees/
+
+# GitHub PAT — credential, never commit
+.gh-token
