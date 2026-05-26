@@ -23,9 +23,9 @@
 #
 # Token resolution mirrors scripts/import-home-to-storage.sh:
 #   1. HA_TOKEN env var (one-shot override)
-#   2. ha_token from /config/secrets.yaml (preferred; see CLAUDE.md >
-#      "Script auth conventions" for why values are stored as full
-#      Authorization header strings)
+#   2. ha_token from /config/secrets.yaml (preferred; see
+#      scripts/README.md > "Script auth conventions" for why values are
+#      stored as full Authorization header strings)
 #   3. SUPERVISOR_TOKEN env var (last resort; rejected by current HA on
 #      the Core websocket auth path, but tried for completeness)
 #

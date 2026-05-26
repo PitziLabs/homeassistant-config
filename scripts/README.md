@@ -63,7 +63,7 @@ Core API). A long-lived access token is required:
    ha_token: "Bearer <paste-the-token-here>"
    ```
    The `Bearer ` prefix matches the project convention for stored
-   Authorization header values (see CLAUDE.md > "Script auth conventions").
+   Authorization header values (see *Script auth conventions* below).
    The script strips the prefix before sending to the websocket.
 
 The script resolves the token in this order: `HA_TOKEN` env var → `ha_token`
@@ -83,3 +83,79 @@ config but does not duplicate the registry entry. The git-managed
 `configuration.yaml` are left in place; both dashboards coexist
 (`/dashboard-home/home` from YAML, `/home-ui` from storage) until cutover
 is decided.
+
+## Script auth conventions
+
+Three conventions learned the hard way during context-sync work. Future scripts
+that talk to GitHub or the HA Supervisor from inside the HA Core container
+should follow these without re-deriving them.
+
+### `secrets.yaml` stores complete Authorization header values
+
+The `github_pat` secret in `/config/secrets.yaml` is stored as the **full
+Authorization header value**, including the auth scheme prefix:
+
+    github_pat: "Bearer github_pat_xxxxxxxxxx..."
+
+This is the HA `rest_command` integration convention — it allows direct use as
+`headers: { authorization: !secret github_pat }` in rest_command definitions
+(see `packages/ha_version_sync.yaml` for the canonical example).
+
+Bash scripts consuming this secret should extract the quoted value cleanly:
+
+    GITHUB_AUTH=$(awk -F'"' '/^github_pat:/ {print $2}' /config/secrets.yaml)
+
+The naive `awk '{print $2}'` (whitespace-split, no quote awareness) returns
+`"Bearer` — the opening quote plus the scheme word. It's non-empty (passes
+naive checks) but unusable. Always use `-F'"'`.
+
+When a bare token is needed (e.g., for git URL-embedded auth), strip the prefix:
+
+    GITHUB_TOKEN="${GITHUB_AUTH#Bearer }"
+
+### Git HTTPS push needs URL-embedded credentials, not extraheader
+
+For `git push` over HTTPS from inside the Core container, use URL-embedded auth:
+
+    git -C "$WORKTREE" push \
+        "https://x-access-token:${GITHUB_TOKEN}@github.com/${OWNER}/${REPO}.git" \
+        "$branch"
+
+**Do not use** the `git -c http.extraheader=...` or
+`git -c http.<url>.extraheader=...` patterns for push. They work for fetch and
+`ls-remote` but git 2.52 drops the extraheader on the auth challenge during the
+receive-pack handshake, falling back to credential helper or interactive prompt
+— which has no terminal in shell_command context, so it hangs.
+
+The URL-embedded form is what GitHub Actions uses internally for its own git
+operations. It puts the bare token briefly in `ps` output, but on a single-user
+HAOS VM this is acceptable. The push is one-shot — the URL is constructed inline,
+not persisted to git config; `git remote -v` continues to show only the bare
+HTTPS origin URL afterward.
+
+### GitHub REST API uses Bearer auth (the stored format works as-is)
+
+For curl calls to `api.github.com` endpoints (firing `repository_dispatch`,
+checking PR state, etc.), use the full stored value directly as the
+Authorization header:
+
+    curl -H "Authorization: ${GITHUB_AUTH}" \
+        https://api.github.com/repos/${OWNER}/${REPO}/dispatches \
+        ...
+
+No prefix manipulation — the `Bearer ` is already in the value. Adding
+`token ` or `Bearer ` prefixes in the script produces malformed headers.
+
+### Public-repo `ls-remote` is not a valid auth test
+
+`git ls-remote https://github.com/<owner>/<public-repo>.git HEAD` succeeds
+anonymously — GitHub serves refs for public repos without authentication. If
+you're testing whether a PAT works for git operations, the only valid test is
+an authenticated operation that the public-anonymous path can't satisfy:
+
+- A push (`git push ...`)
+- A REST API call requiring auth (e.g., `GET /user`, `GET /repos/.../dispatches`
+  with a body)
+- A clone of a private repo
+
+Don't conclude auth works just because `ls-remote` returns a SHA.
