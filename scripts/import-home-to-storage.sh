@@ -12,7 +12,7 @@
 #   1. HA_TOKEN env var (one-shot override)
 #   2. ha_token from /config/secrets.yaml (preferred, follows the project
 #      convention of storing complete Authorization header values; see
-#      CLAUDE.md > "Script auth conventions")
+#      scripts/README.md > "Script auth conventions")
 #   3. SUPERVISOR_TOKEN env var (last resort — current HA versions reject
 #      it on the Core websocket auth path; the script will still try)
 #
