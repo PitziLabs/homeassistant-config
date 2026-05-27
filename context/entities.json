@@ -96,14 +96,6 @@
     "hidden": false
   },
   {
-    "entity_id": "automation.exterior_door_left_open_at_night",
-    "friendly_name": "Exterior door left open at night",
-    "area_id": null,
-    "device_id": null,
-    "platform": "automation",
-    "hidden": false
-  },
-  {
     "entity_id": "automation.gitops_poll_and_deploy",
     "friendly_name": "GitOps: Poll and deploy",
     "area_id": null,
