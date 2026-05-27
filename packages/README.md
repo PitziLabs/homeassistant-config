@@ -43,18 +43,18 @@ The same PAT lives in two places: `secrets.yaml` on the HA instance as `github_p
 A physical "in a meeting" signal for Rachel's office. An ESP32 button (`switch.meeting_button_in_meeting`) drives two lights red while a meeting is on:
 
 - **`light.meeting_light`** — a dedicated hallway indicator. Simply red (on) or off.
-- **`light.door_lamp`** — one of the six office lamps. Turned red as an in-room indicator while a meeting is active, then handed back to the office scene controller when the meeting ends.
+- **`light.corner_lamp`** — one of the six office lamps. Turned red as an in-room indicator while a meeting is active, then handed back to the office scene controller when the meeting ends.
 
-### door_lamp ownership
+### corner_lamp ownership
 
-`door_lamp` is normally driven by the office scene controller (`office_zen77.yaml` + `sonoff_button_office.yaml`). While a meeting is active the meeting indicator owns it exclusively — the office controller drops `door_lamp` from every scene-apply and office-off action, so cycling the office scene mid-meeting cannot disturb the red.
+`corner_lamp` is normally driven by the office scene controller (`office_zen77.yaml` + `sonoff_button_office.yaml`). While a meeting is active the meeting indicator owns it exclusively — the office controller drops `corner_lamp` from every scene-apply and office-off action, so cycling the office scene mid-meeting cannot disturb the red.
 
 `light.meeting_light` being on is the shared "a meeting is active" signal: nothing else ever turns it on, and both this package and the office controller read it via `is_state('light.meeting_light', ...)`.
 
 ### Components
 
-**`script.meeting_indicator_show`** — turns the hallway light and `door_lamp` red. If the office is mid-flicker it waits ~1 s for the candle loop's `door_lamp` branch to bow out before claiming the lamp, and skips `door_lamp` if the meeting ended during that wait.
+**`script.meeting_indicator_show`** — turns the hallway light and `corner_lamp` red. If the office is mid-flicker it waits ~1 s for the candle loop's `corner_lamp` branch to bow out before claiming the lamp, and skips `corner_lamp` if the meeting ended during that wait.
 
-**`script.meeting_indicator_clear`** — turns the hallway light off, then hands `door_lamp` back: off if the rest of the office is off, otherwise re-renders the current office scene via `script.office_sonoff_apply_scene` so `door_lamp` rejoins it.
+**`script.meeting_indicator_clear`** — turns the hallway light off, then hands `corner_lamp` back: off if the rest of the office is off, otherwise re-renders the current office scene via `script.office_sonoff_apply_scene` so `corner_lamp` rejoins it.
 
 **Four automations** — `meeting_status_on` / `meeting_status_off` (button on/off), `meeting_button_offline` (unavailable 10 s — fail-safe clear), `meeting_button_reconnect` (re-sync after a WiFi blip). Each just calls one of the two scripts.

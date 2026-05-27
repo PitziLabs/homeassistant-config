@@ -2,18 +2,18 @@
 #
 # An ESP32 button (switch.meeting_button_in_meeting) drives two lights:
 #   - light.meeting_light : a dedicated hallway indicator (red on / off).
-#   - light.door_lamp     : one of the six office lamps. While a meeting is
+#   - light.corner_lamp   : one of the six office lamps. While a meeting is
 #                           active it is turned red as an in-room indicator;
 #                           when the meeting ends it rejoins the office scene.
 #
-# door_lamp ownership
-# -------------------
-# door_lamp is normally one of the lamps driven by the office scene controller
+# corner_lamp ownership
+# ---------------------
+# corner_lamp is normally one of the lamps driven by the office scene controller
 # (packages/office_zen77.yaml + packages/sonoff_button_office.yaml). While a
 # meeting is active the meeting indicator owns it exclusively: the office
-# controller drops door_lamp from every scene/off action for the duration, so
+# controller drops corner_lamp from every scene/off action for the duration, so
 # cycling the office scene mid-meeting cannot disturb the red. When the meeting
-# ends door_lamp is handed back — it rejoins the current office scene, or turns
+# ends corner_lamp is handed back — it rejoins the current office scene, or turns
 # off if the rest of the office is off.
 #
 # "Is a meeting active?" is read off light.meeting_light: it is on iff the
@@ -21,8 +21,8 @@
 # package and the office controller use that as the shared signal.
 #
 # Two scripts hold the shared logic so the four automations stay thin:
-#   meeting_indicator_show  — turn the hallway light and door_lamp red.
-#   meeting_indicator_clear — turn the hallway light off and hand door_lamp
+#   meeting_indicator_show  — turn the hallway light and corner_lamp red.
+#   meeting_indicator_clear — turn the hallway light off and hand corner_lamp
 #                             back to the office scene controller.
 
 script:
@@ -37,9 +37,9 @@ script:
           rgb_color: [255, 0, 0]
           brightness: 255
           transition: 1
-      # If the office is mid-flicker, the candle loop's door_lamp branch needs
+      # If the office is mid-flicker, the candle loop's corner_lamp branch needs
       # a beat to see the meeting and stop ticking — otherwise its last tick
-      # could overwrite the red. Wait it out before claiming door_lamp.
+      # could overwrite the red. Wait it out before claiming corner_lamp.
       - if:
           - condition: state
             entity_id: script.office_sonoff_candle_loop
@@ -47,7 +47,7 @@ script:
         then:
           - delay:
               seconds: 1
-      # Skip door_lamp if the meeting ended during that wait.
+      # Skip corner_lamp if the meeting ended during that wait.
       - if:
           - condition: state
             entity_id: switch.meeting_button_in_meeting
@@ -55,7 +55,7 @@ script:
         then:
           - action: light.turn_on
             target:
-              entity_id: light.door_lamp
+              entity_id: light.corner_lamp
             data:
               rgb_color: [255, 0, 0]
               brightness: 255
@@ -71,12 +71,12 @@ script:
         data:
           transition: 1
       - choose:
-          # Rest of the office is off → door_lamp joins them (off).
+          # Rest of the office is off → corner_lamp joins them (off).
           - conditions:
               - condition: state
                 entity_id:
                   - light.bookcase_lamp
-                  - light.corner_lamp
+                  - light.door_lamp
                   - light.desk_lamp_2
                   - light.desk_lamp_2_2
                   - light.table_lamp
@@ -84,12 +84,12 @@ script:
             sequence:
               - action: light.turn_off
                 target:
-                  entity_id: light.door_lamp
+                  entity_id: light.corner_lamp
                 data:
                   transition: 1
         # Rest of the office is on → re-render the current office scene. With
-        # the meeting cleared (meeting_light now off), door_lamp is back in the
-        # controller's lamp set, so this rejoins it to the scene.
+        # the meeting cleared (meeting_light now off), corner_lamp is back in
+        # the controller's lamp set, so this rejoins it to the scene.
         default:
           - action: script.office_sonoff_apply_scene
 
