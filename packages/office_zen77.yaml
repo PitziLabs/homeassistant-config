@@ -101,13 +101,13 @@ automation:
           value: KeyPressed
     conditions: []
     variables:
-      # While a meeting is active, door_lamp is owned by the meeting indicator
+      # While a meeting is active, corner_lamp is owned by the meeting indicator
       # (packages/meeting_indicator.yaml) and stays out of office-off.
       office_lamps: >-
-        {% set lamps = ['light.bookcase_lamp', 'light.corner_lamp',
+        {% set lamps = ['light.bookcase_lamp', 'light.door_lamp',
           'light.desk_lamp_2', 'light.desk_lamp_2_2', 'light.table_lamp'] %}
         {{ lamps if is_state('light.meeting_light', 'on')
-           else lamps + ['light.door_lamp'] }}
+           else lamps + ['light.corner_lamp'] }}
     actions:
       - action: script.turn_off
         target:
