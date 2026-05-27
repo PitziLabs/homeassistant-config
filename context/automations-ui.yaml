@@ -146,3 +146,38 @@
   - service: shell_command.gitops_sync
   mode: single
   max_exceeded: silent
+- id: '1779848780821'
+  alias: Exterior door left open at night
+  description: Alerts if any exterior door has been open for 5+ minutes between sunset
+    and sunrise.
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.main_panel_front_door
+    - binary_sensor.main_panel_basement_door
+    - binary_sensor.main_panel_sliding_door
+    - binary_sensor.main_panel_garage_door
+    - binary_sensor.garage_door_1_dry_contact_open
+    - binary_sensor.garage_door_2_dry_contact_open
+    to: 'on'
+    for:
+      minutes: 5
+  conditions:
+  - condition: sun
+    after: sunset
+    before: sunrise
+  actions:
+  - action: notify.mobile_app_sm_s926u1
+    data:
+      title: Door left open
+      message: '{{ trigger.to_state.name }} has been open for 5 minutes (after dark).'
+      data:
+        tag: exterior-door-open-{{ trigger.entity_id }}
+        channel: Security
+        importance: high
+  - action: notify.persistent_notification
+    data:
+      title: Door left open
+      message: '{{ trigger.to_state.name }} has been open for 5 minutes after dark.'
+  mode: parallel
+  max: 10
