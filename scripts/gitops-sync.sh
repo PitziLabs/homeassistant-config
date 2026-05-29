@@ -231,10 +231,18 @@ main() {
   fi
 }
 
-# Acquire exclusive lock — exit silently if a previous run is still in progress
-exec 9>"$LOCK_FILE"
-if ! flock -n 9; then
-  exit 0
-fi
+# Acquire exclusive lock — exit silently if a previous run is still in progress,
+# then run main. Wrapped in a function so the script can be sourced (e.g. by the
+# bats suite in tests/) without acquiring the lock or deploying.
+main_locked() {
+  exec 9>"$LOCK_FILE"
+  if ! flock -n 9; then
+    exit 0
+  fi
+  main
+}
 
-main
+# Only self-execute when run directly, not when sourced for testing.
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main_locked
+fi
