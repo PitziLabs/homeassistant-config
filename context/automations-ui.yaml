@@ -146,3 +146,55 @@
   - service: shell_command.gitops_sync
   mode: single
   max_exceeded: silent
+- id: '1780152068248'
+  alias: UPS — Power Event Notifications
+  description: Notify on CyberPower UPS state transitions (Online / On Battery / Low
+    Battery)
+  triggers:
+  - platform: state
+    entity_id: sensor.cyberpower_status
+    to:
+    - On Battery
+    - Low Battery
+    - Online
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.cyberpower_status
+        state: On Battery
+      sequence:
+      - action: notify.send_message
+        target:
+          entity_id: notify.sm_s926u1
+        data:
+          title: UPS On Battery
+          message: Wall power lost. Battery {{ states('sensor.cyberpower_battery_charge')
+            }}%, load {{ states('sensor.cyberpower_load') }}%.
+    - conditions:
+      - condition: state
+        entity_id: sensor.cyberpower_status
+        state: Low Battery
+      sequence:
+      - action: notify.send_message
+        target:
+          entity_id: notify.sm_s926u1
+        data:
+          title: UPS LOW BATTERY — shutdown imminent
+          message: Battery {{ states('sensor.cyberpower_battery_charge') }}%, load
+            {{ states('sensor.cyberpower_load') }}%. PVE cluster + NAS will halt when
+            upsmon hits FSD.
+    - conditions:
+      - condition: state
+        entity_id: sensor.cyberpower_status
+        state: Online
+      sequence:
+      - action: notify.send_message
+        target:
+          entity_id: notify.sm_s926u1
+        data:
+          title: UPS Online
+          message: Wall power restored. Battery {{ states('sensor.cyberpower_battery_charge')
+            }}%.
+  mode: parallel
+  max: 5

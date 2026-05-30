@@ -150,6 +150,16 @@
     ]
   },
   {
+    "device_id": "d81355516cb935f396c7033ac00d4788",
+    "name": "Cyberpower",
+    "manufacturer": "CPS",
+    "model": "CP1500PFCLCDa",
+    "area_id": "office",
+    "integrations": [
+      "nut"
+    ]
+  },
+  {
     "device_id": "42bfb736cf5e7d6fadc0a7beae30bd2c",
     "name": "Desk Lamp",
     "manufacturer": "Signify Netherlands B.V.",
