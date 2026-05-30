@@ -884,6 +884,16 @@
                     },
                     {
                       "type": "template",
+                      "icon": "mdi:battery-charging",
+                      "icon_color": "{% if is_state('sensor.cyberpower_status','Online') %}green{% elif is_state('sensor.cyberpower_status','On Battery') %}orange{% else %}red{% endif %}",
+                      "content": "UPS {{ states('sensor.cyberpower_status') }} · {{ states('sensor.cyberpower_battery_charge') }}%",
+                      "tap_action": {
+                        "action": "more-info",
+                        "entity": "sensor.cyberpower_status"
+                      }
+                    },
+                    {
+                      "type": "template",
                       "icon": "mdi:source-branch-sync",
                       "icon_color": "{{ 'green' if is_state('automation.gitops_poll_and_deploy','on') else 'red' }}",
                       "content": "GitOps {{ relative_time(state_attr('automation.gitops_poll_and_deploy','last_triggered')) if state_attr('automation.gitops_poll_and_deploy','last_triggered') else 'idle' }}",
@@ -1042,6 +1052,55 @@
                   "name": "Disk 2 (Seagate IronWolf)",
                   "icon": "mdi:harddisk",
                   "color": "{{ 'green' if is_state('sensor.ugreen_nas_disk_2_summary','Normal') else 'red' }}"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "UPS — CyberPower CP1500PFCLCDa",
+                  "icon": "mdi:battery-charging"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "{{ states('sensor.cyberpower_status') }}",
+                  "secondary": "Battery {{ states('sensor.cyberpower_battery_charge') }}% · Load {{ states('sensor.cyberpower_load') }}% · {{ states('sensor.cyberpower_input_voltage') }}V in",
+                  "icon": "mdi:battery-charging",
+                  "icon_color": "{% if is_state('sensor.cyberpower_status','Online') %}green{% elif is_state('sensor.cyberpower_status','On Battery') %}orange{% else %}red{% endif %}",
+                  "tap_action": {
+                    "action": "more-info",
+                    "entity": "sensor.cyberpower_status"
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.cyberpower_battery_charge",
+                  "name": "Battery %",
+                  "icon": "mdi:battery",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.cyberpower_load",
+                  "name": "Load %",
+                  "icon": "mdi:gauge",
+                  "color": "blue"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.cyberpower_input_voltage",
+                  "name": "Input V",
+                  "icon": "mdi:sine-wave",
+                  "color": "indigo"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.cyberpower_output_voltage",
+                  "name": "Output V",
+                  "icon": "mdi:power-plug",
+                  "color": "indigo"
                 }
               ]
             },

@@ -464,6 +464,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.ups_power_event_notifications",
+    "friendly_name": "UPS — Power Event Notifications",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.any_light_on",
     "friendly_name": "Any Light On",
     "area_id": null,
@@ -4824,6 +4832,54 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.cyberpower_battery_charge",
+    "friendly_name": "Battery charge",
+    "area_id": null,
+    "device_id": "d81355516cb935f396c7033ac00d4788",
+    "platform": "nut",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.cyberpower_input_voltage",
+    "friendly_name": "Input voltage",
+    "area_id": null,
+    "device_id": "d81355516cb935f396c7033ac00d4788",
+    "platform": "nut",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.cyberpower_load",
+    "friendly_name": "Load",
+    "area_id": null,
+    "device_id": "d81355516cb935f396c7033ac00d4788",
+    "platform": "nut",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.cyberpower_output_voltage",
+    "friendly_name": "Output voltage",
+    "area_id": null,
+    "device_id": "d81355516cb935f396c7033ac00d4788",
+    "platform": "nut",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.cyberpower_status",
+    "friendly_name": "Status",
+    "area_id": null,
+    "device_id": "d81355516cb935f396c7033ac00d4788",
+    "platform": "nut",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.cyberpower_status_data",
+    "friendly_name": "Status data",
+    "area_id": null,
+    "device_id": "d81355516cb935f396c7033ac00d4788",
+    "platform": "nut",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.dining_room_battery",
     "friendly_name": "Battery",
     "area_id": null,
@@ -8162,6 +8218,30 @@
   {
     "entity_id": "sensor.ugreen_nas_total_runtime",
     "friendly_name": "UGREEN NAS Total Runtime",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_ups_model",
+    "friendly_name": "UGREEN NAS UPS Model",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_ups_power_remaining",
+    "friendly_name": "UGREEN NAS UPS Power Remaining",
+    "area_id": null,
+    "device_id": "226fb0693b9856293f743fa446439f3e",
+    "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ugreen_nas_ups_vendor",
+    "friendly_name": "UGREEN NAS UPS Vendor",
     "area_id": null,
     "device_id": "226fb0693b9856293f743fa446439f3e",
     "platform": "ugreen",
