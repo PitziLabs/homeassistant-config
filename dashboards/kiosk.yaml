@@ -100,7 +100,19 @@ views:
               border-radius: 10px;
               border: none;
               background: transparent;
+              display: flex;
+              flex-direction: column;
             }
+            /* Cascade height into the button-card so the green-tinted
+               state background fills the full 300px row instead of
+               collapsing to content height and leaking page bg below. */
+            ha-card > * {
+              flex: 1 1 auto;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+            }
+            ha-card > * > * { flex: 1 1 auto; min-height: 0; }
         card:
           type: custom:button-card
           entity: alarm_control_panel.home_alarm
@@ -194,7 +206,17 @@ views:
               border-radius: 10px;
               border: none;
               background: transparent;
+              display: flex;
+              flex-direction: column;
             }
+            /* Same fill cascade as the alarm hero — see comment there. */
+            ha-card > * {
+              flex: 1 1 auto;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+            }
+            ha-card > * > * { flex: 1 1 auto; min-height: 0; }
         card:
           type: custom:button-card
           entity: light.meeting_light
