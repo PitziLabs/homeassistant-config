@@ -1,0 +1,47 @@
+name: ESPHome Check
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  esphome-config:
+    name: ESPHome Config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Pinned for deterministic validation — bump deliberately alongside the
+      # ESPHome Device Builder add-on version the panels are flashed from.
+      - name: Install ESPHome
+        run: pip install esphome==2026.5.1
+
+      - name: Prepare fake secrets
+        run: cp esphome/secrets.fake.yaml esphome/secrets.yaml
+
+      - name: Validate ESPHome configs
+        run: |
+          shopt -s nullglob
+          status=0
+          for f in esphome/*.yaml; do
+            case "$(basename "$f")" in
+              secrets*.yaml) continue ;;  # not device configs
+            esac
+            echo "::group::esphome config $f"
+            if ! esphome config "$f"; then
+              echo "::error file=$f::ESPHome config validation failed"
+              status=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "$status"
