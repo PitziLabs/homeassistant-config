@@ -42,6 +42,106 @@ storage_items() {
   fi
 }
 
+# --- Snapshot transforms ---------------------------------------------------
+# Each build_* function takes its input path(s) and emits the artifact JSON on
+# stdout. They are pure (no global state, no file writes) so the bats suite in
+# tests/ can exercise them against fixtures without an HA instance.
+
+# Project the entity registry down to the fields the snapshot exposes,
+# dropping disabled entities and sorting by entity_id.
+build_entities() {
+  jq '
+    .data.entities
+    | map(select(.disabled_by == null))
+    | map({
+        entity_id: .entity_id,
+        friendly_name: (.name // .original_name // null),
+        area_id: .area_id,
+        device_id: .device_id,
+        platform: .platform,
+        hidden: (.hidden_by != null)
+      })
+    | sort_by(.entity_id)
+  ' "$1"
+}
+
+# Project the area registry to {area_id, name}, sorted by name.
+build_areas() {
+  jq '
+    .data.areas
+    | map({area_id: .id, name: .name})
+    | sort_by(.name)
+  ' "$1"
+}
+
+# Join devices against config_entries to resolve each device's integration
+# domains. Args: <device_registry_path> <config_entries_path>.
+build_devices() {
+  jq -n \
+    --slurpfile dev "$1" \
+    --slurpfile cfg "$2" \
+    '
+    ($cfg[0].data.entries | map({(.entry_id): .domain}) | add // {}) as $entry_domains |
+    $dev[0].data.devices
+    | map({
+        device_id: .id,
+        name: (.name_by_user // .name // null),
+        manufacturer: .manufacturer,
+        model: .model,
+        area_id: .area_id,
+        integrations: (.config_entries | map($entry_domains[.]) | map(select(. != null)) | unique)
+      })
+    | sort_by(.name // "")
+    '
+}
+
+# Assemble the combined helpers artifact — an object keyed by helper type, each
+# value the storage_items array for that type. Arg: <storage_dir>.
+build_helpers() {
+  local storage_dir="$1"
+  local helpers='{}'
+  local helper_types=(
+    input_boolean
+    input_number
+    input_text
+    input_select
+    input_datetime
+    timer
+    counter
+    schedule
+  )
+  local t items
+  for t in "${helper_types[@]}"; do
+    items=$(storage_items "${storage_dir}/${t}")
+    helpers=$(jq --argjson items "$items" --arg key "$t" '. + {($key): $items}' <<<"$helpers")
+  done
+  printf '%s\n' "$helpers"
+}
+
+# Assemble the storage-mode dashboards artifact: the dashboard registry plus the
+# config blob for the default dashboard (.storage/lovelace) and any additional
+# storage-mode dashboards (.storage/lovelace.<url_path>). Arg: <storage_dir>.
+build_dashboards_storage() {
+  local storage_dir="$1"
+  local dashboards_registry
+  dashboards_registry=$(storage_items "${storage_dir}/lovelace_dashboards")
+  local configs='{}'
+  if [[ -f "${storage_dir}/lovelace" ]]; then
+    configs=$(jq --slurpfile lv "${storage_dir}/lovelace" \
+      '. + {lovelace: ($lv[0].data.config // {})}' <<<"$configs")
+  fi
+  local f key
+  shopt -s nullglob
+  for f in "${storage_dir}"/lovelace.*; do
+    key=$(basename "$f")
+    configs=$(jq --slurpfile lv "$f" --arg key "$key" \
+      '. + {($key): ($lv[0].data.config // {})}' <<<"$configs")
+  done
+  shopt -u nullglob
+  jq -n --argjson dashboards "$dashboards_registry" --argjson configs "$configs" \
+    '{dashboards: $dashboards, configs: $configs}'
+}
+
 main() {
   rotate_log
   log INFO "Starting HA context dump"
@@ -77,44 +177,14 @@ main() {
   mkdir -p "$CONTEXT_DIR"
 
   log INFO "Building entities.json"
-  jq '
-    .data.entities
-    | map(select(.disabled_by == null))
-    | map({
-        entity_id: .entity_id,
-        friendly_name: (.name // .original_name // null),
-        area_id: .area_id,
-        device_id: .device_id,
-        platform: .platform,
-        hidden: (.hidden_by != null)
-      })
-    | sort_by(.entity_id)
-  ' "${STORAGE}/core.entity_registry" > "${CONTEXT_DIR}/entities.json"
+  build_entities "${STORAGE}/core.entity_registry" > "${CONTEXT_DIR}/entities.json"
 
   log INFO "Building areas.json"
-  jq '
-    .data.areas
-    | map({area_id: .id, name: .name})
-    | sort_by(.name)
-  ' "${STORAGE}/core.area_registry" > "${CONTEXT_DIR}/areas.json"
+  build_areas "${STORAGE}/core.area_registry" > "${CONTEXT_DIR}/areas.json"
 
   log INFO "Building devices.json"
-  jq -n \
-    --slurpfile dev "${STORAGE}/core.device_registry" \
-    --slurpfile cfg "${STORAGE}/core.config_entries" \
-    '
-    ($cfg[0].data.entries | map({(.entry_id): .domain}) | add // {}) as $entry_domains |
-    $dev[0].data.devices
-    | map({
-        device_id: .id,
-        name: (.name_by_user // .name // null),
-        manufacturer: .manufacturer,
-        model: .model,
-        area_id: .area_id,
-        integrations: (.config_entries | map($entry_domains[.]) | map(select(. != null)) | unique)
-      })
-    | sort_by(.name // "")
-    ' > "${CONTEXT_DIR}/devices.json"
+  build_devices "${STORAGE}/core.device_registry" "${STORAGE}/core.config_entries" \
+    > "${CONTEXT_DIR}/devices.json"
 
   log INFO "Copying automations-ui.yaml"
   cp /config/automations.yaml "${CONTEXT_DIR}/automations-ui.yaml"
@@ -136,23 +206,7 @@ main() {
   # output is an object keyed by helper type so a single jq query can list all
   # helpers of a given kind.
   log INFO "Building helpers.json"
-  local helpers='{}'
-  local helper_types=(
-    input_boolean
-    input_number
-    input_text
-    input_select
-    input_datetime
-    timer
-    counter
-    schedule
-  )
-  for t in "${helper_types[@]}"; do
-    local items
-    items=$(storage_items "${STORAGE}/${t}")
-    helpers=$(jq --argjson items "$items" --arg key "$t" '. + {($key): $items}' <<<"$helpers")
-  done
-  printf '%s\n' "$helpers" > "${CONTEXT_DIR}/helpers.json"
+  build_helpers "$STORAGE" > "${CONTEXT_DIR}/helpers.json"
 
   # Storage-mode Lovelace dashboards. The dashboard registry lives at
   # .storage/lovelace_dashboards; the default dashboard config is .storage/lovelace
@@ -160,23 +214,7 @@ main() {
   # YAML-mode dashboards (this repo's home/kiosk/homelab-status) are not stored
   # in .storage/ — they remain in dashboards/*.yaml and are absent here.
   log INFO "Building dashboards-storage.json"
-  local dashboards_registry
-  dashboards_registry=$(storage_items "${STORAGE}/lovelace_dashboards")
-  local configs='{}'
-  if [[ -f "${STORAGE}/lovelace" ]]; then
-    configs=$(jq --slurpfile lv "${STORAGE}/lovelace" \
-      '. + {lovelace: ($lv[0].data.config // {})}' <<<"$configs")
-  fi
-  shopt -s nullglob
-  for f in "${STORAGE}"/lovelace.*; do
-    local key
-    key=$(basename "$f")
-    configs=$(jq --slurpfile lv "$f" --arg key "$key" \
-      '. + {($key): ($lv[0].data.config // {})}' <<<"$configs")
-  done
-  shopt -u nullglob
-  jq -n --argjson dashboards "$dashboards_registry" --argjson configs "$configs" \
-    '{dashboards: $dashboards, configs: $configs}' > "${CONTEXT_DIR}/dashboards-storage.json"
+  build_dashboards_storage "$STORAGE" > "${CONTEXT_DIR}/dashboards-storage.json"
 
   # Check for diff — most common case is no change
   if [[ -z "$(git -C "$WORKTREE" status --porcelain context/)" ]]; then
@@ -241,4 +279,8 @@ main() {
   log INFO "Snapshot pushed — context-snapshot PR will open shortly"
 }
 
-main
+# Only self-execute when run directly, not when sourced for testing (the bats
+# suite in tests/ sources this file to exercise the build_* transforms).
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main
+fi
