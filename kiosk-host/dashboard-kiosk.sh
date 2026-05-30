@@ -16,4 +16,4 @@ chromium \
   --force-device-scale-factor=1 \
   --window-size=2560,1440 \
   --window-position=0,0 \
-  "http://192.168.139.172:8123/dashboard-kiosk/home"
+  "http://homeassistant.local:8123/dashboard-kiosk/home"

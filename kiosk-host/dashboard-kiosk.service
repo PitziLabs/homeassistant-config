@@ -1,5 +1,5 @@
 [Unit]
-Description=Grafana Dashboard Kiosk
+Description=Home Assistant Dashboard Kiosk
 After=network-online.target
 Wants=network-online.target
 
