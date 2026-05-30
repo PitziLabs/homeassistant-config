@@ -303,15 +303,15 @@ views:
         square: false
         cards:
           - type: custom:mushroom-template-card
-            primary: Sonos Office
-            secondary: "{{ states('sensor.office_battery') }}%"
+            primary: Office Switch
+            secondary: "{{ states('sensor.office_switch_battery') }}%"
             icon: >
-              {% set v = states('sensor.office_battery') | int(100) %}
+              {% set v = states('sensor.office_switch_battery') | int(100) %}
               {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
             icon_color: >
-              {% set v = states('sensor.office_battery') | int(100) %}
+              {% set v = states('sensor.office_switch_battery') | int(100) %}
               {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
-            entity: sensor.office_battery
+            entity: sensor.office_switch_battery
             tap_action:
               action: more-info
 
@@ -395,14 +395,14 @@ views:
 
           - type: custom:mushroom-template-card
             primary: Play Room Tap
-            secondary: "{{ states('sensor.play_room_tap_battery') }}%"
+            secondary: "{{ states('sensor.hue_tap_dial_battery') }}%"
             icon: >
-              {% set v = states('sensor.play_room_tap_battery') | int(100) %}
+              {% set v = states('sensor.hue_tap_dial_battery') | int(100) %}
               {% if v < 20 %}mdi:battery-10{% elif v < 40 %}mdi:battery-40{% elif v < 60 %}mdi:battery-60{% elif v < 80 %}mdi:battery-80{% else %}mdi:battery{% endif %}
             icon_color: >
-              {% set v = states('sensor.play_room_tap_battery') | int(100) %}
+              {% set v = states('sensor.hue_tap_dial_battery') | int(100) %}
               {% if v < 20 %}red{% elif v < 40 %}amber{% else %}green{% endif %}
-            entity: sensor.play_room_tap_battery
+            entity: sensor.hue_tap_dial_battery
             tap_action:
               action: more-info
 

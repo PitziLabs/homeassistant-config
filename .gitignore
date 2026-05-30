@@ -52,3 +52,7 @@ ha-context-dump.log.*
 
 # GitHub PAT — credential, never commit
 .gh-token
+
+# Python bytecode
+__pycache__/
+*.pyc
