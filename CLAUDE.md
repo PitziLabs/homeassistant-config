@@ -20,6 +20,7 @@ to them when implementing:
 | `dashboards/README.md` | All four Lovelace dashboards (Home, Kiosk, Homelab Status, Command Deck) |
 | `themes/README.md` | Noctis Kiosk theme, kiosk_polish tokens |
 | `scripts/README.md` | gitops-sync.sh, ha-context-dump.sh, Script auth conventions |
+| `kiosk-host/README.md` | Chromium kiosk launcher running on pve2, its gitops pull loop, bootstrap recipe |
 | `context/README.md` | What each `context/*.json` file is |
 | `docs/` | Long-form design notes, migration write-ups |
 
@@ -152,6 +153,36 @@ The complementary `ha-context-dump.sh` (driven by
 `packages/ha_context_dump.yaml`) runs in the opposite direction — live HA →
 `context/` snapshot → drift PR — see `scripts/README.md` and
 *HA Runtime State Context* below.
+
+### Parallel loop: `kiosk-host/` on pve2
+
+A second gitops loop covers the Chromium kiosk display host (the NUC
+that drives the household 2560x1440 monitor). It is shaped to mirror
+this one but runs *outside* HA:
+
+- **Where:** a clone of this repo at `/opt/homeassistant-config` on
+  pve2 (a Proxmox quorum node — see `~/CLAUDE.md` for the inventory).
+- **Cadence:** systemd timer `dashboard-kiosk-gitops.timer`, every
+  5 minutes, oneshot via `dashboard-kiosk-gitops.service`.
+- **Scope:** `kiosk-host/dashboard-kiosk.sh` →
+  `/usr/local/bin/dashboard-kiosk.sh` and
+  `kiosk-host/dashboard-kiosk.service` →
+  `/etc/systemd/system/dashboard-kiosk.service`. Validates with
+  `bash -n` and `systemd-analyze verify` before installing.
+- **Restart discipline:** `cmp -s` per file decides whether to install;
+  `systemctl restart dashboard-kiosk.service` only fires when at least
+  one of the two files actually changed. No-op polls don't touch the
+  display — editing kiosk artifacts via a PR is a hands-off deploy
+  without the screen-flicker tax.
+- **Self-exclusion:** the loop's own `.service` and `.timer` units are
+  deliberately *not* managed by the loop, so a broken update can't
+  leave pve2 unable to fix itself. Both are bootstrap-only.
+
+Full details (deploy / bootstrap / force-pull / verify / disable) live
+in `kiosk-host/README.md`. The kiosk dashboard YAML itself
+(`dashboards/kiosk.yaml`) is still deployed by the HA-side loop above —
+the pve2 loop only handles the display host's runner script and
+systemd unit, not the dashboard content it points at.
 
 ---
 
