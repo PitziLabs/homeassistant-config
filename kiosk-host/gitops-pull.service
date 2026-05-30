@@ -1,0 +1,13 @@
+[Unit]
+Description=Pull kiosk-host updates from git and redeploy
+Documentation=https://github.com/PitziLabs/homeassistant-config/blob/main/kiosk-host/README.md
+After=network-online.target dashboard-kiosk.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/homeassistant-config/kiosk-host/gitops-pull.sh
+# The script exits cleanly on no-op, so a non-zero exit is a real error
+# worth surfacing in `systemctl status` and journalctl.
+StandardOutput=journal
+StandardError=journal
