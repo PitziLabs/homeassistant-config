@@ -1,10 +1,20 @@
 # =================================================================
-# KIOSK DASHBOARD — V2 (foundation rebuild)
-# Dedicated 1920x1080 home-state display for pve2 -> TCL TV.
+# KIOSK DASHBOARD — V3 (interactive desktop layout)
+# Primary home-state display, scaled for a 2560x1440 monitor driven
+# by mouse + keyboard. Every card supports its native interactions:
+#   - Light tiles toggle on tap, more-info on hold
+#   - Sensors, alarm, TVs, climate standby tiles open more-info
+#     dialogs (history, arm/disarm panel, media controls, climate
+#     setpoint sliders)
+#   - BTUI thermostat dials expose +/- and menu controls
+#   - Mini-media-player tiles expose play/pause, prev/next, volume,
+#     progress, and power overlaid on the artwork
+#   - Meeting card toggles switch.meeting_button_in_meeting so the
+#     in-meeting indicator can be flipped from the dashboard
 #
 # URL: http://<ha-host>:8123/kiosk/home
 #
-# Architecture (research-driven rebuild):
+# Architecture:
 #   - View type: custom:grid-layout (NOT panel:true wrapper)
 #   - Cell wrappers: custom:mod-card for ha-card host + height: 100% cascade
 #   - Typed cards per panel (no html-template-card):
@@ -38,7 +48,7 @@ views:
       overflow: hidden
       grid-gap: 8px
       grid-template-columns: 1fr 1fr 1.4fr 1fr
-      grid-template-rows: 240px 1fr
+      grid-template-rows: 300px 1fr
       grid-template-areas: |
         "weather weather alarm   meeting"
         "climate sensors lights  media"
@@ -100,8 +110,7 @@ views:
           show_icon: true
           size: 55%
           layout: icon_name_state
-          tap_action: { action: none }
-          hold_action: { action: none }
+          tap_action: { action: more-info }
           state:
             - value: disarmed
               icon: mdi:shield-check
@@ -195,8 +204,18 @@ views:
           show_label: true
           show_icon: true
           size: 60%
-          tap_action: { action: none }
-          hold_action: { action: none }
+          # Tap toggles the underlying meeting button so the in-meeting
+          # state can be flipped from the dashboard; the card's visual
+          # state still reads from light.meeting_light (the indicator
+          # the meeting_indicator package drives).
+          tap_action:
+            action: call-service
+            service: switch.toggle
+            target:
+              entity_id: switch.meeting_button_in_meeting
+          hold_action:
+            action: more-info
+            entity: switch.meeting_button_in_meeting
           state:
             - value: 'on'
               icon: mdi:account-voice
@@ -301,8 +320,8 @@ views:
                       entity: climate.upstairs
                       name: Upstairs
                       humidity: sensor.upstairs_humidity
-                      disable_buttons: true
-                      disable_menu: true
+                      disable_buttons: false
+                      disable_menu: false
                       card_mod:
                         style: |
                           ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
@@ -324,7 +343,7 @@ views:
                       icon: mdi:thermometer
                       icon_color: blue-grey
                       fill_container: true
-                      tap_action: { action: none }
+                      tap_action: { action: more-info }
                       card_mod:
                         style: |
                           ha-card {
@@ -423,8 +442,8 @@ views:
                       entity: climate.downstairs
                       name: Downstairs
                       humidity: sensor.downstairs_humidity
-                      disable_buttons: true
-                      disable_menu: true
+                      disable_buttons: false
+                      disable_menu: false
                       card_mod:
                         style: |
                           ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
@@ -446,7 +465,7 @@ views:
                       icon: mdi:thermometer
                       icon_color: blue-grey
                       fill_container: true
-                      tap_action: { action: none }
+                      tap_action: { action: more-info }
                       card_mod:
                         style: |
                           ha-card {
@@ -566,7 +585,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'on'
                   icon: mdi:door-open
@@ -610,7 +629,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'on'
                   icon: mdi:door-sliding-open
@@ -654,7 +673,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'on'
                   icon: mdi:door-open
@@ -698,7 +717,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'on'
                   icon: mdi:door-open
@@ -743,7 +762,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'closed'
                   icon: mdi:garage
@@ -791,7 +810,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'closed'
                   icon: mdi:garage
@@ -840,7 +859,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'on'
                   icon: mdi:motion-sensor
@@ -879,7 +898,7 @@ views:
               show_state: true
               show_icon: true
               size: 70%
-              tap_action: { action: none }
+              tap_action: { action: more-info }
               state:
                 - value: 'on'
                   icon: mdi:motion-sensor
@@ -969,8 +988,8 @@ views:
               columns: 2
               square: false
               cards:
-                - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.floor_lamp_composite, name: Floor, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.floor_lamp_composite, name: Floor, layout: vertical, fill_container: true, icon_type: icon }
 
             # --- Kitchen ---
             - <<: *light_section_header
@@ -979,9 +998,9 @@ views:
               columns: 3
               square: false
               cards:
-                - { type: 'custom:mushroom-light-card', entity: light.kitchen_island, name: Island, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.kitchen_main, name: Kitchen, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.kitchen_table, name: Table, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.kitchen_island, name: Island, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.kitchen_main, name: Kitchen, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.kitchen_table, name: Table, layout: vertical, fill_container: true, icon_type: icon }
 
             # --- Office ---
             - <<: *light_section_header
@@ -990,12 +1009,12 @@ views:
               columns: 3
               square: false
               cards:
-                - { type: 'custom:mushroom-light-card', entity: light.bookcase_lamp, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.corner_lamp, name: Corner, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.door_lamp, name: Door, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.table_lamp, name: Table, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.bookcase_lamp, name: Bookcase, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.corner_lamp, name: Corner, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.door_lamp, name: Door, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.table_lamp, name: Table, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2, name: Desk, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.desk_lamp_2_2, name: Desk 2, layout: vertical, fill_container: true, icon_type: icon }
 
             # --- Hallways ---
             - <<: *light_section_header
@@ -1004,8 +1023,8 @@ views:
               columns: 2
               square: false
               cards:
-                - { type: 'custom:mushroom-light-card', entity: light.downstairs_hallway, name: Down Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.upstairs_hallway_light, name: Up Hall, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.downstairs_hallway, name: Down Hall, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.upstairs_hallway_light, name: Up Hall, layout: vertical, fill_container: true, icon_type: icon }
 
             # --- Outdoor ---
             - <<: *light_section_header
@@ -1014,11 +1033,11 @@ views:
               columns: 5
               square: false
               cards:
-                - { type: 'custom:mushroom-light-card', entity: light.front_door, name: Front, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.front_lantern, name: Lantern, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.garage_front, name: Garage Fr, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.garage_side, name: Garage Sd, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
-                - { type: 'custom:mushroom-light-card', entity: light.shed, name: Shed, layout: vertical, fill_container: true, icon_type: icon, tap_action: { action: none } }
+                - { type: 'custom:mushroom-light-card', entity: light.front_door, name: Front, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.front_lantern, name: Lantern, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.garage_front, name: Garage Fr, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.garage_side, name: Garage Sd, layout: vertical, fill_container: true, icon_type: icon }
+                - { type: 'custom:mushroom-light-card', entity: light.shed, name: Shed, layout: vertical, fill_container: true, icon_type: icon }
 
       # ============================================================
       # MEDIA COLUMN — 6 Sonos cells (2x3) + TV row (60px)
@@ -1074,8 +1093,8 @@ views:
                     name: Master Bedroom
                     artwork: full-cover-fit
                     info: scroll
-                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                    tap_action: { action: none }
+                    hide: { source: true, sound_mode: true, shuffle: true, runtime: true, name: false }
+                    tap_action: { action: more-info }
                     card_mod:
                       style: |
                         ha-card {
@@ -1118,8 +1137,8 @@ views:
                     name: Basement
                     artwork: full-cover-fit
                     info: scroll
-                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                    tap_action: { action: none }
+                    hide: { source: true, sound_mode: true, shuffle: true, runtime: true, name: false }
+                    tap_action: { action: more-info }
                     card_mod:
                       style: |
                         ha-card {
@@ -1162,8 +1181,8 @@ views:
                     name: Office
                     artwork: full-cover-fit
                     info: scroll
-                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                    tap_action: { action: none }
+                    hide: { source: true, sound_mode: true, shuffle: true, runtime: true, name: false }
+                    tap_action: { action: more-info }
                     card_mod:
                       style: |
                         ha-card {
@@ -1206,8 +1225,8 @@ views:
                     name: Kitchen
                     artwork: full-cover-fit
                     info: scroll
-                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                    tap_action: { action: none }
+                    hide: { source: true, sound_mode: true, shuffle: true, runtime: true, name: false }
+                    tap_action: { action: more-info }
                     card_mod:
                       style: |
                         ha-card {
@@ -1250,8 +1269,8 @@ views:
                     name: Dining Room
                     artwork: full-cover-fit
                     info: scroll
-                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                    tap_action: { action: none }
+                    hide: { source: true, sound_mode: true, shuffle: true, runtime: true, name: false }
+                    tap_action: { action: more-info }
                     card_mod:
                       style: |
                         ha-card {
@@ -1294,8 +1313,8 @@ views:
                     name: Roam 2
                     artwork: full-cover-fit
                     info: scroll
-                    hide: { power: true, volume: true, source: true, progress: true, controls: true, play_pause: true, next: true, prev: true, runtime: true, shuffle: true, sound_mode: true, name: false }
-                    tap_action: { action: none }
+                    hide: { source: true, sound_mode: true, shuffle: true, runtime: true, name: false }
+                    tap_action: { action: more-info }
                     card_mod:
                       style: |
                         ha-card {
@@ -1332,7 +1351,7 @@ views:
                   show_icon: true
                   size: 30%
                   layout: icon_name_state
-                  tap_action: { action: none }
+                  tap_action: { action: more-info }
                   state:
                     - value: 'off'
                       icon: mdi:television-off
@@ -1359,7 +1378,7 @@ views:
                   show_icon: true
                   size: 30%
                   layout: icon_name_state
-                  tap_action: { action: none }
+                  tap_action: { action: more-info }
                   state:
                     - value: 'off'
                       icon: mdi:television-off
@@ -1386,7 +1405,7 @@ views:
                   show_icon: true
                   size: 30%
                   layout: icon_name_state
-                  tap_action: { action: none }
+                  tap_action: { action: more-info }
                   state:
                     - value: 'off'
                       icon: mdi:television-off
