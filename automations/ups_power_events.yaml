@@ -1,0 +1,56 @@
+# UPS power-event notifications for the CyberPower CP1500PFCLCDa on
+# neptune. Alerts when the UPS transitions between Online / On Battery /
+# Low Battery. NUT shutdown coordination is owned by upsmon on each
+# secondary (PVE cluster); this automation is for situational awareness only.
+- id: ups_power_event_notifications
+  alias: 'UPS — Power event notifications'
+  description: >-
+    Notifies on CyberPower UPS state transitions (Online / On Battery /
+    Low Battery). NUT secondaries on the PVE cluster handle the actual
+    graceful shutdown via upsmon FSD; this automation is alerting only.
+  mode: parallel
+  max: 5
+  triggers:
+    - trigger: state
+      entity_id: sensor.cyberpower_status
+      to:
+        - 'On Battery'
+        - 'Low Battery'
+        - 'Online'
+  actions:
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: sensor.cyberpower_status
+              state: 'On Battery'
+          sequence:
+            - action: notify.mobile_app_sm_s926u1
+              data:
+                title: 'UPS On Battery'
+                message: >-
+                  Wall power lost. Battery
+                  {{ states('sensor.cyberpower_battery_charge') }}%, load
+                  {{ states('sensor.cyberpower_load') }}%.
+        - conditions:
+            - condition: state
+              entity_id: sensor.cyberpower_status
+              state: 'Low Battery'
+          sequence:
+            - action: notify.mobile_app_sm_s926u1
+              data:
+                title: 'UPS LOW BATTERY — shutdown imminent'
+                message: >-
+                  Battery {{ states('sensor.cyberpower_battery_charge') }}%,
+                  load {{ states('sensor.cyberpower_load') }}%. PVE cluster
+                  + NAS will halt when upsmon hits FSD.
+        - conditions:
+            - condition: state
+              entity_id: sensor.cyberpower_status
+              state: 'Online'
+          sequence:
+            - action: notify.mobile_app_sm_s926u1
+              data:
+                title: 'UPS Online'
+                message: >-
+                  Wall power restored. Battery
+                  {{ states('sensor.cyberpower_battery_charge') }}%.
