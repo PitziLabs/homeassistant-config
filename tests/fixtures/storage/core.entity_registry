@@ -1,0 +1,9 @@
+{
+  "data": {
+    "entities": [
+      {"entity_id":"light.kitchen","name":"Kitchen Light","original_name":"light","area_id":"kitchen","device_id":"dev1","platform":"hue","disabled_by":null,"hidden_by":null},
+      {"entity_id":"light.disabled","name":null,"original_name":"Disabled","area_id":null,"device_id":null,"platform":"hue","disabled_by":"user","hidden_by":null},
+      {"entity_id":"sensor.aaa","name":null,"original_name":"AAA Sensor","area_id":"office","device_id":"dev2","platform":"zha","disabled_by":null,"hidden_by":"integration"}
+    ]
+  }
+}

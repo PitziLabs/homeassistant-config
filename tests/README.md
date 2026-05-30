@@ -32,6 +32,21 @@ bats tests/
   suite sources the script and stubs its side-effecting helpers
   (`log` / `ha_call_service` / `ha_core_restart` / `ha_notify`) and `git diff`.
 
+- **`context_dump.bats`** — the snapshot transforms in
+  `scripts/ha-context-dump.sh` (`build_entities`, `build_areas`,
+  `build_devices`, `build_helpers`, `build_dashboards_storage`,
+  `storage_items`). These are pure jq projections over HA's `.storage/` registry
+  files; a bug silently produces a malformed or empty `context/` snapshot that
+  everything downstream trusts. The suite feeds each transform JSON fixtures
+  under `tests/fixtures/storage/` — covering the device↔config_entry integration
+  join, `name`/`name_by_user` precedence, disabled-entity filtering, and the
+  presence-stable empty-array behavior for absent `.storage` files.
+
+- **`secrets_coverage.bats`** — asserts every `!secret` reference in the HA
+  config resolves in `secrets.fake.yaml`, so a new reference can't pass locally
+  yet break the `check-config` gate with an opaque error. (`esphome/` is
+  excluded — it isn't part of HA's `check-config`.)
+
 ## Making a script testable
 
 Scripts that self-execute at the bottom should guard that call so the file can

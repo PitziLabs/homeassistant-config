@@ -1,0 +1,4 @@
+{"data":{"devices":[
+  {"id":"dev1","name_by_user":"My Hue","name":"Hue bulb","manufacturer":"Signify","model":"LCT001","area_id":"kitchen","config_entries":["ce_hue"]},
+  {"id":"dev2","name_by_user":null,"name":"ZHA Sensor","manufacturer":"Aqara","model":"X1","area_id":"office","config_entries":["ce_zha","ce_unknown"]}
+]}}
