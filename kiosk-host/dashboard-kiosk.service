@@ -1,0 +1,13 @@
+[Unit]
+Description=Grafana Dashboard Kiosk
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/xinit /usr/local/bin/dashboard-kiosk.sh -- :0
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
