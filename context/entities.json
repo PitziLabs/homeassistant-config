@@ -465,7 +465,7 @@
   },
   {
     "entity_id": "automation.ups_power_event_notifications",
-    "friendly_name": "UPS — Power Event Notifications",
+    "friendly_name": "UPS — Power event notifications",
     "area_id": null,
     "device_id": null,
     "platform": "automation",
