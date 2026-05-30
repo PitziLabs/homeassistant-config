@@ -12,7 +12,7 @@ itself lives in `dashboards/kiosk.yaml`; these files configure the
 | **Host** | `pve2` (NUC, i3-6100U, quorum-only PVE node — see top-level `~/CLAUDE.md`) |
 | **Display** | 2560x1440 monitor on `HDMI-2`, mouse + keyboard attached |
 | **Browser** | Chromium in `--kiosk` mode, root-owned, no X session manager |
-| **Display target URL** | `http://192.168.139.172:8123/dashboard-kiosk/home` (= `homeassistant.local`) |
+| **Display target URL** | `http://homeassistant.local:8123/dashboard-kiosk/home` |
 
 ## File map (on pve2)
 
@@ -117,15 +117,3 @@ ssh -J root@pve.local root@pve2 'journalctl -u dashboard-kiosk.service -n 50 --n
 ```
 
 Or just walk over to the monitor.
-
-## Known cleanup (not done in this commit)
-
-- `Description=Grafana Dashboard Kiosk` in `dashboard-kiosk.service`
-  is a stale label from when pve2 displayed Grafana. Rename to
-  `Description=Home Assistant Dashboard Kiosk` next time the unit is
-  touched (the gitops loop will pick up the change automatically).
-- The chromium URL hard-codes `192.168.139.172` (HAOS VM IP). The HAOS
-  VM gets DHCP today — pin the IP in Firewalla (see the *Static DHCP
-  reservations* note in `~/CLAUDE.md`) or switch the URL to
-  `http://homeassistant.local:8123/dashboard-kiosk/home`. Either makes
-  the kiosk survive a lease change.
