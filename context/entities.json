@@ -792,6 +792,14 @@
     "hidden": false
   },
   {
+    "entity_id": "binary_sensor.house_openings",
+    "friendly_name": "House Openings",
+    "area_id": null,
+    "device_id": null,
+    "platform": "template",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.jacobsroom",
     "friendly_name": null,
     "area_id": null,
