@@ -106,12 +106,16 @@ views:
                 style: |
                   ha-card {
                     height: 190px !important;
+                    max-height: 190px !important;
+                    overflow: hidden !important;
                     background: transparent !important;
                     border: none !important;
                     box-shadow: none !important;
                   }
                   ha-card > * {
                     height: 100% !important;
+                    max-height: 190px !important;
+                    overflow: hidden !important;
                     display: block !important;
                   }
               card:
