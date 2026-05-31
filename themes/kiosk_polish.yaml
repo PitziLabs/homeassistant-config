@@ -24,12 +24,12 @@ Kiosk Polish:
 
   # Mushroom token overrides — sized to fit the lights column
   # (5 sections + 7 tile rows + headers) inside the kiosk cell
-  # without triggering a page-level scrollbar at 1920x1080.
-  mush-icon-size: 26px
+  # without triggering a page-level scrollbar at 2560x1440.
+  mush-icon-size: 32px
   mush-icon-symbol-size: 0.55em
-  mush-card-primary-font-size: 10px
-  mush-card-secondary-font-size: 9px
-  mush-spacing: 6px
+  mush-card-primary-font-size: 13px
+  mush-card-secondary-font-size: 12px
+  mush-spacing: 8px
 
   # State-color sugar
   state-on-color: "#56d364"

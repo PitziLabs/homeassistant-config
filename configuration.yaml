@@ -209,6 +209,41 @@ template:
         state: >
           {{ is_state('switch.play_room_outlet', 'on') }}
 
+      # --- Aggregate openings (doors + garage covers) ---
+      # Used by the kiosk alarm hero to escalate visual state when the
+      # alarm is disarmed but a perimeter opening is detected.
+      - name: "House Openings"
+        unique_id: house_openings
+        state: >
+          {{ is_state('binary_sensor.main_panel_front_door', 'on')
+             or is_state('binary_sensor.main_panel_sliding_door', 'on')
+             or is_state('binary_sensor.main_panel_garage_door', 'on')
+             or is_state('binary_sensor.basement_kitchen_door', 'on')
+             or is_state('cover.garage_door_1_door', 'open')
+             or is_state('cover.garage_door_2_door', 'open') }}
+        attributes:
+          open_list: >
+            {% set names = namespace(open=[]) %}
+            {% if is_state('binary_sensor.main_panel_front_door', 'on') %}
+              {% set names.open = names.open + ['Front'] %}
+            {% endif %}
+            {% if is_state('binary_sensor.main_panel_sliding_door', 'on') %}
+              {% set names.open = names.open + ['Sliding'] %}
+            {% endif %}
+            {% if is_state('binary_sensor.main_panel_garage_door', 'on') %}
+              {% set names.open = names.open + ['Garage Entry'] %}
+            {% endif %}
+            {% if is_state('binary_sensor.basement_kitchen_door', 'on') %}
+              {% set names.open = names.open + ['Basement'] %}
+            {% endif %}
+            {% if is_state('cover.garage_door_1_door', 'open') %}
+              {% set names.open = names.open + ['Garage 1'] %}
+            {% endif %}
+            {% if is_state('cover.garage_door_2_door', 'open') %}
+              {% set names.open = names.open + ['Garage 2'] %}
+            {% endif %}
+            {{ names.open | join(', ') }}
+
   - light:
       - name: "Floor Lamp Composite"
         unique_id: floor_lamp_composite
