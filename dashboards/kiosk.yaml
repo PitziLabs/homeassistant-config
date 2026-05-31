@@ -149,7 +149,19 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
-                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night',
+                                  'sunny':'mdi:weather-sunny',
+                                  'cloudy':'mdi:weather-cloudy',
+                                  'partlycloudy':'mdi:weather-partly-cloudy',
+                                  'rainy':'mdi:weather-rainy',
+                                  'pouring':'mdi:weather-pouring',
+                                  'snowy':'mdi:weather-snowy',
+                                  'snowy-rainy':'mdi:weather-snowy-rainy',
+                                  'windy':'mdi:weather-windy',
+                                  'fog':'mdi:weather-fog',
+                                  'lightning':'mdi:weather-lightning',
+                                  'lightning-rainy':'mdi:weather-lightning-rainy',
+                                  'hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
@@ -192,7 +204,19 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
-                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night',
+                                  'sunny':'mdi:weather-sunny',
+                                  'cloudy':'mdi:weather-cloudy',
+                                  'partlycloudy':'mdi:weather-partly-cloudy',
+                                  'rainy':'mdi:weather-rainy',
+                                  'pouring':'mdi:weather-pouring',
+                                  'snowy':'mdi:weather-snowy',
+                                  'snowy-rainy':'mdi:weather-snowy-rainy',
+                                  'windy':'mdi:weather-windy',
+                                  'fog':'mdi:weather-fog',
+                                  'lightning':'mdi:weather-lightning',
+                                  'lightning-rainy':'mdi:weather-lightning-rainy',
+                                  'hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
@@ -211,7 +235,19 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
-                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night',
+                                  'sunny':'mdi:weather-sunny',
+                                  'cloudy':'mdi:weather-cloudy',
+                                  'partlycloudy':'mdi:weather-partly-cloudy',
+                                  'rainy':'mdi:weather-rainy',
+                                  'pouring':'mdi:weather-pouring',
+                                  'snowy':'mdi:weather-snowy',
+                                  'snowy-rainy':'mdi:weather-snowy-rainy',
+                                  'windy':'mdi:weather-windy',
+                                  'fog':'mdi:weather-fog',
+                                  'lightning':'mdi:weather-lightning',
+                                  'lightning-rainy':'mdi:weather-lightning-rainy',
+                                  'hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
@@ -230,7 +266,19 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
-                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night',
+                                  'sunny':'mdi:weather-sunny',
+                                  'cloudy':'mdi:weather-cloudy',
+                                  'partlycloudy':'mdi:weather-partly-cloudy',
+                                  'rainy':'mdi:weather-rainy',
+                                  'pouring':'mdi:weather-pouring',
+                                  'snowy':'mdi:weather-snowy',
+                                  'snowy-rainy':'mdi:weather-snowy-rainy',
+                                  'windy':'mdi:weather-windy',
+                                  'fog':'mdi:weather-fog',
+                                  'lightning':'mdi:weather-lightning',
+                                  'lightning-rainy':'mdi:weather-lightning-rainy',
+                                  'hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
