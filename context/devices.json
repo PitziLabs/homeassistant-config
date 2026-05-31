@@ -900,6 +900,16 @@
     ]
   },
   {
+    "device_id": "6c24f66e640c3c56ef38c1f1fd0ef628",
+    "name": "SM-X518U",
+    "manufacturer": "samsung",
+    "model": "SM-X518U",
+    "area_id": null,
+    "integrations": [
+      "mobile_app"
+    ]
+  },
+  {
     "device_id": "63ce9fae8c8d3b1b49fe5c4b4c00db2c",
     "name": "Samba share",
     "manufacturer": "Official apps",

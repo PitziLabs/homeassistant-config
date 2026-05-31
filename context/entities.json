@@ -3312,6 +3312,14 @@
     "hidden": false
   },
   {
+    "entity_id": "device_tracker.sm_x518u",
+    "friendly_name": "SM-X518U",
+    "area_id": null,
+    "device_id": "6c24f66e640c3c56ef38c1f1fd0ef628",
+    "platform": "mobile_app",
+    "hidden": false
+  },
+  {
     "entity_id": "event.backup_automatic_backup",
     "friendly_name": "Automatic backup",
     "area_id": null,
@@ -3756,6 +3764,14 @@
     "friendly_name": null,
     "area_id": null,
     "device_id": "d2014c733948cebda0f6a68d761b29ca",
+    "platform": "mobile_app",
+    "hidden": false
+  },
+  {
+    "entity_id": "notify.sm_x518u",
+    "friendly_name": null,
+    "area_id": null,
+    "device_id": "6c24f66e640c3c56ef38c1f1fd0ef628",
     "platform": "mobile_app",
     "hidden": false
   },
@@ -6228,6 +6244,30 @@
     "friendly_name": "SM-S926U1 Charger type",
     "area_id": null,
     "device_id": "d2014c733948cebda0f6a68d761b29ca",
+    "platform": "mobile_app",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.sm_x518u_battery_level",
+    "friendly_name": "SM-X518U Battery level",
+    "area_id": null,
+    "device_id": "6c24f66e640c3c56ef38c1f1fd0ef628",
+    "platform": "mobile_app",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.sm_x518u_battery_state",
+    "friendly_name": "SM-X518U Battery state",
+    "area_id": null,
+    "device_id": "6c24f66e640c3c56ef38c1f1fd0ef628",
+    "platform": "mobile_app",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.sm_x518u_charger_type",
+    "friendly_name": "SM-X518U Charger type",
+    "area_id": null,
+    "device_id": "6c24f66e640c3c56ef38c1f1fd0ef628",
     "platform": "mobile_app",
     "hidden": false
   },
