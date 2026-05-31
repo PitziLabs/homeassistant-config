@@ -1003,7 +1003,7 @@ views:
                       - padding-top: '4px'
 
                 - type: custom:button-card
-                  entity: binary_sensor.basement_kitchen_door
+                  entity: binary_sensor.main_panel_basement_door
                   name: Basement
                   show_name: true
                   show_state: true
