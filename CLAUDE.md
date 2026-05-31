@@ -191,11 +191,27 @@ systemd unit, not the dashboard content it points at.
 PR workflow + auto-merge arming protocol is fleet-wide; see
 `~/repos/CLAUDE.md`. Two repo-specific deviations follow.
 
-### No issues — PRs are the canonical record
+### No issues for change dispatch — PRs are the canonical record
 
 Changes to this repo are dispatched by talking to Claude Code directly. There
-is no issue step. The PR itself is the canonical record of intent. Required
-status checks: `YAML Lint`, `check-config`, `claude-review`.
+is no issue step *for change requests*. The PR itself is the canonical record
+of intent. Required status checks: `YAML Lint`, `check-config`, `claude-review`.
+
+### Do file issues for incidentally-observed latent problems
+
+The "no issues" rule above is about change *dispatch* — it does not mean
+the repo doesn't use issues at all. **When Claude (or anyone) notices a
+latent infrastructure problem during unrelated work — a silent failure,
+a memory leak, a degrading component, a stale reference that's not in
+scope of the current task — file a GitHub issue with the symptom,
+relevant logs/measurements, and any candidate fixes.** Do not stop at a
+verbal "heads-up" in the chat: those vanish, the issue persists. The
+issue is the durable triage queue for follow-up work that doesn't yet
+have a fix attached.
+
+Use bug/dashboard/automation/etc. labels as appropriate. A future
+session will pick up the issue, do the actual diagnosis, and open the
+PR that closes it. Origin: kiosk OOM observation 2026-05-31, issue #308.
 
 ### Every PR opens with an `## Origin` section
 
