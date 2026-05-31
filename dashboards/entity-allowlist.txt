@@ -1,0 +1,31 @@
+# Dashboard entity allowlist — entities referenced by dashboards/*.yaml that are
+# intentionally absent from context/entities.json (the entity-registry snapshot).
+# scripts/check-dashboard-entities.py exempts these from the --strict gate.
+#
+# Two legitimate reasons an entity is here:
+#   1. Valid but unregistered — a YAML entity with no unique_id never gets a
+#      registry entry, so it can't appear in the snapshot.
+#   2. Pending integration — the card is intentional but the integration that
+#      provides the entity isn't set up in HA yet.
+#
+# The checker prints a "can be removed" note once an allowlisted entity appears
+# in the snapshot, so prune this file as integrations come online.
+
+# --- Valid but unregistered (no unique_id) ---
+alarm_control_panel.home_alarm   # YAML-defined manual alarm panel (configuration.yaml)
+
+# --- Pending integration: CyberPower UPS (homelab-status.yaml "UPS" section) ---
+sensor.cyberpower_status_data
+sensor.cyberpower_load
+sensor.cyberpower_input_voltage
+sensor.cyberpower_output_voltage
+sensor.cyberpower_battery_charge
+sensor.cyberpower_battery_runtime
+
+# --- Pending integration: cpitzi/prompts GitHub sensors (homelab-status.yaml) ---
+sensor.cpitzi_prompts_latest_commit
+sensor.cpitzi_prompts_issues
+sensor.cpitzi_prompts_pull_requests
+sensor.cpitzi_prompts_stars
+sensor.cpitzi_prompts_forks
+sensor.cpitzi_prompts_watchers

@@ -76,8 +76,7 @@ views:
             title: Office
             show_header_toggle: true
             entities:
-              - light.office
-              - light.office_lamp
+              - light.office_switch
               - light.bookcase_lamp
               - light.corner_lamp
               - light.door_lamp
@@ -88,7 +87,6 @@ views:
             title: Play Room
             show_header_toggle: true
             entities:
-              - light.play_room
               - light.playroom_1
               - light.playroom_2
               - light.playroom_3
@@ -100,17 +98,14 @@ views:
             title: Family Room
             show_header_toggle: true
             entities:
-              - light.family_room
               - light.family_room_2
-              - light.floor_lamp
+              - light.floor_lamp_composite
               - switch.family_room_outlets
 
           - type: entities
             title: Entry / Hallways
             show_header_toggle: true
             entities:
-              - light.entry_1
-              - light.entry_2
               - light.downstairs_hallway
               - light.upstairs_hallway_light
               - light.meeting_light

@@ -1,0 +1,14 @@
+views:
+  - cards:
+      - type: tile
+        entity: light.real
+      - type: tile
+        entity: light.bogus
+      - type: entities
+        entities:
+          - light.real
+          - entity: switch.bogus2
+      - type: custom
+        entity: "{{ states('light.templated') }}"
+        entity_id:
+          - switch.real

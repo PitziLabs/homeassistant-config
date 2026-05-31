@@ -47,6 +47,21 @@ bats tests/
   yet break the `check-config` gate with an opaque error. (`esphome/` is
   excluded — it isn't part of HA's `check-config`.)
 
+- **`dashboard_entities.bats`** — tests `scripts/check-dashboard-entities.py`,
+  the dashboard entity-reference checker. HA does not validate dashboard entity
+  IDs at config-check time, so a typo'd/renamed entity renders a silent
+  blank/unavailable card. The script cross-references the IDs in
+  `dashboards/*.yaml` against `context/entities.json` (which includes YAML
+  template entities and light groups, since they carry a `unique_id`). The suite
+  proves it catches a bad reference, resolves the `entity` / `entities` /
+  `entity_id` forms, ignores templated values, honors `dashboards/entity-allowlist.txt`,
+  and flags a stale allowlist entry once its entity enters the snapshot.
+
+  The `Dashboard Entities` CI job runs the checker `--strict` against the real
+  snapshot. The allowlist exempts entities that are valid-but-unregistered (a
+  YAML entity with no `unique_id`) or pending an integration that isn't set up
+  yet; prune it as the checker's "can be removed" note directs.
+
 ## Making a script testable
 
 Scripts that self-execute at the bottom should guard that call so the file can
