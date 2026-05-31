@@ -22,6 +22,8 @@ readonly SCRIPT_SRC="${REPO_DIR}/${REPO_SUBDIR}/dashboard-kiosk.sh"
 readonly SCRIPT_DST="/usr/local/bin/dashboard-kiosk.sh"
 readonly UNIT_SRC="${REPO_DIR}/${REPO_SUBDIR}/dashboard-kiosk.service"
 readonly UNIT_DST="/etc/systemd/system/dashboard-kiosk.service"
+readonly HELPER_SRC="${REPO_DIR}/${REPO_SUBDIR}/kiosk-show"
+readonly HELPER_DST="/usr/local/bin/kiosk-show"
 readonly KIOSK_UNIT="dashboard-kiosk.service"
 
 log() {
@@ -81,20 +83,27 @@ main() {
     log ERROR "dashboard-kiosk.sh failed syntax check; refusing to install"
     exit 1
   fi
+  if ! bash -n "$HELPER_SRC"; then
+    log ERROR "kiosk-show failed syntax check; refusing to install"
+    exit 1
+  fi
   if ! systemd-analyze verify "$UNIT_SRC" 2>/dev/null; then
     log ERROR "dashboard-kiosk.service failed systemd-analyze verify; refusing to install"
     exit 1
   fi
 
-  local script_changed=false unit_changed=false
+  local script_changed=false unit_changed=false helper_changed=false
   if ! cmp -s "$SCRIPT_SRC" "$SCRIPT_DST"; then
     script_changed=true
   fi
   if ! cmp -s "$UNIT_SRC" "$UNIT_DST"; then
     unit_changed=true
   fi
+  if ! cmp -s "$HELPER_SRC" "$HELPER_DST"; then
+    helper_changed=true
+  fi
 
-  if [[ "$script_changed" == false && "$unit_changed" == false ]]; then
+  if [[ "$script_changed" == false && "$unit_changed" == false && "$helper_changed" == false ]]; then
     log INFO "no-op, deployed copy matches ${remote_sha:0:7}"
     exit 0
   fi
@@ -108,9 +117,17 @@ main() {
     install -m 0644 -o root -g root "$UNIT_SRC" "$UNIT_DST"
     systemctl daemon-reload
   fi
+  if [[ "$helper_changed" == true ]]; then
+    log INFO "Installing kiosk-show → ${HELPER_DST}"
+    install -m 0755 -o root -g root "$HELPER_SRC" "$HELPER_DST"
+  fi
 
-  log INFO "Restarting ${KIOSK_UNIT}"
-  systemctl restart "$KIOSK_UNIT"
+  # Helper-only changes don't affect the running display; skip the
+  # restart so a kiosk-show update doesn't flicker the screen.
+  if [[ "$script_changed" == true || "$unit_changed" == true ]]; then
+    log INFO "Restarting ${KIOSK_UNIT}"
+    systemctl restart "$KIOSK_UNIT"
+  fi
 
   log INFO "Deployed ${remote_sha:0:7}"
 }
