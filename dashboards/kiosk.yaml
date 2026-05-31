@@ -89,7 +89,11 @@ views:
               }
 
       # ============================================================
-      # ALARM HERO (top-right, spans 2 cols)
+      # ALARM CELL — hero + arm/disarm action row
+      # Hero takes the top ~180px; a 3-button action row fills the rest
+      # of the 300px top-row cell (ARM HOME / ARM AWAY / DISARM).
+      # code_arm_required=false in alarm config so arm calls work
+      # without a code; disarm opens more-info for code entry.
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: alarm }
@@ -102,6 +106,23 @@ views:
               background: transparent;
               display: flex;
               flex-direction: column;
+              gap: 8px;
+            }
+            /* Flex cascade through the vertical-stack so the hero
+               grows and the action row stays a fixed 90px. */
+            ha-card hui-vertical-stack-card {
+              flex: 1 1 auto;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+            }
+            ha-card hui-vertical-stack-card > :first-child {
+              flex: 1 1 auto;
+              min-height: 0;
+            }
+            ha-card hui-vertical-stack-card > :last-child {
+              flex: 0 0 90px;
             }
             /* Cascade height into the button-card so the green-tinted
                state background fills the full 300px row instead of
@@ -114,121 +135,174 @@ views:
             }
             ha-card > * > * { flex: 1 1 auto; min-height: 0; }
         card:
-          type: custom:button-card
-          entity: alarm_control_panel.home_alarm
-          name: Home Alarm
-          show_name: true
-          show_state: true
-          show_icon: true
-          size: 55%
-          layout: icon_name_state
-          # Re-render when openings change so the escalated state below
-          # picks up door/cover events even though the entity is the alarm.
-          triggers_update:
-            - binary_sensor.house_openings
-          # Override the alarm's raw state string with the open-list when
-          # the escalation fires; otherwise show the alarm state directly.
-          state_display: |
-            [[[
-              if (states['alarm_control_panel.home_alarm'].state === 'disarmed'
-                  && states['binary_sensor.house_openings'].state === 'on') {
-                const openList = states['binary_sensor.house_openings'].attributes.open_list || '';
-                return openList ? `OPEN: ${openList}` : 'OPEN';
-              }
-              return entity.state.toUpperCase();
-            ]]]
-          tap_action: { action: more-info }
-          state:
-            # Escalated: alarm is disarmed but a door/cover is open — amber warning.
-            # Must come before the plain `disarmed` block since first match wins.
-            - operator: template
-              value: |
-                [[[ return states['alarm_control_panel.home_alarm'].state === 'disarmed'
-                     && states['binary_sensor.house_openings'].state === 'on'; ]]]
-              icon: mdi:shield-alert
-              color: 'var(--kiosk-accent-armed)'
-              styles:
-                card:
-                  - background-color: 'rgba(227, 179, 65, 0.20)'
-                  - border-left: '4px solid var(--kiosk-accent-armed)'
-                state:
-                  - color: 'var(--kiosk-accent-armed)'
-                  - font-size: '22px'
-                  - letter-spacing: '1px'
-                  - line-height: '1.2'
-                  - white-space: 'normal'
-            - value: disarmed
-              icon: mdi:shield-check
-              color: 'var(--kiosk-accent-disarmed)'
-              styles:
-                card:
-                  - background-color: 'rgba(86, 211, 100, 0.15)'
-                  - border-left: '4px solid var(--kiosk-accent-disarmed)'
-                state: [{ color: 'var(--kiosk-accent-disarmed)' }]
-            - value: arming
-              icon: mdi:shield-half-full
-              color: 'var(--kiosk-accent-armed)'
-              styles:
-                card:
-                  - background-color: 'rgba(227, 179, 65, 0.15)'
-                  - border-left: '4px solid var(--kiosk-accent-armed)'
-                state: [{ color: 'var(--kiosk-accent-armed)' }]
-            - operator: regex
-              value: '^armed.*'
-              icon: mdi:shield-lock
-              color: 'var(--kiosk-accent-armed)'
-              styles:
-                card:
-                  - background-color: 'rgba(227, 179, 65, 0.15)'
-                  - border-left: '4px solid var(--kiosk-accent-armed)'
-                state: [{ color: 'var(--kiosk-accent-armed)' }]
-            - operator: regex
-              value: '^(pending|triggered)$'
-              icon: mdi:alarm-light
-              color: 'var(--kiosk-accent-triggered)'
-              styles:
-                card:
-                  - background-color: 'rgba(248, 81, 73, 0.20)'
-                  - border-left: '4px solid var(--kiosk-accent-triggered)'
-                  - animation: 'pulse 1.2s infinite'
-                state: [{ color: 'var(--kiosk-accent-triggered)' }]
-          styles:
-            card:
-              - height: '100%'
-              - border-radius: '10px'
-              - border: 'none'
-              - padding: '20px 28px'
-              - background: 'var(--kiosk-bg-card)'
-            name:
-              - font-size: '20px'
-              - font-weight: '500'
-              - color: 'var(--kiosk-text-secondary)'
-              - justify-self: start
+          type: vertical-stack
+          cards:
+          - type: custom:button-card
+            entity: alarm_control_panel.home_alarm
+            name: Home Alarm
+            show_name: true
+            show_state: true
+            show_icon: true
+            size: 55%
+            layout: icon_name_state
+            # Re-render when openings change so the escalated state below
+            # picks up door/cover events even though the entity is the alarm.
+            triggers_update:
+              - binary_sensor.house_openings
+            # Override the alarm's raw state string with the open-list when
+            # the escalation fires; otherwise show the alarm state directly.
+            state_display: |
+              [[[
+                if (states['alarm_control_panel.home_alarm'].state === 'disarmed'
+                    && states['binary_sensor.house_openings'].state === 'on') {
+                  const openList = states['binary_sensor.house_openings'].attributes.open_list || '';
+                  return openList ? `OPEN: ${openList}` : 'OPEN';
+                }
+                return entity.state.toUpperCase();
+              ]]]
+            tap_action: { action: more-info }
             state:
-              - font-size: '38px'
-              - font-weight: '600'
-              - text-transform: 'uppercase'
-              - letter-spacing: '2px'
-              - justify-self: start
-            grid:
-              - grid-template-areas: '"i n" "i s"'
-              - grid-template-columns: 'min-content 1fr'
-              - grid-template-rows: '1fr 1fr'
-              - column-gap: '24px'
-              - row-gap: '4px'
-              - align-items: 'center'
-              - align-content: 'center'
-              - height: '100%'
-          extra_styles: |
-            @keyframes pulse {
-              0%, 100% { opacity: 1; transform: scale(1); }
-              50% { opacity: 0.7; transform: scale(0.99); }
-            }
+              # Escalated: alarm is disarmed but a door/cover is open — amber warning.
+              # Must come before the plain `disarmed` block since first match wins.
+              - operator: template
+                value: |
+                  [[[ return states['alarm_control_panel.home_alarm'].state === 'disarmed'
+                       && states['binary_sensor.house_openings'].state === 'on'; ]]]
+                icon: mdi:shield-alert
+                color: 'var(--kiosk-accent-armed)'
+                styles:
+                  card:
+                    - background-color: 'rgba(227, 179, 65, 0.20)'
+                    - border-left: '4px solid var(--kiosk-accent-armed)'
+                  state:
+                    - color: 'var(--kiosk-accent-armed)'
+                    - font-size: '22px'
+                    - letter-spacing: '1px'
+                    - line-height: '1.2'
+                    - white-space: 'normal'
+              - value: disarmed
+                icon: mdi:shield-check
+                color: 'var(--kiosk-accent-disarmed)'
+                styles:
+                  card:
+                    - background-color: 'rgba(86, 211, 100, 0.15)'
+                    - border-left: '4px solid var(--kiosk-accent-disarmed)'
+                  state: [{ color: 'var(--kiosk-accent-disarmed)' }]
+              - value: arming
+                icon: mdi:shield-half-full
+                color: 'var(--kiosk-accent-armed)'
+                styles:
+                  card:
+                    - background-color: 'rgba(227, 179, 65, 0.15)'
+                    - border-left: '4px solid var(--kiosk-accent-armed)'
+                  state: [{ color: 'var(--kiosk-accent-armed)' }]
+              - operator: regex
+                value: '^armed.*'
+                icon: mdi:shield-lock
+                color: 'var(--kiosk-accent-armed)'
+                styles:
+                  card:
+                    - background-color: 'rgba(227, 179, 65, 0.15)'
+                    - border-left: '4px solid var(--kiosk-accent-armed)'
+                  state: [{ color: 'var(--kiosk-accent-armed)' }]
+              - operator: regex
+                value: '^(pending|triggered)$'
+                icon: mdi:alarm-light
+                color: 'var(--kiosk-accent-triggered)'
+                styles:
+                  card:
+                    - background-color: 'rgba(248, 81, 73, 0.20)'
+                    - border-left: '4px solid var(--kiosk-accent-triggered)'
+                    - animation: 'pulse 1.2s infinite'
+                  state: [{ color: 'var(--kiosk-accent-triggered)' }]
+            styles:
+              card:
+                - height: '100%'
+                - border-radius: '10px'
+                - border: 'none'
+                - padding: '20px 28px'
+                - background: 'var(--kiosk-bg-card)'
+              name:
+                - font-size: '20px'
+                - font-weight: '500'
+                - color: 'var(--kiosk-text-secondary)'
+                - justify-self: start
+              state:
+                - font-size: '38px'
+                - font-weight: '600'
+                - text-transform: 'uppercase'
+                - letter-spacing: '2px'
+                - justify-self: start
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 'min-content 1fr'
+                - grid-template-rows: '1fr 1fr'
+                - column-gap: '24px'
+                - row-gap: '4px'
+                - align-items: 'center'
+                - align-content: 'center'
+                - height: '100%'
+            extra_styles: |
+              @keyframes pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(0.99); }
+              }
+
+          # --- Arm/disarm action row (bottom of alarm cell) ---
+          # ARM HOME / ARM AWAY are direct service calls (code_arm_required:
+          # false). DISARM opens more-info so the user can enter the code.
+          - type: horizontal-stack
+            cards:
+              - &arm_action_button
+                type: custom:button-card
+                name: Arm Home
+                icon: mdi:shield-home
+                show_name: true
+                show_icon: true
+                show_state: false
+                size: 36%
+                layout: vertical
+                tap_action:
+                  action: call-service
+                  service: alarm_control_panel.alarm_arm_home
+                  target:
+                    entity_id: alarm_control_panel.home_alarm
+                styles:
+                  card:
+                    - height: '100%'
+                    - background: 'var(--kiosk-bg-tile)'
+                    - border-radius: '8px'
+                    - border: 'none'
+                    - padding: '6px 4px'
+                  name:
+                    - font-size: '13px'
+                    - font-weight: '600'
+                    - color: 'var(--kiosk-text-secondary)'
+                    - text-transform: 'uppercase'
+                    - letter-spacing: '1px'
+                    - padding-top: '4px'
+              - <<: *arm_action_button
+                name: Arm Away
+                icon: mdi:shield-lock
+                tap_action:
+                  action: call-service
+                  service: alarm_control_panel.alarm_arm_away
+                  target:
+                    entity_id: alarm_control_panel.home_alarm
+              - <<: *arm_action_button
+                name: Disarm
+                icon: mdi:shield-off
+                tap_action:
+                  action: more-info
+                  entity: alarm_control_panel.home_alarm
 
       # ============================================================
-      # MEETING INDICATOR (top-right corner — Rachel's office light)
+      # MEETING CELL — indicator hero + time-since line + outdoor chips
       # State-driven by light.meeting_light, which the meeting indicator
-      # (packages/meeting_indicator.yaml) drives red when the meeting button is on.
+      # (packages/meeting_indicator.yaml) drives red when the meeting
+      # button is on. The hero takes ~150px; a time-since line shows
+      # "Available for 11m" / "In meeting for 32m"; outdoor weather
+      # chips (temp, humidity, wind, next sun event) fill the rest.
       # ============================================================
       - type: custom:mod-card
         view_layout: { grid-area: meeting }
@@ -241,6 +315,25 @@ views:
               background: transparent;
               display: flex;
               flex-direction: column;
+              gap: 6px;
+            }
+            /* Hero grows; time-since + weather chips fixed-height. */
+            ha-card hui-vertical-stack-card {
+              flex: 1 1 auto;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+            }
+            ha-card hui-vertical-stack-card > :first-child {
+              flex: 1 1 auto;
+              min-height: 0;
+            }
+            ha-card hui-vertical-stack-card > :nth-child(2) {
+              flex: 0 0 36px;
+            }
+            ha-card hui-vertical-stack-card > :nth-child(3) {
+              flex: 0 0 80px;
             }
             /* Same fill cascade as the alarm hero — see comment there. */
             ha-card > * {
@@ -251,83 +344,163 @@ views:
             }
             ha-card > * > * { flex: 1 1 auto; min-height: 0; }
         card:
-          type: custom:button-card
-          entity: light.meeting_light
-          name: Rachel
-          show_name: true
-          show_state: false
-          show_label: true
-          show_icon: true
-          size: 60%
-          # Tap toggles the underlying meeting button so the in-meeting
-          # state can be flipped from the dashboard; the card's visual
-          # state still reads from light.meeting_light (the indicator
-          # the meeting_indicator package drives).
-          tap_action:
-            action: call-service
-            service: switch.toggle
-            target:
-              entity_id: switch.meeting_button_in_meeting
-          hold_action:
-            action: more-info
+          type: vertical-stack
+          cards:
+          - type: custom:button-card
+            entity: light.meeting_light
+            name: Rachel
+            show_name: true
+            show_state: false
+            show_label: true
+            show_icon: true
+            size: 60%
+            # Tap toggles the underlying meeting button so the in-meeting
+            # state can be flipped from the dashboard; the card's visual
+            # state still reads from light.meeting_light (the indicator
+            # the meeting_indicator package drives).
+            tap_action:
+              action: call-service
+              service: switch.toggle
+              target:
+                entity_id: switch.meeting_button_in_meeting
+            hold_action:
+              action: more-info
+              entity: switch.meeting_button_in_meeting
+            state:
+              - value: 'on'
+                icon: mdi:account-voice
+                color: 'var(--kiosk-accent-triggered)'
+                label: In Meeting
+                styles:
+                  card:
+                    - background-color: 'rgba(248, 81, 73, 0.20)'
+                    - border-left: '4px solid var(--kiosk-accent-triggered)'
+                    - animation: 'pulse 1.8s infinite'
+                  label: [{ color: 'var(--kiosk-accent-triggered)' }]
+              - value: 'off'
+                icon: mdi:account-check
+                color: 'var(--kiosk-accent-disarmed)'
+                label: Available
+                styles:
+                  card:
+                    - background-color: 'rgba(86, 211, 100, 0.12)'
+                    - border-left: '4px solid var(--kiosk-accent-disarmed)'
+                  label: [{ color: 'var(--kiosk-accent-disarmed)' }]
+              - value: 'unavailable'
+                icon: mdi:account-off
+                color: 'var(--kiosk-text-tertiary)'
+                label: Offline
+                styles:
+                  card:
+                    - background-color: 'rgba(227, 179, 65, 0.10)'
+                    - border-left: '4px solid var(--kiosk-accent-armed)'
+                  label: [{ color: 'var(--kiosk-text-tertiary)' }]
+            styles:
+              card:
+                - height: '100%'
+                - border-radius: '10px'
+                - border: 'none'
+                - padding: '20px 24px'
+                - background: 'var(--kiosk-bg-card)'
+              name:
+                - font-size: '20px'
+                - font-weight: '500'
+                - color: 'var(--kiosk-text-secondary)'
+                - justify-self: start
+                - align-self: end
+              label:
+                - font-size: '28px'
+                - font-weight: '600'
+                - text-transform: 'uppercase'
+                - letter-spacing: '1.5px'
+                - justify-self: start
+                - align-self: start
+              grid:
+                - grid-template-areas: '"i n" "i l"'
+                - grid-template-columns: 'min-content 1fr'
+                - grid-template-rows: '1fr 1fr'
+                - column-gap: '20px'
+                - row-gap: '4px'
+                - align-items: 'stretch'
+                - height: '100%'
+
+          # --- Time-since indicator ---
+          # Shows "Available for 11m" / "In meeting for 32m" based on the
+          # last_changed of the underlying meeting switch.
+          - type: custom:mushroom-template-card
             entity: switch.meeting_button_in_meeting
-          state:
-            - value: 'on'
-              icon: mdi:account-voice
-              color: 'var(--kiosk-accent-triggered)'
-              label: In Meeting
-              styles:
-                card:
-                  - background-color: 'rgba(248, 81, 73, 0.20)'
-                  - border-left: '4px solid var(--kiosk-accent-triggered)'
-                  - animation: 'pulse 1.8s infinite'
-                label: [{ color: 'var(--kiosk-accent-triggered)' }]
-            - value: 'off'
-              icon: mdi:account-check
-              color: 'var(--kiosk-accent-disarmed)'
-              label: Available
-              styles:
-                card:
-                  - background-color: 'rgba(86, 211, 100, 0.12)'
-                  - border-left: '4px solid var(--kiosk-accent-disarmed)'
-                label: [{ color: 'var(--kiosk-accent-disarmed)' }]
-            - value: 'unavailable'
-              icon: mdi:account-off
-              color: 'var(--kiosk-text-tertiary)'
-              label: Offline
-              styles:
-                card:
-                  - background-color: 'rgba(227, 179, 65, 0.10)'
-                  - border-left: '4px solid var(--kiosk-accent-armed)'
-                label: [{ color: 'var(--kiosk-text-tertiary)' }]
-          styles:
-            card:
-              - height: '100%'
-              - border-radius: '10px'
-              - border: 'none'
-              - padding: '20px 24px'
-              - background: 'var(--kiosk-bg-card)'
-            name:
-              - font-size: '20px'
-              - font-weight: '500'
-              - color: 'var(--kiosk-text-secondary)'
-              - justify-self: start
-              - align-self: end
-            label:
-              - font-size: '28px'
-              - font-weight: '600'
-              - text-transform: 'uppercase'
-              - letter-spacing: '1.5px'
-              - justify-self: start
-              - align-self: start
-            grid:
-              - grid-template-areas: '"i n" "i l"'
-              - grid-template-columns: 'min-content 1fr'
-              - grid-template-rows: '1fr 1fr'
-              - column-gap: '20px'
-              - row-gap: '4px'
-              - align-items: 'stretch'
-              - height: '100%'
+            primary: |-
+              {% set s = states('switch.meeting_button_in_meeting') %}
+              {% set rel = relative_time(states.switch.meeting_button_in_meeting.last_changed) %}
+              {% if s == 'on' %}In meeting for {{ rel }}
+              {% elif s == 'off' %}Available for {{ rel }}
+              {% else %}—{% endif %}
+            icon: mdi:timer-outline
+            icon_color: blue-grey
+            fill_container: true
+            tap_action: { action: none }
+            card_mod:
+              style: |
+                ha-card {
+                  background: transparent !important;
+                  border: none !important;
+                  box-shadow: none !important;
+                  padding: 2px 8px !important;
+                  height: 100%;
+                  display: flex;
+                  align-items: center;
+                }
+                mushroom-state-info {
+                  --card-primary-font-size: 14px;
+                  --card-primary-font-weight: 500;
+                  --card-primary-color: var(--kiosk-text-secondary);
+                  --card-primary-line-height: 1.2;
+                }
+                mushroom-shape-icon {
+                  --icon-size: 22px;
+                  --shape-color: transparent;
+                }
+
+          # --- Outdoor weather chips ---
+          # Temperature, humidity, wind, and next sun event from
+          # weather.forecast_home + sun.sun.
+          - type: custom:mushroom-chips-card
+            alignment: spaced
+            chips:
+              - type: template
+                icon: mdi:thermometer
+                icon_color: amber
+                content: '{{ state_attr("weather.forecast_home", "temperature") | round }}°'
+              - type: template
+                icon: mdi:water-percent
+                icon_color: blue
+                content: '{{ state_attr("weather.forecast_home", "humidity") | round }}%'
+              - type: template
+                icon: mdi:weather-windy
+                icon_color: grey
+                content: '{{ state_attr("weather.forecast_home", "wind_speed") | round }} mph'
+              - type: template
+                icon: |-
+                  {% if states('sun.sun') == 'above_horizon' %}mdi:weather-sunset-down
+                  {% else %}mdi:weather-sunset-up{% endif %}
+                icon_color: orange
+                content: |-
+                  {% if states('sun.sun') == 'above_horizon' %}
+                  {{ as_timestamp(state_attr('sun.sun', 'next_setting')) | timestamp_custom('%-I:%M') }}
+                  {% else %}
+                  {{ as_timestamp(state_attr('sun.sun', 'next_rising')) | timestamp_custom('%-I:%M') }}
+                  {% endif %}
+            card_mod:
+              style: |
+                ha-card {
+                  background: var(--kiosk-bg-tile) !important;
+                  border: none !important;
+                  border-radius: 8px !important;
+                  padding: 8px 8px !important;
+                  height: 100%;
+                  display: flex;
+                  align-items: center;
+                }
 
       # ============================================================
       # CLIMATE COLUMN
