@@ -8,7 +8,66 @@ the same loop and surfaced its pain points.
 
 ---
 
-## The loop (as run today)
+## Two loops — pick by intent
+
+| Loop | When | Cycle time |
+|------|------|-----------|
+| **Fast / exploratory** (below) | Trying layout ideas, debugging visuals, sketching. Changes don't persist past the next gitops poll unless committed. | **~10 s per iteration** |
+| **Canonical / PR** (further below) | Final design ready, change should land in git and survive forever. | ~2–4 min per iteration |
+
+Pick the fast loop for visual debugging — the cycle is short enough that you can try wrong ideas freely. Switch to the canonical loop when the design is stable and you want to commit it.
+
+---
+
+## Fast loop: direct push to HAOS
+
+`~/.local/bin/kiosk-push` writes the local `dashboards/kiosk.yaml` straight to `/config/dashboards/kiosk.yaml` on the HAOS VM, restarts the kiosk Chromium, and runs `kiosk-snap`. One command, ~10 s end-to-end.
+
+```bash
+# Pause gitops once at the start of your iteration session — the gitops
+# automation polls every 5 min and would otherwise reset your direct edits
+# to whatever's on main. Use the HA MCP:
+ha_call_service('automation', 'turn_off',
+                entity_id='automation.gitops_poll_and_deploy')
+
+# Iterate fast: edit kiosk.yaml locally, push, look:
+$EDITOR ~/repos/homeassistant-config/dashboards/kiosk.yaml
+kiosk-push                       # validates YAML, scp's to HAOS, restarts kiosk, scrots
+# → reads ~/repos/homeassistant-config/kiosk-current.png
+
+# Optional: `kiosk-push --no-restart` (CSS tweak that doesn't need Chromium
+# reload), `kiosk-push --no-snap` (just push, skip the screenshot).
+
+# When you're happy with the design, commit + PR + merge as in the canonical
+# loop below. The merged main then becomes the source of truth.
+
+# Resume gitops at end of session:
+ha_call_service('automation', 'turn_on',
+                entity_id='automation.gitops_poll_and_deploy')
+ha_call_service('shell_command', 'gitops_sync')   # deploy main's version
+```
+
+### How it works
+
+- HA YAML-mode dashboards (which include `kiosk.yaml`) watch their files. When `kiosk-push` `scp`s a new version, HA picks up the change at the API layer immediately — no service call needed.
+- The kiosk Chromium has the page already loaded and cached, so it needs a `systemctl restart dashboard-kiosk.service` on pve2 to re-fetch. Same as in the canonical loop.
+- `kiosk-push` validates YAML locally with `python3 -c "import yaml; yaml.safe_load(...)"` before scp. This catches the same syntax errors the `check-config` CI job catches, but instantly.
+
+### Why pause gitops
+
+The gitops loop is sticky: it polls every 5 min, fetches `origin/main`, and `git reset --hard origin/main` if the working tree diverges. Any direct edits to `/config/dashboards/kiosk.yaml` get wiped on the next poll. Pausing the polling automation is the clean way to hold direct edits in place.
+
+The pause/resume is intentional friction — if you forget to resume, the next session won't auto-deploy committed YAML, which is a more obvious failure than "my edits disappeared." Use `ha_get_state('automation.gitops_poll_and_deploy')` to check.
+
+### When to switch to the canonical loop
+
+- The design is stable and you want to commit it.
+- You need CI gating (`Dashboard Entities` validation catches entity-id refs against the snapshot).
+- Multiple people would consume the change.
+
+---
+
+## Canonical loop: PR-gated
 
 For each visual change to the kiosk dashboard:
 
@@ -130,11 +189,17 @@ mod-card (outer cell, view_layout: { grid-area: NAME })
 
 ## Where to next
 
-**Immediate refinements:**
+**Done in this iteration:**
 
-- A wrapper script `~/.local/bin/kiosk-snap` that does restart + scrot + scp in one command. Saves ~30 s of typing per cycle.
-- Authorize SSH to the HAOS VM so exploratory iteration can `scp` the YAML directly (skip PR + CI) and only PR the final state.
+- ✅ `~/.local/bin/kiosk-snap` — restart + scrot + scp in one command.
+- ✅ SSH to HAOS verified (root@192.168.139.172, lands in the SSH add-on container with /config writable).
+- ✅ `~/.local/bin/kiosk-push` — local YAML → HAOS /config → kiosk restart → scrot in one command, ~10 s.
+
+**Still to refine:**
+
 - Batch multiple cell edits per PR; aim for 1 PR per "design idea" not 1 PR per tweak.
+- Add a `kiosk-pause` / `kiosk-resume` wrapper around `automation.turn_off automation.gitops_poll_and_deploy` so it's symmetric with `kiosk-push`. Currently the pause/resume is done via the HA MCP from the agent side; a CLI version would let humans iterate solo.
+- Capture the pause/resume contract in a hook so we never forget to resume.
 
 **Open layout issues to revisit:**
 
