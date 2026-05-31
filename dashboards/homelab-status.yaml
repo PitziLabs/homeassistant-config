@@ -183,6 +183,38 @@ views:
           - entity: sensor.backup_next_scheduled_automatic_backup
             name: Next Scheduled
 
+      # Kiosk host memory watch — pve2 drives the household dashboard
+      # display via Chromium. The renderer has a slow leak that ends in
+      # a V8 OOM after ~7h (see issue #308); pve2 only runs the kiosk
+      # plus bare PVE/corosync, so host memory % is a reliable proxy
+      # for "kiosk Chromium has bloated." Pre-OOM peak observed at ~65%.
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.pve2_memory_usage_percentage_2
+            name: Kiosk Host Memory
+            unit: '%'
+            min: 0
+            max: 100
+            needle: true
+            severity:
+              green: 0
+              yellow: 50
+              red: 70
+          - type: entities
+            title: pve2 (kiosk host)
+            entities:
+              - entity: sensor.pve2_status_2
+                name: Status
+              - entity: sensor.pve2_cpu_usage_2
+                name: CPU
+              - entity: sensor.pve2_memory_usage_2
+                name: Memory (GB)
+              - entity: sensor.pve2_uptime_2
+                name: Host Uptime
+
 
       # ═══════════════════════════════════════════════════════════
       # 3. UPS — CyberPower CP1500PFCLCDa
