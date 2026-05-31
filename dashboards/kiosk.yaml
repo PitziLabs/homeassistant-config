@@ -330,18 +330,6 @@ views:
               flex: 0 0 90px !important;
               min-height: 90px;
             }
-            /* Cascade height into each vstack child's content card so the
-               green-tinted state background fills the entire flex slot
-               instead of collapsing to the button-card's natural content
-               height. Target both the immediate vstack-child wrapper and
-               any inner ha-card or hui-card. */
-            ha-card hui-vertical-stack-card > :first-child > *,
-            ha-card hui-vertical-stack-card > :last-child > *,
-            ha-card hui-vertical-stack-card > :first-child ha-card,
-            ha-card hui-vertical-stack-card > :last-child ha-card {
-              height: 100% !important;
-              min-height: 0 !important;
-            }
             ha-card > * {
               flex: 1 1 auto;
               min-height: 0;
@@ -352,164 +340,184 @@ views:
         card:
           type: vertical-stack
           cards:
-          - type: custom:button-card
-            entity: alarm_control_panel.home_alarm
-            name: Home Alarm
-            show_name: true
-            show_state: true
-            show_icon: true
-            size: 55%
-            layout: icon_name_state
-            # Re-render when openings change so the escalated state below
-            # picks up door/cover events even though the entity is the alarm.
-            triggers_update:
-              - binary_sensor.house_openings
-            # Override the alarm's raw state string with the open-list when
-            # the escalation fires; otherwise show the alarm state directly.
-            state_display: |
-              [[[
-                if (states['alarm_control_panel.home_alarm'].state === 'disarmed'
-                    && states['binary_sensor.house_openings'].state === 'on') {
-                  const openList = states['binary_sensor.house_openings'].attributes.open_list || '';
-                  return openList ? `OPEN: ${openList}` : 'OPEN';
+          - type: custom:mod-card
+            card_mod:
+              style: |
+                ha-card {
+                  height: 200px !important;
+                  background: transparent !important;
+                  border: none !important;
+                  box-shadow: none !important;
                 }
-                return entity.state.toUpperCase();
-              ]]]
-            tap_action: { action: more-info }
-            state:
-              # Escalated: alarm is disarmed but a door/cover is open — amber warning.
-              # Must come before the plain `disarmed` block since first match wins.
-              - operator: template
-                value: |
-                  [[[ return states['alarm_control_panel.home_alarm'].state === 'disarmed'
-                       && states['binary_sensor.house_openings'].state === 'on'; ]]]
-                icon: mdi:shield-alert
-                color: 'var(--kiosk-accent-armed)'
-                styles:
-                  card:
-                    - background-color: 'rgba(227, 179, 65, 0.20)'
-                    - border-left: '4px solid var(--kiosk-accent-armed)'
-                  state:
-                    - color: 'var(--kiosk-accent-armed)'
-                    - font-size: '22px'
-                    - letter-spacing: '1px'
-                    - line-height: '1.2'
-                    - white-space: 'normal'
-              - value: disarmed
-                icon: mdi:shield-check
-                color: 'var(--kiosk-accent-disarmed)'
-                styles:
-                  card:
-                    - background-color: 'rgba(86, 211, 100, 0.15)'
-                    - border-left: '4px solid var(--kiosk-accent-disarmed)'
-                  state: [{ color: 'var(--kiosk-accent-disarmed)' }]
-              - value: arming
-                icon: mdi:shield-half-full
-                color: 'var(--kiosk-accent-armed)'
-                styles:
-                  card:
-                    - background-color: 'rgba(227, 179, 65, 0.15)'
-                    - border-left: '4px solid var(--kiosk-accent-armed)'
-                  state: [{ color: 'var(--kiosk-accent-armed)' }]
-              - operator: regex
-                value: '^armed.*'
-                icon: mdi:shield-lock
-                color: 'var(--kiosk-accent-armed)'
-                styles:
-                  card:
-                    - background-color: 'rgba(227, 179, 65, 0.15)'
-                    - border-left: '4px solid var(--kiosk-accent-armed)'
-                  state: [{ color: 'var(--kiosk-accent-armed)' }]
-              - operator: regex
-                value: '^(pending|triggered)$'
-                icon: mdi:alarm-light
-                color: 'var(--kiosk-accent-triggered)'
-                styles:
-                  card:
-                    - background-color: 'rgba(248, 81, 73, 0.20)'
-                    - border-left: '4px solid var(--kiosk-accent-triggered)'
-                    - animation: 'pulse 1.2s infinite'
-                  state: [{ color: 'var(--kiosk-accent-triggered)' }]
-            styles:
-              card:
-                - height: '100%'
-                - border-radius: '10px'
-                - border: 'none'
-                - padding: '20px 28px'
-                - background: 'var(--kiosk-bg-card)'
-              name:
-                - font-size: '20px'
-                - font-weight: '500'
-                - color: 'var(--kiosk-text-secondary)'
-                - justify-self: start
+            card:
+              type: custom:button-card
+              entity: alarm_control_panel.home_alarm
+              name: Home Alarm
+              show_name: true
+              show_state: true
+              show_icon: true
+              size: 55%
+              layout: icon_name_state
+              # Re-render when openings change so the escalated state below
+              # picks up door/cover events even though the entity is the alarm.
+              triggers_update:
+                - binary_sensor.house_openings
+              # Override the alarm's raw state string with the open-list when
+              # the escalation fires; otherwise show the alarm state directly.
+              state_display: |
+                [[[
+                  if (states['alarm_control_panel.home_alarm'].state === 'disarmed'
+                      && states['binary_sensor.house_openings'].state === 'on') {
+                    const openList = states['binary_sensor.house_openings'].attributes.open_list || '';
+                    return openList ? `OPEN: ${openList}` : 'OPEN';
+                  }
+                  return entity.state.toUpperCase();
+                ]]]
+              tap_action: { action: more-info }
               state:
-                - font-size: '38px'
-                - font-weight: '600'
-                - text-transform: 'uppercase'
-                - letter-spacing: '2px'
-                - justify-self: start
-              grid:
-                - grid-template-areas: '"i n" "i s"'
-                - grid-template-columns: 'min-content 1fr'
-                - grid-template-rows: '1fr 1fr'
-                - column-gap: '24px'
-                - row-gap: '4px'
-                - align-items: 'center'
-                - align-content: 'center'
-                - height: '100%'
-            extra_styles: |
-              @keyframes pulse {
-                0%, 100% { opacity: 1; transform: scale(1); }
-                50% { opacity: 0.7; transform: scale(0.99); }
-              }
+                # Escalated: alarm is disarmed but a door/cover is open — amber warning.
+                # Must come before the plain `disarmed` block since first match wins.
+                - operator: template
+                  value: |
+                    [[[ return states['alarm_control_panel.home_alarm'].state === 'disarmed'
+                         && states['binary_sensor.house_openings'].state === 'on'; ]]]
+                  icon: mdi:shield-alert
+                  color: 'var(--kiosk-accent-armed)'
+                  styles:
+                    card:
+                      - background-color: 'rgba(227, 179, 65, 0.20)'
+                      - border-left: '4px solid var(--kiosk-accent-armed)'
+                    state:
+                      - color: 'var(--kiosk-accent-armed)'
+                      - font-size: '22px'
+                      - letter-spacing: '1px'
+                      - line-height: '1.2'
+                      - white-space: 'normal'
+                - value: disarmed
+                  icon: mdi:shield-check
+                  color: 'var(--kiosk-accent-disarmed)'
+                  styles:
+                    card:
+                      - background-color: 'rgba(86, 211, 100, 0.15)'
+                      - border-left: '4px solid var(--kiosk-accent-disarmed)'
+                    state: [{ color: 'var(--kiosk-accent-disarmed)' }]
+                - value: arming
+                  icon: mdi:shield-half-full
+                  color: 'var(--kiosk-accent-armed)'
+                  styles:
+                    card:
+                      - background-color: 'rgba(227, 179, 65, 0.15)'
+                      - border-left: '4px solid var(--kiosk-accent-armed)'
+                    state: [{ color: 'var(--kiosk-accent-armed)' }]
+                - operator: regex
+                  value: '^armed.*'
+                  icon: mdi:shield-lock
+                  color: 'var(--kiosk-accent-armed)'
+                  styles:
+                    card:
+                      - background-color: 'rgba(227, 179, 65, 0.15)'
+                      - border-left: '4px solid var(--kiosk-accent-armed)'
+                    state: [{ color: 'var(--kiosk-accent-armed)' }]
+                - operator: regex
+                  value: '^(pending|triggered)$'
+                  icon: mdi:alarm-light
+                  color: 'var(--kiosk-accent-triggered)'
+                  styles:
+                    card:
+                      - background-color: 'rgba(248, 81, 73, 0.20)'
+                      - border-left: '4px solid var(--kiosk-accent-triggered)'
+                      - animation: 'pulse 1.2s infinite'
+                    state: [{ color: 'var(--kiosk-accent-triggered)' }]
+              styles:
+                card:
+                  - height: '100%'
+                  - border-radius: '10px'
+                  - border: 'none'
+                  - padding: '20px 28px'
+                  - background: 'var(--kiosk-bg-card)'
+                name:
+                  - font-size: '20px'
+                  - font-weight: '500'
+                  - color: 'var(--kiosk-text-secondary)'
+                  - justify-self: start
+                state:
+                  - font-size: '38px'
+                  - font-weight: '600'
+                  - text-transform: 'uppercase'
+                  - letter-spacing: '2px'
+                  - justify-self: start
+                grid:
+                  - grid-template-areas: '"i n" "i s"'
+                  - grid-template-columns: 'min-content 1fr'
+                  - grid-template-rows: '1fr 1fr'
+                  - column-gap: '24px'
+                  - row-gap: '4px'
+                  - align-items: 'center'
+                  - align-content: 'center'
+                  - height: '100%'
+              extra_styles: |
+                @keyframes pulse {
+                  0%, 100% { opacity: 1; transform: scale(1); }
+                  50% { opacity: 0.7; transform: scale(0.99); }
+                }
 
           # --- Arm/disarm action row (bottom of alarm cell) ---
           # ARM HOME / ARM AWAY are direct service calls (code_arm_required:
           # false). DISARM opens more-info so the user can enter the code.
-          - type: horizontal-stack
-            cards:
-              - &arm_action_button
-                type: custom:button-card
-                name: Arm Home
-                icon: mdi:shield-home
-                show_name: true
-                show_icon: true
-                show_state: false
-                size: 36%
-                layout: vertical
-                tap_action:
-                  action: call-service
-                  service: alarm_control_panel.alarm_arm_home
-                  target:
-                    entity_id: alarm_control_panel.home_alarm
-                styles:
-                  card:
-                    - height: '100%'
-                    - background: 'var(--kiosk-bg-tile)'
-                    - border-radius: '8px'
-                    - border: 'none'
-                    - padding: '6px 4px'
-                  name:
-                    - font-size: '13px'
-                    - font-weight: '600'
-                    - color: 'var(--kiosk-text-secondary)'
-                    - text-transform: 'uppercase'
-                    - letter-spacing: '1px'
-                    - padding-top: '4px'
-              - <<: *arm_action_button
-                name: Arm Away
-                icon: mdi:shield-lock
-                tap_action:
-                  action: call-service
-                  service: alarm_control_panel.alarm_arm_away
-                  target:
-                    entity_id: alarm_control_panel.home_alarm
-              - <<: *arm_action_button
-                name: Disarm
-                icon: mdi:shield-off
-                tap_action:
-                  action: more-info
-                  entity: alarm_control_panel.home_alarm
+          - type: custom:mod-card
+            card_mod:
+              style: |
+                ha-card {
+                  height: 90px !important;
+                  background: transparent !important;
+                  border: none !important;
+                  box-shadow: none !important;
+                }
+            card:
+              type: horizontal-stack
+              cards:
+                - &arm_action_button
+                  type: custom:button-card
+                  name: Arm Home
+                  icon: mdi:shield-home
+                  show_name: true
+                  show_icon: true
+                  show_state: false
+                  size: 36%
+                  layout: vertical
+                  tap_action:
+                    action: call-service
+                    service: alarm_control_panel.alarm_arm_home
+                    target:
+                      entity_id: alarm_control_panel.home_alarm
+                  styles:
+                    card:
+                      - height: '100%'
+                      - background: 'var(--kiosk-bg-tile)'
+                      - border-radius: '8px'
+                      - border: 'none'
+                      - padding: '6px 4px'
+                    name:
+                      - font-size: '13px'
+                      - font-weight: '600'
+                      - color: 'var(--kiosk-text-secondary)'
+                      - text-transform: 'uppercase'
+                      - letter-spacing: '1px'
+                      - padding-top: '4px'
+                - <<: *arm_action_button
+                  name: Arm Away
+                  icon: mdi:shield-lock
+                  tap_action:
+                    action: call-service
+                    service: alarm_control_panel.alarm_arm_away
+                    target:
+                      entity_id: alarm_control_panel.home_alarm
+                - <<: *arm_action_button
+                  name: Disarm
+                  icon: mdi:shield-off
+                  tap_action:
+                    action: more-info
+                    entity: alarm_control_panel.home_alarm
 
       # ============================================================
       # MEETING CELL — indicator hero + time-since line + outdoor chips
