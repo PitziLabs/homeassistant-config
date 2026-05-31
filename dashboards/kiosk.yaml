@@ -75,7 +75,7 @@ views:
               display: flex;
               flex-direction: column;
               gap: 4px;
-              padding: 6px;
+              padding: 0;
             }
             ha-card hui-vertical-stack-card,
             ha-card > * {
