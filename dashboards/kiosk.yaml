@@ -187,7 +187,7 @@ views:
                       {% elif c == 'snowy' %}light-blue
                       {% else %}grey
                       {% endif %}
-                    layout: vertical
+                    layout: horizontal
                     fill_container: true
                     tap_action: { action: none }
                     card_mod:
