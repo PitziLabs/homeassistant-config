@@ -105,8 +105,8 @@ views:
               card_mod:
                 style: |
                   ha-card {
-                    height: 200px !important;
-                    max-height: 200px !important;
+                    height: 215px !important;
+                    max-height: 215px !important;
                     overflow: hidden !important;
                     background: transparent !important;
                     border: none !important;
@@ -114,7 +114,7 @@ views:
                   }
                   ha-card > * {
                     height: 100% !important;
-                    max-height: 200px !important;
+                    max-height: 215px !important;
                     overflow: hidden !important;
                     display: block !important;
                   }
@@ -142,7 +142,7 @@ views:
               card_mod:
                 style: |
                   ha-card {
-                    height: 95px !important;
+                    height: 80px !important;
                     background: rgba(0,0,0,0.18);
                     border: none;
                     border-radius: 8px;
@@ -197,34 +197,19 @@ views:
                           border: none !important;
                           box-shadow: none !important;
                           border-radius: 6px !important;
-                          padding: 4px 2px !important;
-                          height: 100%;
-                          display: flex !important;
-                          flex-direction: column !important;
-                          align-items: center !important;
-                          justify-content: center !important;
+                          padding: 2px !important;
                         }
                         mushroom-state-info {
-                          --card-primary-font-size: 13px;
+                          --card-primary-font-size: 11px;
                           --card-primary-font-weight: 600;
                           --card-primary-color: var(--kiosk-text-primary);
                           --card-primary-text-transform: uppercase;
-                          --card-secondary-font-size: 12px;
+                          --card-secondary-font-size: 11px;
                           --card-secondary-color: var(--kiosk-text-secondary);
-                          text-align: center;
                         }
                         mushroom-shape-icon {
-                          --icon-size: 32px;
+                          --icon-size: 24px;
                           --shape-color: transparent;
-                        }
-                        /* Force the icon container to be visible even
-                           when shape-color is transparent. */
-                        mushroom-shape-icon ha-icon,
-                        mushroom-shape-icon ha-svg-icon {
-                          color: var(--card-mod-icon-color, var(--paper-item-icon-color));
-                          width: 32px !important;
-                          height: 32px !important;
-                          --mdc-icon-size: 32px;
                         }
                   - <<: *forecast_day
                     primary: |-
