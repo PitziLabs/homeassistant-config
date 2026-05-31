@@ -85,13 +85,17 @@ views:
               flex-direction: column;
               gap: 4px;
             }
-            /* Clock card grows; forecast strip fixed 100px at bottom. */
+            /* Fully fixed pixel allocations with !important — same
+               pattern that works in the sensors cell. Avoids the
+               vstack-collapses-to-content failure mode we saw with
+               flex: 1 1 auto on the grow side. */
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 1 1 auto;
-              min-height: 0;
+              flex: 0 0 190px !important;
+              min-height: 190px;
             }
             ha-card hui-vertical-stack-card > :last-child {
-              flex: 0 0 100px;
+              flex: 0 0 95px !important;
+              min-height: 95px;
             }
         card:
           type: vertical-stack
@@ -319,11 +323,12 @@ views:
               gap: 8px;
             }
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 1 1 auto;
-              min-height: 0;
+              flex: 0 0 200px !important;
+              min-height: 200px;
             }
             ha-card hui-vertical-stack-card > :last-child {
-              flex: 0 0 90px;
+              flex: 0 0 90px !important;
+              min-height: 90px;
             }
             /* Cascade height into each vstack child's content card so the
                green-tinted state background fills the entire flex slot
@@ -536,14 +541,16 @@ views:
               gap: 6px;
             }
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 1 1 auto;
-              min-height: 0;
+              flex: 0 0 170px !important;
+              min-height: 170px;
             }
             ha-card hui-vertical-stack-card > :nth-child(2) {
-              flex: 0 0 36px;
+              flex: 0 0 36px !important;
+              min-height: 36px;
             }
             ha-card hui-vertical-stack-card > :nth-child(3) {
-              flex: 0 0 80px;
+              flex: 0 0 80px !important;
+              min-height: 80px;
             }
             /* Same fill cascade as the alarm hero — see comment there. */
             ha-card > * {
