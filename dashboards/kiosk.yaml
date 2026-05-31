@@ -349,6 +349,13 @@ views:
                   border: none !important;
                   box-shadow: none !important;
                 }
+                /* Force the button-card host element to fill the
+                   200px slot — the inner styles.card.height: 100%
+                   only resolves if this host is also 100%. */
+                ha-card > * {
+                  height: 100% !important;
+                  display: block !important;
+                }
             card:
               type: custom:button-card
               entity: alarm_control_panel.home_alarm
