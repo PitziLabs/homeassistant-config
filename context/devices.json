@@ -460,6 +460,26 @@
     ]
   },
   {
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "name": "Home Assistant",
+    "manufacturer": "Home Assistant",
+    "model": null,
+    "area_id": null,
+    "integrations": [
+      "spook"
+    ]
+  },
+  {
+    "device_id": "a096e0461504f595480ab34c5350000e",
+    "name": "Home Assistant Cloud",
+    "manufacturer": "Nabu Casa Inc.",
+    "model": null,
+    "area_id": null,
+    "integrations": [
+      "spook"
+    ]
+  },
+  {
     "device_id": "df2e18893c85f99d908ca2c63a39336f",
     "name": "Home Assistant Connect ZBT-2",
     "manufacturer": "Nabu Casa",
@@ -900,6 +920,16 @@
     ]
   },
   {
+    "device_id": "a8f5a303dc3ba3b6071b345f749125a5",
+    "name": "Repairs",
+    "manufacturer": "Home Assistant",
+    "model": null,
+    "area_id": null,
+    "integrations": [
+      "spook"
+    ]
+  },
+  {
     "device_id": "815507c33505261bf37180004f6468a7",
     "name": "Roam 2",
     "manufacturer": "Sonos",
@@ -1187,6 +1217,16 @@
     "area_id": null,
     "integrations": [
       "hacs"
+    ]
+  },
+  {
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "name": "Watchman",
+    "manufacturer": "dummylabs",
+    "model": "Watchman",
+    "area_id": "office",
+    "integrations": [
+      "watchman"
     ]
   },
   {
