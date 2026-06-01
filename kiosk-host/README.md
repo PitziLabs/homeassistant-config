@@ -27,6 +27,7 @@ itself lives in `dashboards/kiosk.yaml`; these files configure the
 | `gitops-pull.service` | `/etc/systemd/system/dashboard-kiosk-gitops.service` | `0644` | `root:root` | bootstrap only |
 | `gitops-pull.timer` | `/etc/systemd/system/dashboard-kiosk-gitops.timer` | `0644` | `root:root` | bootstrap only |
 | `kiosk-snapshot` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
+| `kiosk-preview` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
 
 Also on pve2, *not* managed by the loop:
 
@@ -106,6 +107,65 @@ launch (Gdk portal / sandbox crashes have been seen on the workstation).
 Even when Playwright works, prefer `kiosk-snapshot` for kiosk captures —
 Playwright would render a clean, just-authed session, missing the live
 state.
+
+## Live preview iteration (`kiosk-preview`)
+
+`kiosk-preview` is the fast-iteration loop for kiosk dashboard YAML —
+push a local edit, refresh Chromium, capture the new frame, in
+roughly 3 seconds. Use it when you want to see the rendered result
+of a dashboard change *before* committing.
+
+```bash
+# Default: pushes ./dashboards/kiosk.yaml, snapshots to cwd
+kiosk-host/kiosk-preview
+
+# Specify a different YAML and open the snapshot
+kiosk-host/kiosk-preview dashboards/kiosk.yaml --open
+
+# Push + refresh without capturing (e.g. you're at the monitor)
+kiosk-host/kiosk-preview --no-snapshot
+```
+
+Under the hood, each call:
+
+1. `python3 yaml.safe_load`s the local file (refuses to push broken YAML)
+2. `scp -p 22 root@homeassistant.local:/config/dashboards/<name>` to the
+   HA VM. **Requires** SSH key access to the HAOS host — root@homeassistant.local
+   on port 22.
+3. Calls `lovelace.reload_resources` via the HA REST API to clear the
+   frontend resource cache. Optional — looks for a long-lived access
+   token at `~/.config/kiosk-preview/ha-token`; skipped silently if
+   absent. yaml-mode dashboards re-read from disk on each fetch, so
+   the F5 alone is enough for dashboard YAML; the resource reload only
+   matters when you've also touched a JS module under `resources:`.
+4. `ssh -J root@pve.local root@pve2 'DISPLAY=:0 xdotool key F5'` to
+   refresh Chromium on the household monitor. **Requires** `xdotool`
+   on pve2 (in the bootstrap apt-install list).
+5. Sleeps ~1.5s for Chromium to repaint, then `curl`s the snapshot
+   server (`http://pve2.local:9999/`) into
+   `./kiosk-preview-<UTC-timestamp>.png`.
+
+### Things to know
+
+- **gitops-sync clobber.** The HA-side `scripts/gitops-sync.sh` runs
+  every 5 min and `git reset --hard origin/main`s `/config/`. Your
+  preview survives until the next poll, then reverts. This is what you
+  want — your iteration window is whatever's left in the current
+  cycle, then commit + PR to make the change permanent. Pass `--keep`
+  to suppress the trailing reminder.
+- **Display flicker.** F5 in Chromium produces a brief blank frame
+  visible at the monitor. Don't iterate in moments where it'd disrupt
+  someone's view.
+- **First-time SSH setup.** Both the HA host (`homeassistant.local`) and
+  the kiosk-snapshot path (via `pve.local` jump) need your workstation
+  key in their `authorized_keys`. The kiosk-snapshot jump already works
+  for the rest of this tooling; HA-host SSH may need a one-time setup
+  of `/root/.ssh/authorized_keys` on HAOS — see the HA developer docs.
+- **Optional HA token for resource reload.** If you want
+  `lovelace.reload_resources` to actually fire (rarely needed for pure
+  dashboard YAML edits — see step 3 above), put a long-lived access
+  token at `~/.config/kiosk-preview/ha-token` (mode `0600`). Without
+  it the call is skipped and the tool still works for dashboard YAML.
 
 ## Snapshot server (network endpoint for HA)
 
@@ -190,7 +250,7 @@ itself, so the initial setup is manual:
 ssh -J root@pve.local root@pve2 '
   set -euo pipefail
   apt-get update
-  apt-get install -y git chromium xserver-xorg xinit unclutter openbox scrot
+  apt-get install -y git chromium xserver-xorg xinit unclutter openbox scrot xdotool
 
   # Clone the canonical config
   test -d /opt/homeassistant-config || \
