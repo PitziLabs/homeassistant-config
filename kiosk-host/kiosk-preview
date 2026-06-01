@@ -38,7 +38,14 @@ readonly HA_TARGET_DIR="/homeassistant/dashboards"
 readonly KIOSK_JUMP="root@pve.local"
 readonly KIOSK_HOST="root@pve2"
 readonly KIOSK_SNAPSHOT_URL="http://pve2.local:9999/"
-readonly REFRESH_WAIT_SEC=1.5
+# Give Chromium an initial beat before polling for a stable frame.
+# Too short → first poll catches mid-paint; too long → wasted seconds.
+readonly INITIAL_WAIT_SEC=1.2
+# Stability poll: after the initial wait, take snapshots at this interval
+# and stop as soon as two consecutive frames match by md5. Caps total
+# post-F5 wait at INITIAL_WAIT_SEC + MAX_STABILITY_SEC.
+readonly STABILITY_INTERVAL_SEC=0.7
+readonly MAX_STABILITY_SEC=6.0
 
 usage() {
   sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
@@ -144,21 +151,58 @@ fi
 refresh_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $refresh_start) * 1000 }")
 ok "F5 sent (${refresh_ms}ms)"
 
-# Chromium needs a beat to re-render. Tune REFRESH_WAIT_SEC at the top if
-# the snapshot consistently catches a stale or mid-paint frame.
-sleep "$REFRESH_WAIT_SEC"
-
-# --- 4. Snapshot -----------------------------------------------------------
+# --- 4. Snapshot (with frame-stability detection) --------------------------
+# After F5, Chromium repaints over 1–4s depending on dashboard complexity
+# and entity-stream readiness. A fixed sleep risks capturing a half-painted
+# skeleton. Instead: short initial wait, then poll until two consecutive
+# snapshots are within STABILITY_SIZE_PCT% of each other in size. (md5 won't
+# work — clock seconds + minor animations make pixel-stable comparison fail
+# even on a fully-rendered dashboard; settled frames cluster within ~0.2%
+# of size while a mid-paint frame is typically 50–75% smaller.)
+readonly STABILITY_SIZE_PCT=1.0
 if (( snapshot == 1 )); then
   outfile="kiosk-preview-${ts}.png"
-  step "capturing snapshot → ${outfile}"
+  step "capturing snapshot → ${outfile} (waiting for stable frame)"
   snap_start=$EPOCHREALTIME
-  if ! curl -fsS --max-time 8 -o "$outfile" "$KIOSK_SNAPSHOT_URL"; then
-    err "snapshot fetch from ${KIOSK_SNAPSHOT_URL} failed"
-    exit 1
-  fi
+  sleep "$INITIAL_WAIT_SEC"
+  prev_size=0
+  attempts=0
+  stable=0
+  poll_tmp=$(mktemp --suffix=.png)
+  trap 'rm -f "$poll_tmp"' EXIT
+  while :; do
+    attempts=$((attempts + 1))
+    if ! curl -fsS --max-time 8 -o "$poll_tmp" "$KIOSK_SNAPSHOT_URL"; then
+      err "snapshot fetch from ${KIOSK_SNAPSHOT_URL} failed"
+      exit 1
+    fi
+    cur_size=$(stat -c%s "$poll_tmp")
+    if (( prev_size > 0 )); then
+      # |Δ size| / max(prev, cur) * 100 < STABILITY_SIZE_PCT → settled
+      stable_flag=$(awk -v a="$prev_size" -v b="$cur_size" -v pct="$STABILITY_SIZE_PCT" \
+        'BEGIN { d = (a>b)?(a-b):(b-a); m = (a>b)?a:b; print (d / m * 100 < pct) ? 1 : 0 }')
+      if [[ "$stable_flag" == "1" ]]; then
+        stable=1
+        break
+      fi
+    fi
+    prev_size=$cur_size
+    elapsed=$(awk "BEGIN { printf \"%.2f\", $EPOCHREALTIME - $snap_start }")
+    if awk "BEGIN { exit !($elapsed > $MAX_STABILITY_SEC) }"; then
+      break
+    fi
+    sleep "$STABILITY_INTERVAL_SEC"
+  done
+  mv "$poll_tmp" "$outfile"
+  trap - EXIT
   snap_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $snap_start) * 1000 }")
-  ok "captured ${outfile} (${snap_ms}ms, $(stat -c%s "$outfile") bytes)"
+  final_size=$(stat -c%s "$outfile")
+  if (( stable == 1 )); then
+    ok "captured ${outfile} (${snap_ms}ms, ${attempts} polls, ${final_size} bytes)"
+  else
+    printf '\033[33m!\033[0m captured %s after %s polls but frame did not stabilize before %ss cap — paint may still be in progress (size=%s)\n' \
+      "$outfile" "$attempts" "$MAX_STABILITY_SEC" "$final_size"
+  fi
 fi
 
 total_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $total_start) * 1000 }")
