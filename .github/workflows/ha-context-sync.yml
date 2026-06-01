@@ -18,22 +18,22 @@ jobs:
   open-context-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Validate dispatch payload
-        env:
-          BRANCH: ${{ github.event.client_payload.branch }}
-        run: |
-          if [[ ! "$BRANCH" =~ ^context-sync/[0-9]{8}-[0-9]{6}$ ]]; then
-            echo "::error::Invalid branch name pattern: $BRANCH"
-            echo "::error::Expected: context-sync/YYYYMMDD-HHMMSS"
-            exit 1
-          fi
-          echo "Branch validated: $BRANCH"
-
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.HA_SYNC_PAT }}
           fetch-depth: 0
+
+      - name: Validate dispatch payload
+        env:
+          BRANCH: ${{ github.event.client_payload.branch }}
+        run: |
+          if ! scripts/validate-context-branch.sh "$BRANCH"; then
+            echo "::error::Invalid branch name pattern: $BRANCH"
+            echo "::error::Expected: context-sync/YYYYMMDD-HHMMSS"
+            exit 1
+          fi
+          echo "Branch validated: $BRANCH"
 
       - name: Verify branch exists on remote
         env:

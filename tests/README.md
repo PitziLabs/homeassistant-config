@@ -62,6 +62,14 @@ bats tests/
   YAML entity with no `unique_id`) or pending an integration that isn't set up
   yet; prune it as the checker's "can be removed" note directs.
 
+- **`validate_inputs.bats`** — tests `scripts/validate-ha-version.sh` and
+  `scripts/validate-context-branch.sh`, the regex validators the sync workflows
+  use to gate what gets auto-committed (`.ha-version`) and which externally-
+  supplied `repository_dispatch` branch becomes a PR. Covers accept/reject cases
+  (dev builds, prefixes, partials, wrong separators, path traversal, trailing
+  whitespace, injection-shaped input) plus the CLI exit-code/stdout contract the
+  workflows depend on.
+
 ## Making a script testable
 
 Scripts that self-execute at the bottom should guard that call so the file can

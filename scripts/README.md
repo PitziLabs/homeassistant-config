@@ -84,6 +84,27 @@ config but does not duplicate the registry entry. The git-managed
 (`/dashboard-home/home` from YAML, `/home-ui` from storage) until cutover
 is decided.
 
+## `validate-ha-version.sh` / `validate-context-branch.sh`
+
+Tiny input validators used by the sync workflows, factored out of inline
+workflow YAML so the regexes have a single source of truth that CI can test.
+
+- `validate-ha-version.sh <version>` — accepts a stable (`YYYY.MM.N`) or beta
+  (`YYYY.MM.NbN`) HA version, rejects everything else; echoes the validated
+  version on success. Called by `ha-version-sync.yml` before it commits
+  `.ha-version`.
+- `validate-context-branch.sh <branch>` — accepts only
+  `context-sync/YYYYMMDD-HHMMSS`. The branch is an externally-supplied
+  `repository_dispatch` payload that `ha-context-sync.yml` turns into a PR, so
+  this is a trust boundary. Echoes the branch on success.
+
+Both expose a sourceable function (`validate_ha_version` /
+`validate_context_branch`) guarded by `BASH_SOURCE == $0`, exercised by
+`tests/validate_inputs.bats`. Because the workflows now call these scripts, they
+checkout the repo *before* validating the payload (an early checkout for an
+invalid payload is the only behavioral change; the payload isn't used in
+checkout, so there's no security impact).
+
 ## Script auth conventions
 
 Three conventions learned the hard way during context-sync work. Future scripts
