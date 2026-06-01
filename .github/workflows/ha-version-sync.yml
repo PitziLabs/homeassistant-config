@@ -11,20 +11,20 @@ jobs:
   sync-version:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.HA_SYNC_PAT }}
+
       - name: Validate version payload
         env:
           RAW_VERSION: ${{ github.event.client_payload.version }}
         run: |
-          if ! printf '%s' "$RAW_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(b[0-9]+)?$'; then
+          if ! VERSION=$(scripts/validate-ha-version.sh "$RAW_VERSION"); then
             echo "::error::Version '${RAW_VERSION}' failed format check." \
               "Expected: YYYY.MM.N or YYYY.MM.NbN. Dev builds not supported — update regex to widen."
             exit 1
           fi
-          echo "VERSION=$RAW_VERSION" >> "$GITHUB_ENV"
-
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.HA_SYNC_PAT }}
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Compare versions
         id: compare
