@@ -272,8 +272,33 @@ Seven sections:
 | [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling + `custom:mod-card` cell wrapper |
 | [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, TV row in kiosk view |
 | [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in kiosk view |
+| [apexcharts-card](https://github.com/RomRider/apexcharts-card) | Advanced graphs and radial gauges (homelab/kiosk) |
+| [mini-graph-card](https://github.com/kalkih/mini-graph-card) | Lightweight inline sparklines for at-a-glance trends |
+| [Bubble Card](https://github.com/Clooos/Bubble-Card) | Minimalist cards with slide-up pop-ups |
+| [auto-entities](https://github.com/thomasloven/lovelace-auto-entities) | Auto-populates card entity lists by filter/area |
+| [decluttering-card](https://github.com/custom-cards/decluttering-card) | Reusable card templates (DRY repeated tiles) |
+| [HTML Jinja2 Template card](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-Jinja2-Template-card) | Renders a Jinja2 template as HTML card content |
 | [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Hides sidebar/header for wall display |
 | [Noctis](https://github.com/aFFekopp/nern) | Base dark theme (extended by Noctis Kiosk) |
+
+These cards are auto-loaded by HACS — do **not** add them to
+`frontend.extra_module_url` (only `kiosk-mode.js` and `card-mod.js` are
+loaded explicitly there; double-registering throws "already been used with
+this registry").
+
+### Integrations (HACS)
+
+Custom integrations installed via HACS. All are UI-configured (config flow)
+or self-registering — none take a `configuration.yaml` block.
+
+| Integration | Purpose |
+|------|---------|
+| [Better Thermostat](https://github.com/KartoffelToby/better_thermostat) | Smart TRV control feeding the kiosk thermostat dials |
+| [Hubspace](https://github.com/jdeath/Hubspace-Homeassistant) | Hubspace (Afero) device integration |
+| [UGreen NAS](https://github.com/Tom-Bom-badil/home-assistant_ugreen-nas) | UGREEN NAS telemetry on the Homelab Status dashboard |
+| [HA MCP Tools](https://github.com/homeassistant-ai/ha-mcp) | MCP server exposing HA to AI agents (the "Live" layer) |
+| [Spook](https://github.com/frenck/spook) | Power-user toolbox — extra services, repairs, entity tools |
+| [Watchman](https://github.com/dummylabs/thewatchman) | Reports missing/unavailable entities & actions referenced in config |
 
 ## Part of the PitziLabs Portfolio
 
