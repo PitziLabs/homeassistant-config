@@ -9520,6 +9520,14 @@
     "hidden": false
   },
   {
+    "entity_id": "update.auto_entities_update",
+    "friendly_name": "auto-entities update",
+    "area_id": null,
+    "device_id": "28489d7faccc1a8625fee746e0f2fe35",
+    "platform": "hacs",
+    "hidden": false
+  },
+  {
     "entity_id": "update.basement_kitchen_door_firmware",
     "friendly_name": "Firmware",
     "area_id": null,
@@ -9549,6 +9557,14 @@
     "area_id": null,
     "device_id": "cb2f82f7e05c0c803d1a769aa47ab3cb",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.bubble_card_update",
+    "friendly_name": "Bubble Card update",
+    "area_id": null,
+    "device_id": "e1b524130f9311bf54107048f5ad48c1",
+    "platform": "hacs",
     "hidden": false
   },
   {
@@ -9597,6 +9613,14 @@
     "area_id": null,
     "device_id": "3e452e168782a954bdfe68df7bdbcbb5",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.decluttering_card_update",
+    "friendly_name": "Decluttering Card update",
+    "area_id": null,
+    "device_id": "73271ae2ce9e53ac413bdcad711e5806",
+    "platform": "hacs",
     "hidden": false
   },
   {
@@ -9768,6 +9792,14 @@
     "hidden": false
   },
   {
+    "entity_id": "update.mini_graph_card_update",
+    "friendly_name": "mini-graph-card update",
+    "area_id": null,
+    "device_id": "d50d941df33126093e9880d15d125d7f",
+    "platform": "hacs",
+    "hidden": false
+  },
+  {
     "entity_id": "update.mini_media_player_update",
     "friendly_name": "Mini Media Player update",
     "area_id": null,
@@ -9864,6 +9896,14 @@
     "hidden": false
   },
   {
+    "entity_id": "update.spook_your_homie_update",
+    "friendly_name": "Spook 👻 Your homie update",
+    "area_id": null,
+    "device_id": "8b66ff3841ee737370171263bfe6b422",
+    "platform": "hacs",
+    "hidden": false
+  },
+  {
     "entity_id": "update.table_lamp_firmware",
     "friendly_name": "Firmware",
     "area_id": null,
@@ -9876,6 +9916,14 @@
     "friendly_name": "UGreen NAS Integration update",
     "area_id": null,
     "device_id": "792675a285dd3da24e44c67268e933ee",
+    "platform": "hacs",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.watchman_update",
+    "friendly_name": "Watchman update",
+    "area_id": null,
+    "device_id": "54aa9a26d90cc6dd75026830728e93f8",
     "platform": "hacs",
     "hidden": false
   },
