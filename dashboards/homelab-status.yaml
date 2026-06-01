@@ -487,41 +487,94 @@ views:
 
 
       # ═══════════════════════════════════════════════════════════
-      # 7. GitHub
+      # 7. GitHub — PitziLabs fleet
       # ═══════════════════════════════════════════════════════════
+      # Entity IDs follow HA core `github` integration naming:
+      # sensor.<owner>_<repo>_{latest_commit,open_issues,open_pull_requests}.
+      # Repo hyphens become underscores in the entity_id slug.
       - type: markdown
-        content: "### 🐙 GitHub"
+        content: "### 🐙 GitHub — PitziLabs"
 
       - type: entities
-        title: cpitzi/prompts
+        title: Fleet activity
+        show_header_toggle: false
         entities:
-          - entity: sensor.cpitzi_prompts_latest_commit
+          - type: section
+            label: firewalla-axiom-pipeline
+          - entity: sensor.pitzilabs_firewalla_axiom_pipeline_latest_commit
             name: Latest Commit
-          - entity: sensor.cpitzi_prompts_issues
+          - entity: sensor.pitzilabs_firewalla_axiom_pipeline_open_issues
             name: Open Issues
-          - entity: sensor.cpitzi_prompts_pull_requests
+          - entity: sensor.pitzilabs_firewalla_axiom_pipeline_open_pull_requests
             name: Open PRs
 
-      - type: grid
-        columns: 3
-        square: false
-        cards:
-          - type: custom:mushroom-entity-card
-            entity: sensor.cpitzi_prompts_stars
-            name: Stars
-            icon: mdi:star
-          - type: custom:mushroom-entity-card
-            entity: sensor.cpitzi_prompts_forks
-            name: Forks
-            icon: mdi:source-fork
-          - type: custom:mushroom-entity-card
-            entity: sensor.cpitzi_prompts_watchers
-            name: Watchers
-            icon: mdi:eye
+          - type: section
+            label: foundry-platform-demo
+          - entity: sensor.pitzilabs_foundry_platform_demo_latest_commit
+            name: Latest Commit
+          - entity: sensor.pitzilabs_foundry_platform_demo_open_issues
+            name: Open Issues
+          - entity: sensor.pitzilabs_foundry_platform_demo_open_pull_requests
+            name: Open PRs
+
+          - type: section
+            label: homeassistant-config
+          - entity: sensor.pitzilabs_homeassistant_config_latest_commit
+            name: Latest Commit
+          - entity: sensor.pitzilabs_homeassistant_config_open_issues
+            name: Open Issues
+          - entity: sensor.pitzilabs_homeassistant_config_open_pull_requests
+            name: Open PRs
+
+          - type: section
+            label: homelab-observability
+          - entity: sensor.pitzilabs_homelab_observability_latest_commit
+            name: Latest Commit
+          - entity: sensor.pitzilabs_homelab_observability_open_issues
+            name: Open Issues
+          - entity: sensor.pitzilabs_homelab_observability_open_pull_requests
+            name: Open PRs
+
+          - type: section
+            label: ice-cream-book
+          - entity: sensor.pitzilabs_ice_cream_book_latest_commit
+            name: Latest Commit
+          - entity: sensor.pitzilabs_ice_cream_book_open_issues
+            name: Open Issues
+          - entity: sensor.pitzilabs_ice_cream_book_open_pull_requests
+            name: Open PRs
+
+          - type: section
+            label: reference-checker
+          - entity: sensor.pitzilabs_reference_checker_latest_commit
+            name: Latest Commit
+          - entity: sensor.pitzilabs_reference_checker_open_issues
+            name: Open Issues
+          - entity: sensor.pitzilabs_reference_checker_open_pull_requests
+            name: Open PRs
+
+          - type: section
+            label: shared-workflows
+          - entity: sensor.pitzilabs_shared_workflows_latest_commit
+            name: Latest Commit
+          - entity: sensor.pitzilabs_shared_workflows_open_issues
+            name: Open Issues
+          - entity: sensor.pitzilabs_shared_workflows_open_pull_requests
+            name: Open PRs
+
+          - type: section
+            label: workstation-bootstrap
+          - entity: sensor.pitzilabs_workstation_bootstrap_latest_commit
+            name: Latest Commit
+          - entity: sensor.pitzilabs_workstation_bootstrap_open_issues
+            name: Open Issues
+          - entity: sensor.pitzilabs_workstation_bootstrap_open_pull_requests
+            name: Open PRs
 
       - type: markdown
         content: >
-          _More repos (hass, homelab-observability, workstation-bootstrap) coming in a follow-up issue once sensors are configured._
+          _Sensors populate once the HA core `github` integration is configured
+          with the eight PitziLabs/* repos. Until then they read as Unavailable._
 
 
       # ═══════════════════════════════════════════════════════════

@@ -35,10 +35,31 @@ sensor.play_room_youtube_today
 # Only battery_runtime remains absent (entity not exposed by the integration yet).
 sensor.cyberpower_battery_runtime
 
-# --- Pending integration: cpitzi/prompts GitHub sensors (homelab-status.yaml) ---
-sensor.cpitzi_prompts_latest_commit
-sensor.cpitzi_prompts_issues
-sensor.cpitzi_prompts_pull_requests
-sensor.cpitzi_prompts_stars
-sensor.cpitzi_prompts_forks
-sensor.cpitzi_prompts_watchers
+# --- Pending integration: PitziLabs/* GitHub sensors (homelab-status.yaml) ---
+# Populated by the HA core `github` integration once configured with the eight
+# PitziLabs org repos. Three sensors per repo: latest_commit, open_issues,
+# open_pull_requests. Prune as each repo's sensors land in entities.json.
+sensor.pitzilabs_firewalla_axiom_pipeline_latest_commit
+sensor.pitzilabs_firewalla_axiom_pipeline_open_issues
+sensor.pitzilabs_firewalla_axiom_pipeline_open_pull_requests
+sensor.pitzilabs_foundry_platform_demo_latest_commit
+sensor.pitzilabs_foundry_platform_demo_open_issues
+sensor.pitzilabs_foundry_platform_demo_open_pull_requests
+sensor.pitzilabs_homeassistant_config_latest_commit
+sensor.pitzilabs_homeassistant_config_open_issues
+sensor.pitzilabs_homeassistant_config_open_pull_requests
+sensor.pitzilabs_homelab_observability_latest_commit
+sensor.pitzilabs_homelab_observability_open_issues
+sensor.pitzilabs_homelab_observability_open_pull_requests
+sensor.pitzilabs_ice_cream_book_latest_commit
+sensor.pitzilabs_ice_cream_book_open_issues
+sensor.pitzilabs_ice_cream_book_open_pull_requests
+sensor.pitzilabs_reference_checker_latest_commit
+sensor.pitzilabs_reference_checker_open_issues
+sensor.pitzilabs_reference_checker_open_pull_requests
+sensor.pitzilabs_shared_workflows_latest_commit
+sensor.pitzilabs_shared_workflows_open_issues
+sensor.pitzilabs_shared_workflows_open_pull_requests
+sensor.pitzilabs_workstation_bootstrap_latest_commit
+sensor.pitzilabs_workstation_bootstrap_open_issues
+sensor.pitzilabs_workstation_bootstrap_open_pull_requests
