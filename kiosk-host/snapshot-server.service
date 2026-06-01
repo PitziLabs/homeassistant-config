@@ -1,0 +1,16 @@
+[Unit]
+Description=Kiosk Snapshot Server (returns a live scrot on HTTP GET)
+After=dashboard-kiosk.service network-online.target
+Wants=network-online.target
+# Bind to the kiosk session so we stop when the display is restarted —
+# the gitops loop also restarts us explicitly if our script or unit drifts.
+PartOf=dashboard-kiosk.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/snapshot-server
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

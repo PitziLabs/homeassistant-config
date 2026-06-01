@@ -10,6 +10,14 @@ readonly LOG_FILE="/config/ha-context-dump.log"
 readonly LOG_MAX_BYTES=1048576
 readonly STORAGE="/config/.storage"
 
+# Kiosk live-frame snapshot — fetched from snapshot-server on pve2. Hostname
+# first, IP as fallback so the dump survives a transient mDNS hiccup. If both
+# fail, the previous context/kiosk-latest.png (if any) is retained — the
+# rest of the dump continues normally.
+readonly KIOSK_SNAPSHOT_URL_HOST="http://pve2.local:9999/"
+readonly KIOSK_SNAPSHOT_URL_IP="http://192.168.139.7:9999/"
+readonly KIOSK_SNAPSHOT_TIMEOUT=8
+
 log() {
   local level="$1"
   shift
@@ -142,6 +150,53 @@ build_dashboards_storage() {
     '{dashboards: $dashboards, configs: $configs}'
 }
 
+# Fetch a live PNG snapshot of the pve2 kiosk display and write it to
+# context/kiosk-latest.png. Best-effort: tries hostname then IP with a
+# short timeout, retains the previous file on failure, never aborts the
+# dump. Writes to a tempfile and atomically moves on success so a partial
+# download can't replace a good prior snapshot.
+fetch_kiosk_snapshot() {
+  local out="${CONTEXT_DIR}/kiosk-latest.png"
+  local tmp="${out}.tmp.$$"
+  local url
+  for url in "$KIOSK_SNAPSHOT_URL_HOST" "$KIOSK_SNAPSHOT_URL_IP"; do
+    if curl --fail --silent --show-error \
+            --max-time "$KIOSK_SNAPSHOT_TIMEOUT" \
+            --output "$tmp" \
+            "$url" 2>>"$LOG_FILE"; then
+      # PNG magic check: first 4 bytes must be 89 50 4E 47. Read with xxd
+      # if available, otherwise fall back to a size sanity check — real
+      # kiosk frames are hundreds of KB; error bodies are tens of bytes.
+      local valid=false
+      if command -v xxd >/dev/null 2>&1; then
+        if [[ "$(xxd -p -l 4 "$tmp" 2>/dev/null)" == "89504e47" ]]; then
+          valid=true
+        fi
+      else
+        local sz
+        sz=$(stat -c%s "$tmp" 2>/dev/null || echo 0)
+        if (( sz > 10000 )); then
+          valid=true
+        fi
+      fi
+      if [[ "$valid" == true ]]; then
+        mv "$tmp" "$out"
+        log INFO "Kiosk snapshot updated from $url"
+        return 0
+      fi
+      log WARN "Kiosk snapshot from $url did not look like PNG; discarding"
+      rm -f "$tmp"
+    fi
+  done
+  rm -f "$tmp"
+  if [[ -f "$out" ]]; then
+    log WARN "Kiosk snapshot fetch failed; retaining previous kiosk-latest.png"
+  else
+    log WARN "Kiosk snapshot fetch failed; no previous file to retain"
+  fi
+  return 0
+}
+
 main() {
   rotate_log
   log INFO "Starting HA context dump"
@@ -215,6 +270,8 @@ main() {
   # in .storage/ — they remain in dashboards/*.yaml and are absent here.
   log INFO "Building dashboards-storage.json"
   build_dashboards_storage "$STORAGE" > "${CONTEXT_DIR}/dashboards-storage.json"
+
+  fetch_kiosk_snapshot
 
   # Check for diff — most common case is no change
   if [[ -z "$(git -C "$WORKTREE" status --porcelain context/)" ]]; then

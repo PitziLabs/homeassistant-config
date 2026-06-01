@@ -41,6 +41,9 @@ case "$tool" in
         path=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // ""' <<<"$payload")
         [[ -z "$path" ]] && exit 0
         project_root=${CLAUDE_PROJECT_DIR:-$PWD}
+        # context/README.md is reference documentation, not generated state —
+        # the dump only writes the *.json / *.yaml artifacts it explicitly
+        # produces. Allow edits so the file map can be kept current.
         in_context=$(python3 - "$project_root" "$path" <<'PY'
 import os
 import sys
@@ -49,7 +52,13 @@ root, path = sys.argv[1], sys.argv[2]
 abs_path = path if os.path.isabs(path) else os.path.join(root, path)
 abs_path = os.path.normpath(abs_path)
 ctx = os.path.normpath(os.path.join(root, "context"))
-print("yes" if abs_path == ctx or abs_path.startswith(ctx + os.sep) else "no")
+readme = os.path.join(ctx, "README.md")
+if abs_path == readme:
+    print("no")
+elif abs_path == ctx or abs_path.startswith(ctx + os.sep):
+    print("yes")
+else:
+    print("no")
 PY
         )
         [[ "$in_context" == "yes" ]] && block "path" "$path"
