@@ -20,7 +20,6 @@ downstairs_lights:
     - light.kitchen_main
     - light.kitchen_island
     - light.kitchen_table
-    - light.family_room
     - light.family_room_2
     - light.floor_lamp_composite
 
