@@ -108,9 +108,8 @@ light:
       - light.kitchen_main
       - light.kitchen_island
       - light.kitchen_table
-      - light.family_room
       - light.family_room_2
-      - light.floor_lamp
+      - light.floor_lamp_composite
 
 # Template sensors for Sonos group-aware dashboard
 template:
@@ -163,9 +162,7 @@ template:
       - name: "Office Lights On"
         unique_id: office_lights_on
         state: >
-          {{ is_state('light.office', 'on')
-             or is_state('light.office_lamp', 'on')
-             or is_state('light.bookcase_lamp', 'on')
+          {{ is_state('light.bookcase_lamp', 'on')
              or is_state('light.corner_lamp', 'on')
              or is_state('light.door_lamp', 'on')
              or is_state('light.desk_lamp_2', 'on')
@@ -174,8 +171,7 @@ template:
       - name: "Play Room Lights On"
         unique_id: play_room_lights_on
         state: >
-          {{ is_state('light.play_room', 'on')
-             or is_state('light.playroom_1', 'on')
+          {{ is_state('light.playroom_1', 'on')
              or is_state('light.playroom_2', 'on')
              or is_state('light.playroom_3', 'on')
              or is_state('light.playroom_4', 'on') }}
@@ -183,17 +179,13 @@ template:
       - name: "Family Room Lights On"
         unique_id: family_room_lights_on
         state: >
-          {{ is_state('light.family_room', 'on')
-             or is_state('light.family_room_2', 'on')
-             or is_state('light.floor_lamp', 'on')
-             or is_state('switch.family_room_outlets', 'on') }}
+          {{ is_state('light.family_room_2', 'on')
+             or is_state('light.floor_lamp_composite', 'on') }}
 
       - name: "Entry Lights On"
         unique_id: entry_lights_on
         state: >
-          {{ is_state('light.entry_1', 'on')
-             or is_state('light.entry_2', 'on')
-             or is_state('light.downstairs_hallway', 'on')
+          {{ is_state('light.downstairs_hallway', 'on')
              or is_state('light.upstairs_hallway_light', 'on')
              or is_state('light.meeting_light', 'on') }}
 
@@ -250,30 +242,18 @@ template:
           - service: switch.turn_on
             target:
               entity_id: switch.family_room_outlets
-          - delay: "00:00:01"
-          - service: light.turn_on
-            target:
-              entity_id: light.floor_lamp
-            data:
-              brightness: "{{ brightness | default(255) }}"
         turn_off:
-          - service: light.turn_off
-            target:
-              entity_id: light.floor_lamp
-          - delay: "00:00:01"
           - service: switch.turn_off
             target:
               entity_id: switch.family_room_outlets
-        state: >
-          {{ is_state('switch.family_room_outlets', 'on') and is_state('light.floor_lamp', 'on') }}
-        level: "{{ state_attr('light.floor_lamp', 'brightness') | int(0) }}"
+        state: "{{ is_state('switch.family_room_outlets', 'on') }}"
 
   - sensor:
       - name: "Lights On Office Count"
         unique_id: lights_on_office_count
         state: >
-          {{ ['light.office','light.bookcase_lamp','light.corner_lamp',
-              'light.door_lamp','light.office_lamp','light.meeting_light',
+          {{ ['light.bookcase_lamp','light.corner_lamp',
+              'light.door_lamp','light.meeting_light',
               'light.desk_lamp_2','light.desk_lamp_2_2']
              | select('is_state','on') | list | count }}
         icon: mdi:lightbulb-group
@@ -281,7 +261,7 @@ template:
       - name: "Lights On Family Room Count"
         unique_id: lights_on_family_room_count
         state: >
-          {{ ['light.family_room','light.family_room_2','light.floor_lamp_composite']
+          {{ ['light.family_room_2','light.floor_lamp_composite']
              | select('is_state','on') | list | count }}
         icon: mdi:lightbulb-group
 
