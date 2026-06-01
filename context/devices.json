@@ -110,6 +110,16 @@
     ]
   },
   {
+    "device_id": "e1b524130f9311bf54107048f5ad48c1",
+    "name": "Bubble Card",
+    "manufacturer": "Clooos",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
     "device_id": "9f4ebbb742445b128f4f08060d64ae98",
     "name": "Claude AI Task",
     "manufacturer": "Anthropic",
@@ -157,6 +167,16 @@
     "area_id": "office",
     "integrations": [
       "nut"
+    ]
+  },
+  {
+    "device_id": "73271ae2ce9e53ac413bdcad711e5806",
+    "name": "Decluttering Card",
+    "manufacturer": "custom-cards",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
     ]
   },
   {
@@ -970,6 +990,16 @@
     ]
   },
   {
+    "device_id": "8b66ff3841ee737370171263bfe6b422",
+    "name": "Spook 👻 Your homie",
+    "manufacturer": "frenck",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
     "device_id": "8099bb7aaac63f524cfc316dbbffa6bc",
     "name": "Spotify",
     "manufacturer": "Spotify AB",
@@ -1150,6 +1180,16 @@
     ]
   },
   {
+    "device_id": "54aa9a26d90cc6dd75026830728e93f8",
+    "name": "Watchman",
+    "manufacturer": "dummylabs",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
     "device_id": "9abb1f3ede3d1af5abc35ad28a0a3665",
     "name": "Withings",
     "manufacturer": "Withings",
@@ -1173,6 +1213,16 @@
     "device_id": "ca434a02db9505fe9478fe8a028a4922",
     "name": "apexcharts-card",
     "manufacturer": "RomRider",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
+    "device_id": "28489d7faccc1a8625fee746e0f2fe35",
+    "name": "auto-entities",
+    "manufacturer": "thomasloven",
     "model": "plugin",
     "area_id": null,
     "integrations": [
@@ -1407,6 +1457,16 @@
     "area_id": "upstairs",
     "integrations": [
       "esphome"
+    ]
+  },
+  {
+    "device_id": "d50d941df33126093e9880d15d125d7f",
+    "name": "mini-graph-card",
+    "manufacturer": "kalkih",
+    "model": "plugin",
+    "area_id": null,
+    "integrations": [
+      "hacs"
     ]
   },
   {
