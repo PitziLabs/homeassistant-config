@@ -80,6 +80,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.context_dump_debounced_on_registry_change",
+    "friendly_name": "Context Dump: Debounced on registry change",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.context_dump_periodic_snapshot",
     "friendly_name": "Context Dump: Periodic snapshot",
     "area_id": null,
@@ -2472,6 +2480,22 @@
     "hidden": false
   },
   {
+    "entity_id": "button.homeassistant_reload",
+    "friendly_name": "Reload",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.homeassistant_restart",
+    "friendly_name": "Restart",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "button.hubspace_api_cpitzi_gmail_com_generate_debug",
     "friendly_name": "Generate Debug",
     "area_id": null,
@@ -2493,6 +2517,14 @@
     "area_id": null,
     "device_id": "2d6cd400df2e3424cb883cc78bce43d7",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.ignore_all_issues",
+    "friendly_name": "Ignore all",
+    "area_id": null,
+    "device_id": "a8f5a303dc3ba3b6071b345f749125a5",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -2912,6 +2944,14 @@
     "hidden": false
   },
   {
+    "entity_id": "button.unignore_all_issues",
+    "friendly_name": "Unignore all",
+    "area_id": null,
+    "device_id": "a8f5a303dc3ba3b6071b345f749125a5",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "button.vm_102",
     "friendly_name": null,
     "area_id": null,
@@ -2973,6 +3013,14 @@
     "area_id": null,
     "device_id": "4561e1cbf0279c77774c6d0f47c5c789",
     "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.watchman_create_report_file",
+    "friendly_name": "Create Report File",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
     "hidden": false
   },
   {
@@ -3360,6 +3408,14 @@
     "hidden": false
   },
   {
+    "entity_id": "event.repair",
+    "friendly_name": null,
+    "area_id": null,
+    "device_id": "a8f5a303dc3ba3b6071b345f749125a5",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "input_button.assign_playroom_areas",
     "friendly_name": "Fix Play Room device areas",
     "area_id": null,
@@ -3680,14 +3736,6 @@
     "hidden": false
   },
   {
-    "entity_id": "media_player.basement",
-    "friendly_name": null,
-    "area_id": null,
-    "device_id": "8bf1e839ce7964732ace6d4f811bef3c",
-    "platform": "sonos",
-    "hidden": false
-  },
-  {
     "entity_id": "media_player.basement_tv",
     "friendly_name": null,
     "area_id": null,
@@ -3723,7 +3771,7 @@
     "entity_id": "media_player.office",
     "friendly_name": null,
     "area_id": null,
-    "device_id": "d723e430ed6d2075e0600b409be85201",
+    "device_id": "8bf1e839ce7964732ace6d4f811bef3c",
     "platform": "sonos",
     "hidden": false
   },
@@ -4512,6 +4560,30 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.active_issues",
+    "friendly_name": "Active",
+    "area_id": null,
+    "device_id": "a8f5a303dc3ba3b6071b345f749125a5",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.air_quality",
+    "friendly_name": "Air quality",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.alarm_control_panels",
+    "friendly_name": "Alarm control panels",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.alarm_panel_56a4fa_ip_address",
     "friendly_name": "IP Address",
     "area_id": null,
@@ -4541,6 +4613,22 @@
     "area_id": null,
     "device_id": "48d49cbc456a5942edd0ec627baab874",
     "platform": "esphome",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.areas",
+    "friendly_name": "Areas",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.automations",
+    "friendly_name": "Automations",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -4629,6 +4717,14 @@
     "area_id": null,
     "device_id": "302467d56935e72646a7bb0175a41d8f",
     "platform": "roku",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.binary_sensors",
+    "friendly_name": "Binary sensors",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -4768,6 +4864,46 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.buttons",
+    "friendly_name": "Buttons",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.calendars",
+    "friendly_name": "Calendars",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.cameras",
+    "friendly_name": "Cameras",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.climate",
+    "friendly_name": "Climate",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.covers",
+    "friendly_name": "Covers",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.ct101_cpu_usage",
     "friendly_name": "CPU usage",
     "area_id": null,
@@ -4856,6 +4992,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.custom_integrations",
+    "friendly_name": "Custom integrations",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.cyberpower_battery_charge",
     "friendly_name": "Battery charge",
     "area_id": null,
@@ -4901,6 +5045,38 @@
     "area_id": null,
     "device_id": "d81355516cb935f396c7033ac00d4788",
     "platform": "nut",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.dates",
+    "friendly_name": "Dates",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.datetimes",
+    "friendly_name": "Date/times",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.device_trackers",
+    "friendly_name": "Device trackers",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.devices",
+    "friendly_name": "Devices",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -4965,6 +5141,22 @@
     "area_id": null,
     "device_id": "8b9bc18bc893c9d0e1a7fb905a8ecec1",
     "platform": "forecast_solar",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.entities",
+    "friendly_name": "Entities",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.fans",
+    "friendly_name": "Fans",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -5552,6 +5744,94 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.humidifiers",
+    "friendly_name": "Humidifiers",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.ignored_issues",
+    "friendly_name": "Ignored",
+    "area_id": null,
+    "device_id": "a8f5a303dc3ba3b6071b345f749125a5",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.images",
+    "friendly_name": "Images",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.input_booleans",
+    "friendly_name": "Input booleans",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.input_buttons",
+    "friendly_name": "Input buttons",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.input_datetimes",
+    "friendly_name": "Input date/times",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.input_numbers",
+    "friendly_name": "Input numbers",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.input_selects",
+    "friendly_name": "Input selects",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.input_texts",
+    "friendly_name": "Input texts",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.integrations",
+    "friendly_name": "Integrations",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.issues",
+    "friendly_name": "Total",
+    "area_id": null,
+    "device_id": "a8f5a303dc3ba3b6071b345f749125a5",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.kid_room_1_battery",
     "friendly_name": "Battery",
     "area_id": null,
@@ -5581,6 +5861,14 @@
     "area_id": null,
     "device_id": "0a6647718a0292e693aab2afb449b75d",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.lights",
+    "friendly_name": "Lights",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -5624,6 +5912,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.locks",
+    "friendly_name": "Locks",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.main_panel_wifi_signal",
     "friendly_name": "WiFi Signal",
     "area_id": null,
@@ -5637,6 +5933,14 @@
     "area_id": null,
     "device_id": "85a396c41f4525d362a45e5f143214bf",
     "platform": "hubspace",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.media_players",
+    "friendly_name": "Media players",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -5688,6 +5992,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.numbers",
+    "friendly_name": "Numbers",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.office_audio_input_format",
     "friendly_name": "Audio input format",
     "area_id": null,
@@ -5725,6 +6037,22 @@
     "area_id": null,
     "device_id": "2e36e6eac114bf2f201c568d60ff792a",
     "platform": "roku",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.persistent_notifications",
+    "friendly_name": "Persistent notifications",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.persons",
+    "friendly_name": "Persons",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -6208,6 +6536,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.remotes",
+    "friendly_name": "Remotes",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.roam_2_battery",
     "friendly_name": "Battery",
     "area_id": null,
@@ -6216,11 +6552,51 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.scenes",
+    "friendly_name": "Scenes",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.scripts",
+    "friendly_name": "Scripts",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.secondary_panel_wifi_signal",
     "friendly_name": "WiFi Signal",
     "area_id": null,
     "device_id": "aeecb0348f80b9b5b9e789ad5c220d2a",
     "platform": "esphome",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.selects",
+    "friendly_name": "Selects",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.sensors",
+    "friendly_name": "Sensors",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.sirens",
+    "friendly_name": "Sirens",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -7160,6 +7536,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.stt",
+    "friendly_name": "Speech-to-text",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.sun_next_dawn",
     "friendly_name": "Next dawn",
     "area_id": null,
@@ -7205,6 +7589,46 @@
     "area_id": null,
     "device_id": "f8a2cc27737db0221c3c7f56d78da5cd",
     "platform": "sun",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.suns",
+    "friendly_name": "Suns",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.switches",
+    "friendly_name": "Switches",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.texts",
+    "friendly_name": "Texts",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.times",
+    "friendly_name": "Times",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.tts",
+    "friendly_name": "Text-to-speech",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -8304,6 +8728,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.update",
+    "friendly_name": "Update",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.upstairs_humidity",
     "friendly_name": "Humidity",
     "area_id": null,
@@ -8317,6 +8749,14 @@
     "area_id": null,
     "device_id": "9a9b77008bdf8a082fcfe35e0f206da5",
     "platform": "nest",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.vacuums",
+    "friendly_name": "Vacuums",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -8405,6 +8845,86 @@
     "area_id": null,
     "device_id": "4561e1cbf0279c77774c6d0f47c5c789",
     "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_ignored_files",
+    "friendly_name": "Ignored Files",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_last_parse",
+    "friendly_name": "Last Parse",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_last_update",
+    "friendly_name": "Last Update",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_missing_actions",
+    "friendly_name": "Missing Actions",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_missing_entities",
+    "friendly_name": "Missing Entities",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_parse_duration",
+    "friendly_name": "Parse Duration",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_processed_files",
+    "friendly_name": "Processed Files",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.watchman_status",
+    "friendly_name": "Status",
+    "area_id": null,
+    "device_id": "86650065abdf35fe3adf954137114c65",
+    "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.water_heaters",
+    "friendly_name": "Water heaters",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.weather",
+    "friendly_name": "Weather",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -8760,6 +9280,14 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.zones",
+    "friendly_name": "Zones",
+    "area_id": null,
+    "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
     "entity_id": "stt.google_ai_stt",
     "friendly_name": "Google AI STT",
     "area_id": null,
@@ -8885,6 +9413,46 @@
     "area_id": null,
     "device_id": "f090c7c3434162e57c3d8a9cee321fae",
     "platform": "wemo",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.cloud_alexa",
+    "friendly_name": "Alexa",
+    "area_id": null,
+    "device_id": "a096e0461504f595480ab34c5350000e",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.cloud_alexa_report_state",
+    "friendly_name": "Alexa state reporting",
+    "area_id": null,
+    "device_id": "a096e0461504f595480ab34c5350000e",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.cloud_google",
+    "friendly_name": "Google Assistant",
+    "area_id": null,
+    "device_id": "a096e0461504f595480ab34c5350000e",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.cloud_google_report_state",
+    "friendly_name": "Google Assistant state reporting",
+    "area_id": null,
+    "device_id": "a096e0461504f595480ab34c5350000e",
+    "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.cloud_remote",
+    "friendly_name": "Remote",
+    "area_id": null,
+    "device_id": "a096e0461504f595480ab34c5350000e",
+    "platform": "spook",
     "hidden": false
   },
   {
@@ -9469,6 +10037,14 @@
     "area_id": null,
     "device_id": null,
     "platform": "ugreen",
+    "hidden": false
+  },
+  {
+    "entity_id": "text.watchman_ignored_labels",
+    "friendly_name": "Ignored Labels",
+    "area_id": null,
+    "device_id": null,
+    "platform": "watchman",
     "hidden": false
   },
   {
