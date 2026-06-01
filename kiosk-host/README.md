@@ -128,10 +128,8 @@ kiosk-host/kiosk-preview --no-snapshot
 
 Under the hood, each call:
 
-1. `python3 yaml.safe_load`s the local file (refuses to push broken YAML)
-2. `scp -p 22 root@homeassistant.local:/config/dashboards/<name>` to the
-   HA VM. **Requires** SSH key access to the HAOS host — root@homeassistant.local
-   on port 22.
+1. `python3 yaml.safe_load`s the local file (refuses to push broken YAML).
+2. `ssh -p 22 root@homeassistant.local 'cat > /homeassistant/dashboards/.<name>.preview-tmp && mv ... <name>'` — atomic write via stdin redirect. **Requires** SSH key access to `root@homeassistant.local` port 22 (HAOS host SSH). `scp` does *not* work on HAOS port 22 (no sftp-server); the Core container's `/config` maps to `/homeassistant` on the HAOS host filesystem.
 3. Calls `lovelace.reload_resources` via the HA REST API to clear the
    frontend resource cache. Optional — looks for a long-lived access
    token at `~/.config/kiosk-preview/ha-token`; skipped silently if
@@ -159,8 +157,10 @@ Under the hood, each call:
 - **First-time SSH setup.** Both the HA host (`homeassistant.local`) and
   the kiosk-snapshot path (via `pve.local` jump) need your workstation
   key in their `authorized_keys`. The kiosk-snapshot jump already works
-  for the rest of this tooling; HA-host SSH may need a one-time setup
-  of `/root/.ssh/authorized_keys` on HAOS — see the HA developer docs.
+  for the rest of this tooling; HA-host SSH (port 22, NOT the
+  Terminal & SSH add-on on 22222) needs a one-time `authorized_keys.txt`
+  drop on the HAOS data partition — see the HA developer docs. Verify
+  with `ssh -p 22 root@homeassistant.local 'echo ok'`.
 - **Optional HA token for resource reload.** If you want
   `lovelace.reload_resources` to actually fire (rarely needed for pure
   dashboard YAML edits — see step 3 above), put a long-lived access
