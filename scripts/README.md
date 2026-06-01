@@ -105,6 +105,16 @@ checkout the repo *before* validating the payload (an early checkout for an
 invalid payload is the only behavioral change; the payload isn't used in
 checkout, so there's no security impact).
 
+## `force-sync.sh`
+
+Collapses the cross-layer latency windows on demand: fires an immediate
+`shell_command.gitops_sync` (deploy now, rather than waiting for the 5-minute
+poll) and presses `input_button.ha_context_dump_now` (snapshot now, rather than
+the 6-hour dump). Use it after a coordinated LIVE + INTENT change so the layers
+reconcile in seconds — see `docs/cross-layer-changes.md` (rename recipe,
+steps 3–4). Runs inside the HA Core container; uses `SUPERVISOR_TOKEN` like
+`gitops-sync.sh`.
+
 ## Script auth conventions
 
 Three conventions learned the hard way during context-sync work. Future scripts
