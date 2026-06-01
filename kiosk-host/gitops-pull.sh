@@ -96,12 +96,30 @@ main() {
     log ERROR "snapshot-server failed python syntax check; refusing to install"
     exit 1
   fi
-  if ! systemd-analyze verify "$UNIT_SRC" 2>/dev/null; then
-    log ERROR "dashboard-kiosk.service failed systemd-analyze verify; refusing to install"
+  # systemd-analyze verify checks ExecStart's first word exists on disk.
+  # When we're first-deploying a new unit+script pair, the script isn't
+  # installed yet — verify will warn "Command X is not executable: No such
+  # file or directory" and exit 1. That's a chicken-and-egg false positive
+  # in our context because the install step right after places the binary.
+  # Tolerate that specific warning; refuse on anything else.
+  verify_unit() {
+    local unit_src="$1" unit_name="$2"
+    local verify_out
+    if verify_out=$(systemd-analyze verify "$unit_src" 2>&1); then
+      return 0
+    fi
+    local residual
+    residual=$(printf '%s\n' "$verify_out" | grep -v 'is not executable: No such file or directory' || true)
+    if [[ -z "$residual" ]]; then
+      return 0
+    fi
+    log ERROR "${unit_name} failed systemd-analyze verify: ${residual}"
+    return 1
+  }
+  if ! verify_unit "$UNIT_SRC" "dashboard-kiosk.service"; then
     exit 1
   fi
-  if ! systemd-analyze verify "$SNAP_UNIT_SRC" 2>/dev/null; then
-    log ERROR "snapshot-server.service failed systemd-analyze verify; refusing to install"
+  if ! verify_unit "$SNAP_UNIT_SRC" "snapshot-server.service"; then
     exit 1
   fi
 
