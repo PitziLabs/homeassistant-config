@@ -56,3 +56,6 @@ ha-context-dump.log.*
 # Python bytecode
 __pycache__/
 *.pyc
+
+# kiosk-snapshot tool output — throwaway frame grabs from pve2's display
+/kiosk-snapshot-*.png

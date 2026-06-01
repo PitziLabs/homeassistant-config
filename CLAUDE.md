@@ -20,7 +20,7 @@ to them when implementing:
 | `dashboards/README.md` | All four Lovelace dashboards (Home, Kiosk, Homelab Status, Command Deck) |
 | `themes/README.md` | Noctis Kiosk theme, kiosk_polish tokens |
 | `scripts/README.md` | gitops-sync.sh, ha-context-dump.sh, Script auth conventions |
-| `kiosk-host/README.md` | Chromium kiosk launcher running on pve2, its gitops pull loop, bootstrap recipe |
+| `kiosk-host/README.md` | Chromium kiosk launcher running on pve2, gitops pull loop, bootstrap recipe, **live preview iteration loop + design session protocol** |
 | `context/README.md` | What each `context/*.json` file is |
 | `docs/` | Long-form design notes, migration write-ups |
 
@@ -183,6 +183,46 @@ in `kiosk-host/README.md`. The kiosk dashboard YAML itself
 (`dashboards/kiosk.yaml`) is still deployed by the HA-side loop above —
 the pve2 loop only handles the display host's runner script and
 systemd unit, not the dashboard content it points at.
+
+---
+
+## Live Design Loop (kiosk dashboard)
+
+For non-trivial kiosk dashboard work, prefer the **live preview loop**
+over the slower edit→commit→wait-for-gitops cycle:
+
+```
+edit dashboards/kiosk.yaml  →  kiosk-host/kiosk-preview --open
+                                  ↳ 4–8s: push to HA, F5 Chromium,
+                                    wait for stable frame, snapshot
+                                    back to ./kiosk-preview-<UTC>.png
+                                  ↳ discuss the captured frame
+                                  ↳ repeat
+                                  ↳ commit at logical checkpoints (PR
+                                    + auto-merge, one coherent change
+                                    per PR)
+```
+
+The push goes via `ssh -p 22 root@homeassistant.local 'cat > /homeassistant/dashboards/<name>'`
+(HAOS-host SSH, NOT scp — HAOS port 22 has no sftp-server). The
+HA-side gitops-sync resets `/homeassistant/dashboards/` to `origin/main`
+every 5 min, so each preview survives whatever's left in the current
+poll window. That's the discipline: iterate freely in-session, commit
+when a coherent unit is ready, let gitops make it permanent.
+
+**Live-state caveat.** The captured PNG reflects current entity values
+(alarm color, current Sonos art, "Unavailable" labels on cards whose
+entities are genuinely down right now). If a frame surprises you, look
+at the entity, not the dashboard.
+
+**When to skip the loop:** trivial copy edits (just commit), additions
+that reference entities not yet in `context/entities.json` (refresh
+context first), or changes to `extra_module_url` JS resources (need
+the optional HA token for `lovelace.reload_resources`).
+
+Full protocol + setup (HAOS SSH key, xdotool on pve2, optional HA
+token) in `kiosk-host/README.md` § "Live preview iteration" and
+§ "Design session protocol".
 
 ---
 

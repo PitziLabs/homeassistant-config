@@ -24,7 +24,12 @@ readonly UNIT_SRC="${REPO_DIR}/${REPO_SUBDIR}/dashboard-kiosk.service"
 readonly UNIT_DST="/etc/systemd/system/dashboard-kiosk.service"
 readonly HELPER_SRC="${REPO_DIR}/${REPO_SUBDIR}/kiosk-show"
 readonly HELPER_DST="/usr/local/bin/kiosk-show"
+readonly SNAP_SRC="${REPO_DIR}/${REPO_SUBDIR}/snapshot-server"
+readonly SNAP_DST="/usr/local/bin/snapshot-server"
+readonly SNAP_UNIT_SRC="${REPO_DIR}/${REPO_SUBDIR}/snapshot-server.service"
+readonly SNAP_UNIT_DST="/etc/systemd/system/snapshot-server.service"
 readonly KIOSK_UNIT="dashboard-kiosk.service"
+readonly SNAP_UNIT="snapshot-server.service"
 
 log() {
   local level="$1"
@@ -87,12 +92,39 @@ main() {
     log ERROR "kiosk-show failed syntax check; refusing to install"
     exit 1
   fi
-  if ! systemd-analyze verify "$UNIT_SRC" 2>/dev/null; then
-    log ERROR "dashboard-kiosk.service failed systemd-analyze verify; refusing to install"
+  if ! python3 -m py_compile "$SNAP_SRC" 2>/dev/null; then
+    log ERROR "snapshot-server failed python syntax check; refusing to install"
+    exit 1
+  fi
+  # systemd-analyze verify checks ExecStart's first word exists on disk.
+  # When we're first-deploying a new unit+script pair, the script isn't
+  # installed yet — verify will warn "Command X is not executable: No such
+  # file or directory" and exit 1. That's a chicken-and-egg false positive
+  # in our context because the install step right after places the binary.
+  # Tolerate that specific warning; refuse on anything else.
+  verify_unit() {
+    local unit_src="$1" unit_name="$2"
+    local verify_out
+    if verify_out=$(systemd-analyze verify "$unit_src" 2>&1); then
+      return 0
+    fi
+    local residual
+    residual=$(printf '%s\n' "$verify_out" | grep -v 'is not executable: No such file or directory' || true)
+    if [[ -z "$residual" ]]; then
+      return 0
+    fi
+    log ERROR "${unit_name} failed systemd-analyze verify: ${residual}"
+    return 1
+  }
+  if ! verify_unit "$UNIT_SRC" "dashboard-kiosk.service"; then
+    exit 1
+  fi
+  if ! verify_unit "$SNAP_UNIT_SRC" "snapshot-server.service"; then
     exit 1
   fi
 
   local script_changed=false unit_changed=false helper_changed=false
+  local snap_changed=false snap_unit_changed=false
   if ! cmp -s "$SCRIPT_SRC" "$SCRIPT_DST"; then
     script_changed=true
   fi
@@ -102,8 +134,16 @@ main() {
   if ! cmp -s "$HELPER_SRC" "$HELPER_DST"; then
     helper_changed=true
   fi
+  if ! cmp -s "$SNAP_SRC" "$SNAP_DST"; then
+    snap_changed=true
+  fi
+  if ! cmp -s "$SNAP_UNIT_SRC" "$SNAP_UNIT_DST"; then
+    snap_unit_changed=true
+  fi
 
-  if [[ "$script_changed" == false && "$unit_changed" == false && "$helper_changed" == false ]]; then
+  if [[ "$script_changed" == false && "$unit_changed" == false \
+        && "$helper_changed" == false && "$snap_changed" == false \
+        && "$snap_unit_changed" == false ]]; then
     log INFO "no-op, deployed copy matches ${remote_sha:0:7}"
     exit 0
   fi
@@ -115,18 +155,40 @@ main() {
   if [[ "$unit_changed" == true ]]; then
     log INFO "Installing dashboard-kiosk.service → ${UNIT_DST}"
     install -m 0644 -o root -g root "$UNIT_SRC" "$UNIT_DST"
-    systemctl daemon-reload
   fi
   if [[ "$helper_changed" == true ]]; then
     log INFO "Installing kiosk-show → ${HELPER_DST}"
     install -m 0755 -o root -g root "$HELPER_SRC" "$HELPER_DST"
   fi
+  if [[ "$snap_changed" == true ]]; then
+    log INFO "Installing snapshot-server → ${SNAP_DST}"
+    install -m 0755 -o root -g root "$SNAP_SRC" "$SNAP_DST"
+  fi
+  if [[ "$snap_unit_changed" == true ]]; then
+    log INFO "Installing snapshot-server.service → ${SNAP_UNIT_DST}"
+    install -m 0644 -o root -g root "$SNAP_UNIT_SRC" "$SNAP_UNIT_DST"
+  fi
+
+  # Daemon-reload once if any unit drifted.
+  if [[ "$unit_changed" == true || "$snap_unit_changed" == true ]]; then
+    systemctl daemon-reload
+  fi
 
   # Helper-only changes don't affect the running display; skip the
-  # restart so a kiosk-show update doesn't flicker the screen.
+  # display restart so a kiosk-show update doesn't flicker the screen.
   if [[ "$script_changed" == true || "$unit_changed" == true ]]; then
     log INFO "Restarting ${KIOSK_UNIT}"
     systemctl restart "$KIOSK_UNIT"
+  fi
+
+  # snapshot-server is PartOf dashboard-kiosk.service, so a kiosk restart
+  # will have already stopped it. Either way, restart on drift to pick up
+  # changes; enable in case it's not enabled yet (idempotent).
+  if [[ "$snap_changed" == true || "$snap_unit_changed" == true \
+        || "$script_changed" == true || "$unit_changed" == true ]]; then
+    systemctl enable --now "$SNAP_UNIT" >/dev/null 2>&1 || true
+    log INFO "Restarting ${SNAP_UNIT}"
+    systemctl restart "$SNAP_UNIT"
   fi
 
   log INFO "Deployed ${remote_sha:0:7}"
