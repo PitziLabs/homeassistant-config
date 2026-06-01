@@ -145,13 +145,6 @@ template:
              and state_attr('media_player.master_bedroom', 'group_members') is not none
              and state_attr('media_player.master_bedroom', 'group_members')[0] == 'media_player.master_bedroom' }}
 
-      - name: "Sonos Basement Leader"
-        unique_id: sonos_basement_leader
-        state: >
-          {{ is_state('media_player.basement', 'playing')
-             and state_attr('media_player.basement', 'group_members') is not none
-             and state_attr('media_player.basement', 'group_members')[0] == 'media_player.basement' }}
-
       - name: "Sonos Roam Leader"
         unique_id: sonos_roam_leader
         state: >
