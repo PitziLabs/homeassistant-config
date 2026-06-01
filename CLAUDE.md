@@ -75,6 +75,12 @@ YAML and letting GitOps redeploy. The *Drift guardrail* subsection under
 *HA Runtime Access* below catalogs which object types live in `.storage/`
 vs YAML.
 
+**Mutating across layers**: a change that spans LIVE, INTENT, and SNAPSHOT
+(e.g. an entity rename) needs a deliberate order, or one layer ends up
+referencing state another doesn't have. The runbook — ordering by change
+type, the rename recipe, and the `scripts/force-sync.sh` window-collapse
+helper — is in `docs/cross-layer-changes.md`.
+
 ---
 
 ## Key Patterns & Conventions
@@ -229,7 +235,19 @@ token) in `kiosk-host/README.md` § "Live preview iteration" and
 ## PR Authoring Without Issues
 
 PR workflow + auto-merge arming protocol is fleet-wide; see
-`~/repos/CLAUDE.md`. Two repo-specific deviations follow.
+`~/repos/CLAUDE.md`. Restated locally below so it survives that file being
+out of context, followed by two repo-specific deviations.
+
+### Always arm auto-merge
+
+Arm **every** PR you open for auto-merge (squash) immediately after creating
+it — `gh pr merge --auto --squash <pr>`, or the `enable_pr_auto_merge` MCP
+tool with `mergeMethod: SQUASH`. If the PR's checks have already gone green by
+then (arming returns "already clean"), merge it directly with squash instead —
+same outcome. Required checks (`YAML Lint`, `check-config`, `claude-review`,
+plus the `Tests` and `ESPHome Config` gates) still gate the merge; auto-merge
+just lands it the instant they pass, with no human round-trip. This is the
+fleet-wide rule restated here precisely so it can't fall out of context.
 
 ### No issues for change dispatch — PRs are the canonical record
 

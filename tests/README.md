@@ -70,6 +70,12 @@ bats tests/
   whitespace, injection-shaped input) plus the CLI exit-code/stdout contract the
   workflows depend on.
 
+- **`force_sync.bats`** — tests `scripts/force-sync.sh`, the helper that
+  collapses the cross-layer latency windows. Sources the script, stubs
+  `ha_call_service`, and asserts `force_sync` deploys (gitops) *before*
+  reconciling the snapshot (dump button), plus that the CLI refuses to run
+  without `SUPERVISOR_TOKEN`.
+
 ## Making a script testable
 
 Scripts that self-execute at the bottom should guard that call so the file can
