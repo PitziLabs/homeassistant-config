@@ -24,6 +24,7 @@ itself lives in `dashboards/kiosk.yaml`; these files configure the
 | `gitops-pull.sh` | (run in place from `/opt/homeassistant-config/kiosk-host/`) | `0755` | `root:root` | bootstrap only |
 | `gitops-pull.service` | `/etc/systemd/system/dashboard-kiosk-gitops.service` | `0644` | `root:root` | bootstrap only |
 | `gitops-pull.timer` | `/etc/systemd/system/dashboard-kiosk-gitops.timer` | `0644` | `root:root` | bootstrap only |
+| `kiosk-snapshot` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
 
 Also on pve2, *not* managed by the loop:
 
@@ -72,6 +73,37 @@ Each call rewrites the state file and `systemctl restart`s
 `dashboard-kiosk.service` — the screen blinks once and lands on the
 new URL within a few seconds. The display has no kiosk lockout in
 browser mode; whoever's at the keyboard can navigate normally.
+
+## Snapshot the live display
+
+`kiosk-snapshot` is the **preferred way to capture what the household
+monitor is showing** — it grabs the actual rendered frame from pve2's
+X session, so you see the real kiosk state (alarm color, current Sonos
+art, active media tile, etc.) rather than a fresh, just-loaded render.
+
+Run it from your workstation (it is not deployed to pve2):
+
+```bash
+# Drop a snapshot in cwd → ./kiosk-snapshot-<UTC-timestamp>.png
+kiosk-host/kiosk-snapshot
+
+# Custom output path
+kiosk-host/kiosk-snapshot -o /tmp/before-fix.png
+
+# Capture and open in the default image viewer
+kiosk-host/kiosk-snapshot --open
+```
+
+Under the hood: `ssh -J root@pve.local root@pve2`, `scrot` against
+`DISPLAY=:0` as root (the kiosk's bare-xinit session), `scp` back, then
+`rm` the remote temp file. Requires `scrot` on pve2 — added to the
+bootstrap recipe below.
+
+This is also the fallback path when local Playwright/Chromium fails to
+launch (Gdk portal / sandbox crashes have been seen on the workstation).
+Even when Playwright works, prefer `kiosk-snapshot` for kiosk captures —
+Playwright would render a clean, just-authed session, missing the live
+state.
 
 ## Deploy
 
@@ -123,7 +155,7 @@ itself, so the initial setup is manual:
 ssh -J root@pve.local root@pve2 '
   set -euo pipefail
   apt-get update
-  apt-get install -y git chromium xserver-xorg xinit unclutter openbox
+  apt-get install -y git chromium xserver-xorg xinit unclutter openbox scrot
 
   # Clone the canonical config
   test -d /opt/homeassistant-config || \
