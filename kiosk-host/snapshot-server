@@ -28,12 +28,18 @@ ENV = {
 
 
 def capture() -> bytes:
-    """Run scrot to a tempfile, read it back, unlink. Returns PNG bytes."""
+    """Run scrot to a tempfile, read it back, unlink. Returns PNG bytes.
+
+    mkstemp creates the file as a side effect of reserving the name; scrot
+    (1.12+) treats an existing target as a collision and silently writes to
+    a fallback path, leaving the original empty. Pass --overwrite so scrot
+    writes to the exact path we asked for.
+    """
     fd, path = tempfile.mkstemp(prefix="kiosk-snapshot-", suffix=".png")
     os.close(fd)
     try:
         subprocess.run(
-            ["scrot", path],
+            ["scrot", "--overwrite", path],
             env=ENV,
             check=True,
             timeout=SCROT_TIMEOUT,
