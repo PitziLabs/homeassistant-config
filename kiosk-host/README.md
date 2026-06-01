@@ -139,9 +139,15 @@ Under the hood, each call:
 4. `ssh -J root@pve.local root@pve2 'DISPLAY=:0 xdotool key F5'` to
    refresh Chromium on the household monitor. **Requires** `xdotool`
    on pve2 (in the bootstrap apt-install list).
-5. Sleeps ~1.5s for Chromium to repaint, then `curl`s the snapshot
+5. Waits for a **stable** rendered frame, then `curl`s the snapshot
    server (`http://pve2.local:9999/`) into
-   `./kiosk-preview-<UTC-timestamp>.png`.
+   `./kiosk-preview-<UTC-timestamp>.png`. Stability heuristic: short
+   initial wait (1.2s), then poll until two consecutive PNG sizes are
+   within 1% of each other (or a 6s cap is hit). md5 equality won't
+   work — clock seconds + small dashboard animations make settled
+   frames vary in pixels but cluster within ~0.2% of size, while a
+   mid-paint skeleton is typically 50–75% smaller than a settled
+   frame. Typical end-to-end loop is 4–8s.
 
 ### Things to know
 
@@ -166,6 +172,56 @@ Under the hood, each call:
   dashboard YAML edits — see step 3 above), put a long-lived access
   token at `~/.config/kiosk-preview/ha-token` (mode `0600`). Without
   it the call is skipped and the tool still works for dashboard YAML.
+
+### Design session protocol
+
+For non-trivial kiosk dashboard work (layout changes, theming, new
+cards, alarm-state polish), use this loop instead of the slower
+edit→commit→wait-5min-for-gitops cycle:
+
+1. **Start clean.** Branch off `main`:
+   ```bash
+   git checkout main && git pull && git checkout -b kiosk-<topic>
+   ```
+2. **Iterate.** Edit `dashboards/kiosk.yaml`, run
+   `kiosk-host/kiosk-preview --open`, look at the PNG, discuss, repeat.
+   Each loop is 4–8s.
+3. **Checkpoint at logical units.** When a coherent change is ready
+   (one card refactored, one theme tweak landed, one alarm-state polish
+   complete), commit + PR + arm auto-merge with the usual repo flow.
+   Don't pile multiple unrelated changes into one PR — small PRs are
+   easier to revert if a downstream issue surfaces.
+4. **Mind the gitops clobber.** Every 5 min, the HA-side gitops-sync
+   resets `/homeassistant/dashboards/` to `origin/main`. While
+   iterating you have whatever's left in the current poll window. If
+   you want a YAML change that survives past the next poll, commit
+   and let auto-merge land it.
+
+**Live-state caveats** (look at the captured PNG with these in mind):
+
+- Cards labeled *Unavailable* reflect the actual current entity
+  states, not a kiosk bug. If you're surprised, check the upstream
+  device/integration; consider whether the dashboard should hide vs.
+  show unavailable entities for that card type.
+- The clock and Sonos art are dynamic — comparing PNGs from runs a
+  few seconds apart won't be pixel-identical even on an unchanged
+  dashboard.
+- The snapshot captures the **live** kiosk session (alarm color,
+  current Sonos coordinator, last media played, current weather). If
+  a hero card looks empty, the entity may genuinely have no value
+  right now — try again later or simulate the state via the HA UI.
+
+**When NOT to use this loop:**
+
+- Trivial copy edits — too much friction; just commit.
+- Adding cards that reference entities not yet in
+  `context/entities.json` — `kiosk-preview` only refreshes Lovelace;
+  HA must already know about the entity. Refresh the context snapshot
+  first (`input_button.ha_context_dump_now`) and let the
+  context-snapshot PR land.
+- Theme or `extra_module_url` changes — those need
+  `lovelace.reload_resources`, which requires the optional HA token
+  (see above).
 
 ## Snapshot server (network endpoint for HA)
 
