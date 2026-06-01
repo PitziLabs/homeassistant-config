@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+# kiosk-preview — push a local dashboard YAML to the live HA instance,
+# refresh the household kiosk's Chromium, and snapshot the result.
+#
+# Usage:
+#   kiosk-preview [YAML_PATH] [--open] [--keep] [--no-snapshot]
+#   kiosk-preview --help
+#
+# Defaults YAML_PATH to ./dashboards/kiosk.yaml (run from the repo root).
+# Pushes to /config/dashboards/kiosk.yaml on HA, calls lovelace.reload_resources,
+# sends F5 to Chromium on pve2 via xdotool, and curls a fresh snapshot back to
+# ./kiosk-preview-<UTC>.png (--open xdg-opens it).
+#
+# This bypasses git for fast in-session iteration. Two things to know:
+#   1. The HA-side gitops-sync.sh runs every 5 min and resets /config/ to
+#      origin/main — your preview gets clobbered then. That's the feature
+#      (commit when you're done iterating), not a bug.
+#   2. The kiosk display flickers briefly on F5. Don't run this in a
+#      household-visibility-sensitive moment.
+#
+# Requires:
+#   - SSH key access to root@homeassistant.local on port 22 (HAOS host SSH).
+#   - SSH access to root@pve2 via the root@pve.local jump host (standard).
+#   - xdotool installed on pve2 (added to bootstrap in README.md).
+set -euo pipefail
+
+readonly HA_HOST="homeassistant.local"
+readonly HA_USER="root"
+readonly HA_SSH_PORT=22
+readonly HA_TARGET_DIR="/config/dashboards"
+readonly KIOSK_JUMP="root@pve.local"
+readonly KIOSK_HOST="root@pve2"
+readonly KIOSK_SNAPSHOT_URL="http://pve2.local:9999/"
+readonly REFRESH_WAIT_SEC=1.5
+
+usage() {
+  sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+err() { printf '\033[31m✗\033[0m %s\n' "$*" >&2; }
+ok()  { printf '\033[32m✓\033[0m %s\n' "$*"; }
+step() { printf '\033[36m→\033[0m %s\n' "$*"; }
+
+yaml_path="dashboards/kiosk.yaml"
+open_after=0
+keep_after_session=0
+snapshot=1
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage; exit 0;;
+    --open) open_after=1; shift;;
+    --keep) keep_after_session=1; shift;;
+    --no-snapshot) snapshot=0; shift;;
+    -*) err "unknown flag: $1"; usage >&2; exit 2;;
+    *) yaml_path="$1"; shift;;
+  esac
+done
+
+if [[ ! -f "$yaml_path" ]]; then
+  err "YAML not found: $yaml_path"
+  exit 2
+fi
+
+# --- 1. Local YAML validation ----------------------------------------------
+step "validating YAML"
+if ! python3 -c "import sys, yaml; yaml.safe_load(open(sys.argv[1]))" "$yaml_path" 2>/dev/null; then
+  err "YAML parse failed for $yaml_path — refusing to push"
+  python3 -c "import sys, yaml; yaml.safe_load(open(sys.argv[1]))" "$yaml_path"
+  exit 1
+fi
+
+target_name=$(basename "$yaml_path")
+ts=$(date -u +%Y%m%dT%H%M%SZ)
+total_start=$EPOCHREALTIME
+
+# --- 2. Push to HA ---------------------------------------------------------
+step "pushing → ${HA_USER}@${HA_HOST}:${HA_TARGET_DIR}/${target_name}"
+push_start=$EPOCHREALTIME
+if ! scp -P "$HA_SSH_PORT" -q -o ConnectTimeout=5 -o BatchMode=yes \
+      "$yaml_path" "${HA_USER}@${HA_HOST}:${HA_TARGET_DIR}/${target_name}"; then
+  err "scp to HA failed. Verify SSH key access:"
+  err "  ssh -p ${HA_SSH_PORT} ${HA_USER}@${HA_HOST} 'echo ok'"
+  err "If you haven't set up HAOS SSH yet, see HA docs:"
+  err "  https://developers.home-assistant.io/docs/operating-system/debugging"
+  exit 1
+fi
+push_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $push_start) * 1000 }")
+ok "pushed (${push_ms}ms)"
+
+# --- 3. Reload + F5 --------------------------------------------------------
+# yaml-mode dashboards re-read from disk on each fetch. lovelace.reload_resources
+# clears any client-side module/resource caches; F5 in Chromium then re-fetches
+# the dashboard config (and any reloaded JS modules) from HA.
+step "reloading frontend resources + refreshing Chromium"
+refresh_start=$EPOCHREALTIME
+
+# Fire lovelace.reload_resources via the snapshot/dump infrastructure isn't
+# applicable here — use the HA REST API. The PAT lives in secrets.yaml as
+# the `github_pat` value would on the HA side, but for HA itself we use a
+# long-lived access token. If not configured, skip the resource reload — F5
+# alone will still re-fetch the YAML, just won't reload JS modules. That's
+# fine for dashboard YAML iteration.
+HA_TOKEN_FILE="${HOME}/.config/kiosk-preview/ha-token"
+if [[ -r "$HA_TOKEN_FILE" ]]; then
+  ha_token=$(<"$HA_TOKEN_FILE")
+  curl -fsS --max-time 5 \
+    -X POST \
+    -H "Authorization: Bearer ${ha_token}" \
+    -H "Content-Type: application/json" \
+    -d '{}' \
+    "http://${HA_HOST}:8123/api/services/lovelace/reload_resources" \
+    >/dev/null 2>&1 \
+    && ok "lovelace.reload_resources called" \
+    || printf '  (lovelace.reload_resources failed; continuing)\n'
+else
+  printf '  (no HA token at %s; skipping resource reload — F5 alone refreshes YAML)\n' "$HA_TOKEN_FILE"
+fi
+
+# F5 the kiosk Chromium so it re-fetches the dashboard config.
+if ! ssh -J "$KIOSK_JUMP" "$KIOSK_HOST" \
+      'DISPLAY=:0 XAUTHORITY=/root/.Xauthority xdotool key F5' 2>/dev/null; then
+  err "xdotool F5 failed on pve2. Is xdotool installed there?"
+  err "  ssh -J ${KIOSK_JUMP} ${KIOSK_HOST} 'apt-get install -y xdotool'"
+  exit 1
+fi
+refresh_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $refresh_start) * 1000 }")
+ok "F5 sent (${refresh_ms}ms)"
+
+# Chromium needs a beat to re-render. Tune REFRESH_WAIT_SEC at the top if
+# the snapshot consistently catches a stale or mid-paint frame.
+sleep "$REFRESH_WAIT_SEC"
+
+# --- 4. Snapshot -----------------------------------------------------------
+if (( snapshot == 1 )); then
+  outfile="kiosk-preview-${ts}.png"
+  step "capturing snapshot → ${outfile}"
+  snap_start=$EPOCHREALTIME
+  if ! curl -fsS --max-time 8 -o "$outfile" "$KIOSK_SNAPSHOT_URL"; then
+    err "snapshot fetch from ${KIOSK_SNAPSHOT_URL} failed"
+    exit 1
+  fi
+  snap_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $snap_start) * 1000 }")
+  ok "captured ${outfile} (${snap_ms}ms, $(stat -c%s "$outfile") bytes)"
+fi
+
+total_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $total_start) * 1000 }")
+printf '\n\033[1mtotal: %sms\033[0m\n' "$total_ms"
+
+if (( snapshot == 1 && open_after == 1 )); then
+  if command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$outfile" >/dev/null 2>&1 &
+    disown || true
+  fi
+fi
+
+if (( keep_after_session == 0 )); then
+  printf '\nnote: the next gitops-sync poll (≤5 min) will reset %s to origin/main.\n' "$HA_TARGET_DIR/$target_name"
+  printf '      pass --keep to suppress this reminder when you know.\n'
+fi
