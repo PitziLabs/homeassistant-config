@@ -148,7 +148,4 @@ views:
             entity: media_player.master_bedroom
 
           - type: media-control
-            entity: media_player.basement
-
-          - type: media-control
             entity: media_player.roam_2

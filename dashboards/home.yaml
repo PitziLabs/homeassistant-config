@@ -91,15 +91,6 @@ views:
       - type: conditional
         conditions:
           - condition: state
-            entity: binary_sensor.sonos_basement_leader
-            state: "on"
-        card:
-          type: media-control
-          entity: media_player.basement
-
-      - type: conditional
-        conditions:
-          - condition: state
             entity: binary_sensor.sonos_roam_leader
             state: "on"
         card:
