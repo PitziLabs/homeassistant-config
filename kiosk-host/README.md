@@ -21,6 +21,8 @@ itself lives in `dashboards/kiosk.yaml`; these files configure the
 | `dashboard-kiosk.sh` | `/usr/local/bin/dashboard-kiosk.sh` | `0755` | `root:root` | gitops loop |
 | `dashboard-kiosk.service` | `/etc/systemd/system/dashboard-kiosk.service` | `0644` | `root:root` | gitops loop |
 | `kiosk-show` | `/usr/local/bin/kiosk-show` | `0755` | `root:root` | gitops loop |
+| `snapshot-server` | `/usr/local/bin/snapshot-server` | `0755` | `root:root` | gitops loop |
+| `snapshot-server.service` | `/etc/systemd/system/snapshot-server.service` | `0644` | `root:root` | gitops loop |
 | `gitops-pull.sh` | (run in place from `/opt/homeassistant-config/kiosk-host/`) | `0755` | `root:root` | bootstrap only |
 | `gitops-pull.service` | `/etc/systemd/system/dashboard-kiosk-gitops.service` | `0644` | `root:root` | bootstrap only |
 | `gitops-pull.timer` | `/etc/systemd/system/dashboard-kiosk-gitops.timer` | `0644` | `root:root` | bootstrap only |
@@ -105,6 +107,39 @@ Even when Playwright works, prefer `kiosk-snapshot` for kiosk captures —
 Playwright would render a clean, just-authed session, missing the live
 state.
 
+## Snapshot server (network endpoint for HA)
+
+`snapshot-server` runs as a small systemd service on pve2 listening on
+`0.0.0.0:9999`. Each `GET /` returns a live PNG of the kiosk display
+(content-type `image/png`). Errors return `503` with a short text body
+(scrot timeout, scrot not installed, etc.). No auth — exposure is the
+LAN, and the content is the household dashboard that's already visible
+on the monitor.
+
+The HA-side `scripts/ha-context-dump.sh` calls this on every ~6h dump
+to refresh `context/kiosk-latest.png`. The call is best-effort with an
+8-second timeout: if the server is down, the previous file is retained
+and the rest of the dump proceeds normally. See `scripts/README.md` for
+the consumer side.
+
+Quick test from anywhere on the LAN:
+
+```bash
+curl -fsSL http://pve2.local:9999/ -o /tmp/kiosk-now.png && file /tmp/kiosk-now.png
+```
+
+Service status / logs:
+
+```bash
+ssh -J root@pve.local root@pve2 'systemctl status snapshot-server.service --no-pager'
+ssh -J root@pve.local root@pve2 'journalctl -u snapshot-server.service -n 50 --no-pager'
+```
+
+The unit is `PartOf=dashboard-kiosk.service`, so a kiosk restart cycles
+the snapshot server too — they share the X session anyway. The gitops
+loop explicitly restarts `snapshot-server.service` whenever its script
+or unit drifts.
+
 ## Deploy
 
 Push a change through the standard PitziLabs PR flow. The merged
@@ -166,6 +201,8 @@ ssh -J root@pve.local root@pve2 '
   install -m 0755 -o root -g root kiosk-host/dashboard-kiosk.sh         /usr/local/bin/dashboard-kiosk.sh
   install -m 0644 -o root -g root kiosk-host/dashboard-kiosk.service    /etc/systemd/system/dashboard-kiosk.service
   install -m 0755 -o root -g root kiosk-host/kiosk-show                 /usr/local/bin/kiosk-show
+  install -m 0755 -o root -g root kiosk-host/snapshot-server            /usr/local/bin/snapshot-server
+  install -m 0644 -o root -g root kiosk-host/snapshot-server.service    /etc/systemd/system/snapshot-server.service
 
   # Install the gitops loop units (the loop does NOT manage these — bootstrap only)
   install -m 0644 -o root -g root kiosk-host/gitops-pull.service        /etc/systemd/system/dashboard-kiosk-gitops.service
@@ -173,9 +210,10 @@ ssh -J root@pve.local root@pve2 '
 
   systemctl daemon-reload
   systemctl enable --now dashboard-kiosk.service
+  systemctl enable --now snapshot-server.service
   systemctl enable --now dashboard-kiosk-gitops.timer
 
-  systemctl status --no-pager dashboard-kiosk.service dashboard-kiosk-gitops.timer
+  systemctl status --no-pager dashboard-kiosk.service snapshot-server.service dashboard-kiosk-gitops.timer
 '
 ```
 
