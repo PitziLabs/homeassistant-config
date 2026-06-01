@@ -25,5 +25,9 @@ pipeline (see `.github/workflows/ha-context-sync.yml`).
 
 - **Manual:** press `input_button.ha_context_dump_now` in the HA UI.
 - **Periodic:** every 6 hours via the `ha_context_dump_periodic` automation.
+- **On registry change (debounced):** the `ha_context_dump_on_registry_change`
+  automation fires a dump 15 minutes after the last entity/device/area
+  registry change (`mode: restart` coalesces a burst into one dump), so the
+  snapshot tracks material changes without waiting for the 6-hour cycle.
 
 Snapshots that match the current `main` content produce no PR (silent no-op).
