@@ -20,6 +20,9 @@
 #
 # Requires:
 #   - SSH key access to root@homeassistant.local on port 22 (HAOS host SSH).
+#     The push uses an `ssh ... 'cat > /homeassistant/dashboards/<name>'`
+#     stdin redirect — scp doesn't work on HAOS port 22 (no sftp-server).
+#     The Core container's /config maps to /homeassistant on the host.
 #   - SSH access to root@pve2 via the root@pve.local jump host (standard).
 #   - xdotool installed on pve2 (added to bootstrap in README.md).
 set -euo pipefail
@@ -27,7 +30,11 @@ set -euo pipefail
 readonly HA_HOST="homeassistant.local"
 readonly HA_USER="root"
 readonly HA_SSH_PORT=22
-readonly HA_TARGET_DIR="/config/dashboards"
+# HAOS root SSH (port 22) is a BusyBox shell on the host filesystem,
+# NOT inside HA Core. The Core container's /config maps to /homeassistant
+# on the host. scp doesn't work here (no sftp-server); we use ssh-stdin
+# redirect with `cat >` instead, which only needs basic shell builtins.
+readonly HA_TARGET_DIR="/homeassistant/dashboards"
 readonly KIOSK_JUMP="root@pve.local"
 readonly KIOSK_HOST="root@pve2"
 readonly KIOSK_SNAPSHOT_URL="http://pve2.local:9999/"
@@ -70,15 +77,26 @@ if ! python3 -c "import sys, yaml; yaml.safe_load(open(sys.argv[1]))" "$yaml_pat
 fi
 
 target_name=$(basename "$yaml_path")
+# Defense in depth: refuse anything that isn't a plain dashboard YAML name.
+# basename already strips path separators; this catches the rest.
+if [[ ! "$target_name" =~ ^[a-zA-Z0-9._-]+\.yaml$ ]]; then
+  err "target filename must match [A-Za-z0-9._-]+\\.yaml: ${target_name}"
+  exit 2
+fi
 ts=$(date -u +%Y%m%dT%H%M%SZ)
 total_start=$EPOCHREALTIME
 
 # --- 2. Push to HA ---------------------------------------------------------
 step "pushing → ${HA_USER}@${HA_HOST}:${HA_TARGET_DIR}/${target_name}"
 push_start=$EPOCHREALTIME
-if ! scp -P "$HA_SSH_PORT" -q -o ConnectTimeout=5 -o BatchMode=yes \
-      "$yaml_path" "${HA_USER}@${HA_HOST}:${HA_TARGET_DIR}/${target_name}"; then
-  err "scp to HA failed. Verify SSH key access:"
+# HAOS port-22 SSH has no sftp-server; pipe via stdin to `cat` instead.
+# Write to a hidden tmpfile first, then atomic mv — a partial transfer
+# (network blip, ctrl-C) can't replace a working dashboard with garbage.
+if ! ssh -p "$HA_SSH_PORT" -o ConnectTimeout=5 -o BatchMode=yes \
+        "${HA_USER}@${HA_HOST}" \
+        "set -e; tmp='${HA_TARGET_DIR}/.${target_name}.preview-tmp'; cat > \"\$tmp\" && mv \"\$tmp\" '${HA_TARGET_DIR}/${target_name}'" \
+        < "$yaml_path"; then
+  err "ssh-stdin push to HA failed. Verify SSH access:"
   err "  ssh -p ${HA_SSH_PORT} ${HA_USER}@${HA_HOST} 'echo ok'"
   err "If you haven't set up HAOS SSH yet, see HA docs:"
   err "  https://developers.home-assistant.io/docs/operating-system/debugging"
