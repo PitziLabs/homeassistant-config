@@ -29,3 +29,25 @@ automation:
         hours: "/6"
     actions:
       - action: shell_command.ha_context_dump
+
+  # Event-driven, debounced. Registry changes (entities/devices/areas
+  # created, removed, or renamed) make context/ stale until the next 6h
+  # snapshot — that lag is what surfaces as "entity not found" against the
+  # snapshot. mode:restart resets the 15-minute timer on every new registry
+  # event, so a burst of changes coalesces into a single dump fired 15 min
+  # after the LAST change. Fires on registry events only (not state changes),
+  # so normal operation never triggers it. The 6h periodic dump above remains
+  # as a backstop. The dump script is a no-op (no PR) when nothing changed.
+  - id: ha_context_dump_on_registry_change
+    alias: "Context Dump: Debounced on registry change"
+    mode: restart
+    triggers:
+      - trigger: event
+        event_type: entity_registry_updated
+      - trigger: event
+        event_type: device_registry_updated
+      - trigger: event
+        event_type: area_registry_updated
+    actions:
+      - delay: "00:15:00"
+      - action: shell_command.ha_context_dump
