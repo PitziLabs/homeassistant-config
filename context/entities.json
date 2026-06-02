@@ -6056,6 +6056,70 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.pitzilabs_firewalla_axiom_pipeline",
+    "friendly_name": "pitzilabs firewalla-axiom-pipeline",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.pitzilabs_foundry_platform_demo",
+    "friendly_name": "pitzilabs foundry-platform-demo",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.pitzilabs_homeassistant_config",
+    "friendly_name": "pitzilabs homeassistant-config",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.pitzilabs_homelab_observability",
+    "friendly_name": "pitzilabs homelab-observability",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.pitzilabs_ice_cream_book",
+    "friendly_name": "pitzilabs ice-cream-book",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.pitzilabs_reference_checker",
+    "friendly_name": "pitzilabs reference-checker",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.pitzilabs_shared_workflows",
+    "friendly_name": "pitzilabs shared-workflows",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.pitzilabs_workstation_bootstrap",
+    "friendly_name": "pitzilabs workstation-bootstrap",
+    "area_id": null,
+    "device_id": null,
+    "platform": "github_custom",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.play_room_tv_active_app",
     "friendly_name": "Active app",
     "area_id": null,
