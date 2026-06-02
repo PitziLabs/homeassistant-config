@@ -1,0 +1,7 @@
+title: Networks
+path: networks
+icon: mdi:lan
+type: masonry
+cards:
+  - type: markdown
+    content: "## Lens 4 · Networks (placeholder)"

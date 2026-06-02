@@ -1,0 +1,76 @@
+title: pve4
+path: pve4-detail
+subview: true
+icon: mdi:server
+type: panel
+cards:
+  - type: vertical-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: pve4
+        secondary: >
+          {% if is_state('binary_sensor.pve4_status', 'on') %}
+            Dell OptiPlex · 32 GiB · rebuilt 2026-05-29 (fresh PVE 9.2.2) ·
+            no guests · static DHCP at 192.168.139.210
+          {% else %}DOWN{% endif %}
+        icon: mdi:server
+        icon_color: >
+          {% if is_state('binary_sensor.pve4_status', 'on') %}green{% else %}red{% endif %}
+        entity: binary_sensor.pve4_status
+        tap_action: { action: none }
+
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.pve4_cpu_usage
+            name: CPU
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 50, red: 80 }
+          - type: gauge
+            entity: sensor.pve4_memory_usage_percentage
+            name: Memory
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 70, red: 85 }
+          - type: gauge
+            entity: sensor.pve4_disk_usage
+            name: Disk
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 60, red: 80 }
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            title: Backup (guests-weekly job · skipped — no guests)
+            show_header_toggle: false
+            entities:
+              - entity: binary_sensor.pve4_backup_status
+                name: Last backup status
+              - entity: sensor.pve4_last_backup
+                name: Last backup
+          - type: custom:mushroom-template-card
+            primary: Uptime
+            secondary: >
+              {% set s = states('sensor.pve4_uptime') | int(-1) %}
+              {% if s < 0 %}—
+              {% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h
+              {% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m
+              {% else %}{{ (s // 60) }}m{% endif %}
+            icon: mdi:clock-outline
+            entity: sensor.pve4_uptime
+            tap_action: { action: more-info }
+
+      - type: markdown
+        content: >
+          **Pending work:** small ZFS-target SSD for workstation VM replication (`pvesr`).
+          Doesn't help HAOS DR (radios still pin recovery), but would replicate the
+          xubuntu-ws/fedora-ws VMs off pve5 to reduce single-host blast radius.

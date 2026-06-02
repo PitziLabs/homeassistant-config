@@ -45,19 +45,43 @@ grid-template-areas:
 
 The `kiosk_mode` block at the top of `kiosk.yaml` hides header and sidebar **only for the `Kiosk` non-admin user** (used historically on the wall-display kiosk). The desktop session logs in as the normal admin user, so the sidebar/header remain available for navigation between dashboards.
 
-## `homelab-status.yaml` — Homelab Status
+## `homelab-status.yaml` — Homelab Status (mental-map fleet view)
 
-Scrollable infrastructure overview dashboard (`/dashboard-homelab-status`). Seven sections covering the full homelab stack:
+Multi-tab dashboard at `/dashboard-homelab-status/`. Built as a **manifest of `!include`d view files** so each "lens" lives in its own file and can be evolved, added, or retired independently.
 
-| Section | What's surfaced |
-|---------|----------------|
-| Neptune NAS (UGREEN DXP2800) | RAID pool health, disk temps and SMART power-on hours, CPU/RAM/fan, LAN throughput |
-| Proxmox (pve) | Node CPU/memory/disk, HAOS and grafana-stack VM status, backup schedule |
-| Smart Home Coordinators | ZWA-2 (Z-Wave), ZBT-2 (Zigbee), both Konnected alarm panels — WiFi RSSI and uptime |
-| Battery Health | 8-device grid with amber (<40%) and red (<20%) color thresholds |
-| Printer (HP M477fdw) | CMYK toner levels with color-coded warnings |
-| GitHub | cpitzi/prompts repo stats via REST sensor (commits, issues, PRs, stars, forks) |
-| Meeting Indicator | ESP32 device state, WiFi signal quality, uptime |
+```
+dashboards/
+├── homelab-status.yaml          ← manifest: just a list of !include lines
+└── homelab-views/
+    ├── hardware.yaml            ← Lens 1: physical fleet
+    ├── repos.yaml               ← Lens 2: PitziLabs/* commit / PR / issue activity
+    ├── smart_home.yaml          ← Lens 3: rooms as objects, alarm hero
+    ├── networks.yaml            ← Lens 4: Zigbee / Z-Wave / WiFi / LAN meshes
+    ├── automations.yaml         ← Lens 5: silent-failure detection
+    ├── backups.yaml             ← Lens 6: PVE jobs, NAS scrub, HAOS backup
+    ├── issues.yaml              ← Lens 7: queue (alarms + GitHub + depletion)
+    └── details/
+        ├── neptune.yaml         ← drill-down subview from Hardware
+        ├── pve.yaml             ← (one per fleet member that has detail)
+        ├── pve2.yaml … pve5.yaml
+        ├── haos.yaml
+        ├── grafana-stack.yaml
+        └── ups.yaml
+```
+
+### Lens model
+
+Each lens answers a single "what am I looking at?" question. The user can have many lenses without their content fighting for canvas — switching lenses is a tab click. Lenses can be added, refined, or obsoleted over time without dashboard-wide refactoring; each lens is one file.
+
+### Drill-down pattern (subviews)
+
+Files under `homelab-views/details/` set `subview: true`, which hides them from the top tab strip and adds an automatic back-arrow. Tiles in a lens use `tap_action: navigate, navigation_path: /dashboard-homelab-status/<view-path>` to drill in. `hold_action: more-info` keeps HA's built-in entity dialog one long-press away.
+
+Add a drill-down by dropping a new file under `details/` with a unique `path:`, then add it to the include list in `homelab-status.yaml`.
+
+### Iteration workflow
+
+The whole structure is designed for live iteration via `kiosk-host/kiosk-preview` — see `kiosk-host/README.md § "Design session protocol for non-kiosk dashboards"` for the pause-gitops / redirect-pve2 / restore-at-end protocol. Key flag: pass `--dashboard-root dashboards/homelab-status.yaml` when iterating any `homelab-views/**` file so HA's yaml-mode cache (keyed off the manifest's mtime, not the !include child's) gets busted on each push.
 
 ## HACS Dependencies
 

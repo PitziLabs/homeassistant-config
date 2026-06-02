@@ -124,7 +124,26 @@ kiosk-host/kiosk-preview dashboards/kiosk.yaml --open
 
 # Push + refresh without capturing (e.g. you're at the monitor)
 kiosk-host/kiosk-preview --no-snapshot
+
+# Iterating an !include child — touches the manifest to bust HA's
+# yaml-mode dashboard cache (which keys off the root file's mtime,
+# not the included child's)
+kiosk-host/kiosk-preview dashboards/homelab-views/hardware.yaml \
+  --dashboard-root dashboards/homelab-status.yaml
+
+# URL change (different view, dashboard, or subview) — does
+# `kiosk-show --kiosk <URL>` instead of F5 (~10–15s vs ~3s for F5)
+kiosk-host/kiosk-preview dashboards/homelab-status.yaml \
+  --url http://homeassistant.local:8123/dashboard-homelab-status/ups-detail
 ```
+
+| Flag | When to reach for it |
+|---|---|
+| `--dashboard-root FILE` | The pushed file is `!include`d by another dashboard YAML; pass the manifest path |
+| `--url URL` | Chromium needs to point at a different URL (new dashboard, view, or subview); skips F5 for a `kiosk-show` restart |
+| `--open` | xdg-open the captured PNG after capture |
+| `--keep` | Suppress the gitops-clobber reminder |
+| `--no-snapshot` | Push + refresh only; no capture (use when you're physically watching the monitor) |
 
 Under the hood, each call:
 
@@ -222,6 +241,54 @@ edit→commit→wait-5min-for-gitops cycle:
 - Theme or `extra_module_url` changes — those need
   `lovelace.reload_resources`, which requires the optional HA token
   (see above).
+
+### Design session protocol for non-kiosk dashboards
+
+Use this when iterating any dashboard that the kiosk *isn't* currently
+displaying — e.g. `homelab-status.yaml`'s lens views, the Home
+dashboard, or a brand-new dashboard whose YAML doesn't yet exist on
+`main`. Same fast iteration shape, plus three setup/teardown steps for
+the household display:
+
+1. **Pause the HA-side gitops sync** (otherwise it'll reset
+   `/homeassistant/dashboards/` to `origin/main` every 5 min and erase
+   any new files you've pushed via kiosk-preview):
+   ```
+   ha_call_service(automation.turn_off, automation.gitops_poll_and_deploy)
+   ```
+   Or via UI: Settings → Automations → "GitOps: Poll and deploy" → off.
+2. **Redirect pve2's Chromium** to the dashboard you're iterating
+   (commandeers the household monitor for the session):
+   ```bash
+   ssh -J root@pve.local root@pve2 'kiosk-show --kiosk \
+     http://homeassistant.local:8123/dashboard-<id>/<view-path>'
+   ```
+   Once Chromium is on the right URL, regular `kiosk-preview` calls
+   F5-refresh it — no further `kiosk-show` needed unless the URL
+   changes (e.g. navigating to a different view or subview, which
+   you can drive in one shot with `kiosk-preview --url <URL>`).
+3. **Iterate.** Same edit → `kiosk-preview` → snapshot → discuss
+   shape as the kiosk dashboard loop. For multi-file dashboards that
+   use `!include`, pass `--dashboard-root <manifest.yaml>` so the
+   yaml-mode dashboard cache (keyed off the manifest's mtime, not
+   the included child's) actually gets busted.
+4. **Restore on the way out** (in this order, after the PR is open
+   and ideally merged — otherwise the next gitops poll fetches
+   `origin/main` which doesn't yet have your new files and the
+   dashboard breaks until merge):
+   ```bash
+   # Re-enable gitops
+   ha_call_service(automation.turn_on, automation.gitops_poll_and_deploy)
+   # Send the kiosk back to the household dashboard
+   ssh -J root@pve.local root@pve2 'kiosk-show --dashboard'
+   ```
+5. **Confirm.** A quick `kiosk-snapshot` after the restore should
+   show the regular household kiosk again.
+
+**Cost to the household:** the wall display flickers when you
+`kiosk-show`, again at the F5 cadence of your iteration, and once more
+at the restore. If someone's watching the dashboard at the moment,
+defer the session — iteration is dense and disruptive.
 
 ## Snapshot server (network endpoint for HA)
 

@@ -1,0 +1,7 @@
+title: Issues
+path: issues
+icon: mdi:alert-circle-outline
+type: masonry
+cards:
+  - type: markdown
+    content: "## Lens 7 · Issues queue (placeholder)"

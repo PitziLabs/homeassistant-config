@@ -1,0 +1,206 @@
+title: Hardware
+path: hardware
+icon: mdi:server-network
+type: panel
+cards:
+  - type: vertical-stack
+    cards:
+
+      # Row 1 — Gateway
+      - type: custom:mushroom-template-card
+        primary: firewalla
+        secondary: Gold SE · gateway / DPI / DNS · 192.168.139.1
+        icon: mdi:router-network
+        icon_color: blue
+        tap_action: { action: none }
+
+      # Row 2 — Storage
+      - type: custom:mushroom-template-card
+        primary: neptune
+        secondary: >
+          UGREEN DXP · 2× 4TB RAID1 btrfs ·
+          CPU {{ states('sensor.ugreen_nas_cpu_usage') | int(0) }}% ·
+          RAM {{ states('sensor.ugreen_nas_ram_usage') | int(0) }}%
+        icon: mdi:nas
+        icon_color: >
+          {% set s = states('sensor.ugreen_nas_server_status') %}
+          {% if s != 'Normal' %}red
+          {% else %}
+            {% set cpu = states('sensor.ugreen_nas_cpu_usage') | int(0) %}
+            {% if cpu > 80 %}red{% elif cpu > 50 %}amber{% else %}green{% endif %}
+          {% endif %}
+        entity: sensor.ugreen_nas_server_status
+        tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/neptune-detail }
+        hold_action: { action: more-info }
+
+      # Row 3 — PVE cluster
+      - type: grid
+        columns: 5
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: pve
+            secondary: >
+              {% if is_state('binary_sensor.pve_status', 'on') %}
+                cpu {{ states('sensor.pve_cpu_usage') | int(0) }}% · mem {{ states('sensor.pve_memory_usage_percentage') | int(0) }}%
+              {% else %}DOWN{% endif %}
+            icon: mdi:server
+            icon_color: >
+              {% if not is_state('binary_sensor.pve_status', 'on') %}red
+              {% else %}
+                {% set m = states('sensor.pve_memory_usage_percentage') | float(0) %}
+                {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
+              {% endif %}
+            entity: binary_sensor.pve_status
+            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve-detail }
+            hold_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: pve2
+            secondary: >
+              {% if is_state('binary_sensor.pve2_status_2', 'on') %}
+                cpu {{ states('sensor.pve2_cpu_usage_2') | int(0) }}% · mem {{ states('sensor.pve2_memory_usage_percentage_2') | int(0) }}%
+              {% else %}DOWN{% endif %}
+            icon: mdi:server
+            icon_color: >
+              {% if not is_state('binary_sensor.pve2_status_2', 'on') %}red
+              {% else %}
+                {% set m = states('sensor.pve2_memory_usage_percentage_2') | float(0) %}
+                {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
+              {% endif %}
+            entity: binary_sensor.pve2_status_2
+            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve2-detail }
+            hold_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: pve3
+            secondary: >
+              {% if is_state('binary_sensor.pve3_status', 'on') %}
+                cpu {{ states('sensor.pve3_cpu_usage') | int(0) }}% · mem {{ states('sensor.pve3_memory_usage_percentage') | int(0) }}%
+              {% else %}DOWN{% endif %}
+            icon: mdi:server
+            icon_color: >
+              {% if not is_state('binary_sensor.pve3_status', 'on') %}red
+              {% else %}
+                {% set m = states('sensor.pve3_memory_usage_percentage') | float(0) %}
+                {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
+              {% endif %}
+            entity: binary_sensor.pve3_status
+            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve3-detail }
+            hold_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: pve4
+            secondary: >
+              {% if is_state('binary_sensor.pve4_status', 'on') %}
+                cpu {{ states('sensor.pve4_cpu_usage') | int(0) }}% · mem {{ states('sensor.pve4_memory_usage_percentage') | int(0) }}%
+              {% else %}DOWN{% endif %}
+            icon: mdi:server
+            icon_color: >
+              {% if not is_state('binary_sensor.pve4_status', 'on') %}red
+              {% else %}
+                {% set m = states('sensor.pve4_memory_usage_percentage') | float(0) %}
+                {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
+              {% endif %}
+            entity: binary_sensor.pve4_status
+            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve4-detail }
+            hold_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: pve5
+            secondary: >
+              {% if is_state('binary_sensor.pve5_status', 'on') %}
+                cpu {{ states('sensor.pve5_cpu_usage') | int(0) }}% · mem {{ states('sensor.pve5_memory_usage_percentage') | int(0) }}%
+              {% else %}DOWN{% endif %}
+            icon: mdi:server
+            icon_color: >
+              {% if not is_state('binary_sensor.pve5_status', 'on') %}red
+              {% else %}
+                {% set m = states('sensor.pve5_memory_usage_percentage') | float(0) %}
+                {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
+              {% endif %}
+            entity: binary_sensor.pve5_status
+            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve5-detail }
+            hold_action: { action: more-info }
+
+      # Row 4 — Workloads (VMs / LXCs pinned to specific PVE nodes)
+      - type: grid
+        columns: 4
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: HAOS
+            secondary: >
+              {% if is_state('binary_sensor.haos_17_1_status', 'on') %}
+                VM 100 on pve3 (USB-pinned) ·
+                cpu {{ states('sensor.haos_17_1_cpu_usage') | int(0) }}% ·
+                mem {{ states('sensor.haos_17_1_memory_usage_percentage') | int(0) }}%
+              {% else %}VM 100 · DOWN{% endif %}
+            icon: mdi:home-assistant
+            icon_color: >
+              {% if not is_state('binary_sensor.haos_17_1_status', 'on') %}red
+              {% else %}green{% endif %}
+            entity: binary_sensor.haos_17_1_status
+            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/haos-detail }
+            hold_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: grafana-stack
+            secondary: >
+              {% if is_state('binary_sensor.grafana_stack_status', 'on') %}
+                LXC 105 on pve3 · Alloy + collectors
+              {% else %}LXC 105 · {{ states('binary_sensor.grafana_stack_status') }}{% endif %}
+            icon: mdi:chart-line
+            icon_color: >
+              {% if is_state('binary_sensor.grafana_stack_status', 'on') %}green
+              {% else %}red{% endif %}
+            entity: binary_sensor.grafana_stack_status
+            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/grafana-stack-detail }
+            hold_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: fedora-ws
+            secondary: >
+              {% if is_state('binary_sensor.fedora_ws_status', 'on') %}
+                VM 104 on pve5 · Fedora 43 KDE
+              {% else %}VM 104 on pve5 · off{% endif %}
+            icon: mdi:fedora
+            icon_color: >
+              {% if is_state('binary_sensor.fedora_ws_status', 'on') %}green
+              {% else %}disabled{% endif %}
+            entity: binary_sensor.fedora_ws_status
+            tap_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: xubuntu-ws
+            secondary: >
+              {% if is_state('binary_sensor.xubuntu_ws_status', 'on') %}
+                VM 102 on pve5 · Ubuntu 26.04 KDE
+              {% else %}VM 102 on pve5 · off{% endif %}
+            icon: mdi:ubuntu
+            icon_color: >
+              {% if is_state('binary_sensor.xubuntu_ws_status', 'on') %}green
+              {% else %}disabled{% endif %}
+            entity: binary_sensor.xubuntu_ws_status
+            tap_action: { action: more-info }
+
+      # Row 5 — Power
+      - type: custom:mushroom-template-card
+        primary: CyberPower CP1500PFCLCDa
+        secondary: >
+          {% set st = states('sensor.cyberpower_status_data') %}
+          {% set bat = states('sensor.cyberpower_battery_charge') | int(0) %}
+          {% set load = states('sensor.cyberpower_load') | int(0) %}
+          {% set label = 'Online' if st == 'OL' else ('On battery' if st == 'OB' else st) %}
+          {{ label }} · battery {{ bat }}% · load {{ load }}%
+        icon: mdi:power-plug
+        icon_color: >
+          {% set st = states('sensor.cyberpower_status_data') %}
+          {% set bat = states('sensor.cyberpower_battery_charge') | int(100) %}
+          {% if st == 'OB' %}red
+          {% elif st != 'OL' %}amber
+          {% elif bat < 50 %}amber
+          {% else %}green{% endif %}
+        entity: sensor.cyberpower_status_data
+        tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/ups-detail }
+        hold_action: { action: more-info }

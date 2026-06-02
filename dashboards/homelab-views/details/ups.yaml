@@ -1,0 +1,85 @@
+title: UPS
+path: ups-detail
+subview: true
+icon: mdi:power-plug
+type: panel
+cards:
+  - type: vertical-stack
+    cards:
+
+      # Hero
+      - type: custom:mushroom-template-card
+        primary: CyberPower CP1500PFCLCDa
+        secondary: >
+          {% set st = states('sensor.cyberpower_status_data') %}
+          {% set label = 'Online' if st == 'OL' else ('On battery' if st == 'OB' else st) %}
+          NUT master on neptune (usbhid-ups) · PVE×5 wired as secondaries · {{ label }}
+        icon: mdi:power-plug
+        icon_color: >
+          {% set st = states('sensor.cyberpower_status_data') %}
+          {% if st == 'OB' %}red
+          {% elif st != 'OL' %}amber
+          {% else %}green{% endif %}
+        entity: sensor.cyberpower_status_data
+        tap_action: { action: none }
+
+      # Live state
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.cyberpower_battery_charge
+            name: Battery
+            unit: '%'
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 50, yellow: 20, red: 0 }
+          - type: gauge
+            entity: sensor.cyberpower_load
+            name: Load
+            unit: '%'
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 50, red: 75 }
+          - type: custom:mushroom-template-card
+            primary: Runtime remaining
+            secondary: >
+              {% set s = states('sensor.cyberpower_battery_runtime') | int(-1) %}
+              {% if s < 0 %}—
+              {% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m
+              {% else %}{{ (s // 60) }}m{% endif %}
+            icon: mdi:timer-sand
+            icon_color: >
+              {% set s = states('sensor.cyberpower_battery_runtime') | int(0) %}
+              {% if s < 300 %}red{% elif s < 600 %}amber{% else %}green{% endif %}
+            entity: sensor.cyberpower_battery_runtime
+            tap_action: { action: more-info }
+
+      # Power lines
+      - type: entities
+        title: Power
+        show_header_toggle: false
+        entities:
+          - entity: sensor.cyberpower_input_voltage
+            name: Input voltage
+          - entity: sensor.cyberpower_output_voltage
+            name: Output voltage
+          - entity: sensor.cyberpower_status
+            name: Raw status
+          - entity: sensor.cyberpower_status_data
+            name: Status (text)
+
+      # Notes
+      - type: markdown
+        content: >
+          **Topology:** CyberPower CP1500PFCLCDa connected USB to neptune
+          (NAS), which runs `nut-server` as the NUT master. The five PVE
+          nodes run `upsmon` as secondaries against neptune. NUT
+          passwords live at `/root/nut-secrets/` on neptune. HA's NUT
+          integration provides these sensors + a power-event automation.
+          `sensor.cyberpower_battery_runtime` is flagged in issue #334
+          (registered but disabled by default — see the dashboard
+          allowlist note).
