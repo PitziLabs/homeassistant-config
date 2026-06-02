@@ -10232,6 +10232,14 @@
     "hidden": false
   },
   {
+    "entity_id": "update.github_custom_update",
+    "friendly_name": "Github Custom update",
+    "area_id": null,
+    "device_id": "312c5a7be0510c34b725aa8ba6abf264",
+    "platform": "hacs",
+    "hidden": false
+  },
+  {
     "entity_id": "update.ha_mcp_tools_update",
     "friendly_name": "HA MCP Tools update",
     "area_id": null,
