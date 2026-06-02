@@ -120,6 +120,16 @@
     ]
   },
   {
+    "device_id": "5dae9e89715f5e6d302f293c915e535f",
+    "name": "Chris-Phone",
+    "manufacturer": "Firewalla",
+    "model": "Tracked client",
+    "area_id": null,
+    "integrations": [
+      "firewalla_local"
+    ]
+  },
+  {
     "device_id": "9f4ebbb742445b128f4f08060d64ae98",
     "name": "Claude AI Task",
     "manufacturer": "Anthropic",
@@ -260,6 +270,26 @@
     ]
   },
   {
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "name": "Firewalla",
+    "manufacturer": "Firewalla",
+    "model": "Gse",
+    "area_id": "office",
+    "integrations": [
+      "firewalla_local"
+    ]
+  },
+  {
+    "device_id": "e953e0fc3003eda5e70e3edcf51ee662",
+    "name": "Firewalla Local",
+    "manufacturer": "ccpk1",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
     "device_id": "81fbd9a5df7ea3ca13cbe194a1523f40",
     "name": "Forecast",
     "manufacturer": "Met.no",
@@ -277,6 +307,16 @@
     "area_id": "front_door",
     "integrations": [
       "nest"
+    ]
+  },
+  {
+    "device_id": "9389db81174d1669f07a6952471f8562",
+    "name": "Galaxy-S22",
+    "manufacturer": "Firewalla",
+    "model": "Tracked client",
+    "area_id": null,
+    "integrations": [
+      "firewalla_local"
     ]
   },
   {
@@ -917,6 +957,16 @@
     "area_id": "play_room",
     "integrations": [
       "wemo"
+    ]
+  },
+  {
+    "device_id": "328b7a7d3d550030a0777fdd29fc3a6e",
+    "name": "Rachel-s-S23",
+    "manufacturer": "Firewalla",
+    "model": "Tracked client",
+    "area_id": null,
+    "integrations": [
+      "firewalla_local"
     ]
   },
   {
