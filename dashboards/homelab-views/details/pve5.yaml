@@ -1,0 +1,100 @@
+title: pve5
+path: pve5-detail
+subview: true
+icon: mdi:server
+type: panel
+cards:
+  - type: vertical-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: pve5
+        secondary: >
+          {% if is_state('binary_sensor.pve5_status', 'on') %}
+            Dell OptiPlex 7060 · i5-8500T · 32 GiB · 238 GB NVMe ·
+            hosts xubuntu-ws (VM 102) + fedora-ws (VM 104)
+          {% else %}DOWN{% endif %}
+        icon: mdi:server
+        icon_color: >
+          {% if is_state('binary_sensor.pve5_status', 'on') %}green{% else %}red{% endif %}
+        entity: binary_sensor.pve5_status
+        tap_action: { action: none }
+
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.pve5_cpu_usage
+            name: CPU
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 50, red: 80 }
+          - type: gauge
+            entity: sensor.pve5_memory_usage_percentage
+            name: Memory
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 70, red: 85 }
+          - type: gauge
+            entity: sensor.pve5_disk_usage
+            name: Disk
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 60, red: 80 }
+
+      # Workstation VMs pinned here
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: xubuntu-ws
+            secondary: >
+              {% if is_state('binary_sensor.xubuntu_ws_status', 'on') %}
+                VM 102 · Ubuntu 26.04 KDE · 192.168.139.81
+              {% else %}VM 102 · off{% endif %}
+            icon: mdi:ubuntu
+            icon_color: >
+              {% if is_state('binary_sensor.xubuntu_ws_status', 'on') %}green{% else %}disabled{% endif %}
+            entity: binary_sensor.xubuntu_ws_status
+            tap_action: { action: more-info }
+          - type: custom:mushroom-template-card
+            primary: fedora-ws
+            secondary: >
+              {% if is_state('binary_sensor.fedora_ws_status', 'on') %}
+                VM 104 · Fedora 43 KDE · 192.168.139.168
+              {% else %}VM 104 · off{% endif %}
+            icon: mdi:fedora
+            icon_color: >
+              {% if is_state('binary_sensor.fedora_ws_status', 'on') %}green{% else %}disabled{% endif %}
+            entity: binary_sensor.fedora_ws_status
+            tap_action: { action: more-info }
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            title: Backup (guests-weekly job)
+            show_header_toggle: false
+            entities:
+              - entity: binary_sensor.pve5_backup_status
+                name: Last backup status
+              - entity: sensor.pve5_last_backup
+                name: Last backup
+              - entity: sensor.pve5_backup_duration
+                name: Duration
+          - type: custom:mushroom-template-card
+            primary: Uptime
+            secondary: >
+              {% set s = states('sensor.pve5_uptime') | int(-1) %}
+              {% if s < 0 %}—
+              {% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h
+              {% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m
+              {% else %}{{ (s // 60) }}m{% endif %}
+            icon: mdi:clock-outline
+            entity: sensor.pve5_uptime
+            tap_action: { action: more-info }

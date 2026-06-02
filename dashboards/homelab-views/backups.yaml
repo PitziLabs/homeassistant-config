@@ -1,0 +1,7 @@
+title: Backups
+path: backups
+icon: mdi:backup-restore
+type: masonry
+cards:
+  - type: markdown
+    content: "## Lens 6 · Backups (placeholder)"

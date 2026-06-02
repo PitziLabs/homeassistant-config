@@ -1,0 +1,7 @@
+title: Smart Home
+path: smart-home
+icon: mdi:home-automation
+type: masonry
+cards:
+  - type: markdown
+    content: "## Lens 3 · Smart Home (placeholder)"

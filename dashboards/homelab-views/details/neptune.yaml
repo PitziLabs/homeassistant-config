@@ -1,0 +1,105 @@
+title: neptune
+path: neptune-detail
+subview: true
+icon: mdi:nas
+type: panel
+cards:
+  - type: vertical-stack
+    cards:
+
+      # Hero
+      - type: custom:mushroom-template-card
+        primary: neptune
+        secondary: >
+          UGREEN DXP · Intel N100 · UGOS (Debian 12) ·
+          SMB share `PitziLabs` · 192.168.139.6
+        icon: mdi:nas
+        icon_color: >
+          {% set s = states('sensor.ugreen_nas_server_status') %}
+          {% if s != 'Normal' %}red{% else %}green{% endif %}
+        entity: sensor.ugreen_nas_server_status
+        tap_action: { action: none }
+
+      # Live resources
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.ugreen_nas_cpu_usage
+            name: CPU
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 50, red: 80 }
+          - type: gauge
+            entity: sensor.ugreen_nas_ram_usage
+            name: RAM
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 70, red: 85 }
+          - type: custom:mushroom-template-card
+            primary: Pool 1 — RAID 1 btrfs
+            secondary: >
+              {% set u = states('sensor.ugreen_nas_pool_1_volume_1_used_size_raw') | float(0) %}
+              {% set t = states('sensor.ugreen_nas_pool_1_volume_1_total_size_raw') | float(1) %}
+              {% set pct = (u / t * 100) | round(1) %}
+              {{ states('sensor.ugreen_nas_pool_1_volume_1_used_size') }} /
+              {{ states('sensor.ugreen_nas_pool_1_volume_1_total_size') }} · {{ pct }}% used
+            icon: mdi:harddisk
+            icon_color: >
+              {% set u = states('sensor.ugreen_nas_pool_1_volume_1_used_size_raw') | float(0) %}
+              {% set t = states('sensor.ugreen_nas_pool_1_volume_1_total_size_raw') | float(1) %}
+              {% set pct = u / t * 100 %}
+              {% if pct > 80 %}red{% elif pct > 60 %}amber{% else %}green{% endif %}
+            entity: sensor.ugreen_nas_pool_1_volume_1_used_size
+            tap_action: { action: more-info }
+
+      # Disks
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            title: Disk 1
+            show_header_toggle: false
+            entities:
+              - entity: sensor.ugreen_nas_pool_1_disk_1_status
+                name: Status
+              - entity: sensor.ugreen_nas_pool_1_disk_1_brand
+                name: Brand / Model
+              - entity: sensor.ugreen_nas_pool_1_disk_1_temperature
+                name: Temperature
+              - entity: sensor.ugreen_nas_pool_1_disk_1_power_on_hours
+                name: Power-on hours
+          - type: entities
+            title: Disk 2
+            show_header_toggle: false
+            entities:
+              - entity: sensor.ugreen_nas_pool_1_disk_2_status
+                name: Status
+              - entity: sensor.ugreen_nas_pool_1_disk_2_brand
+                name: Brand / Model
+              - entity: sensor.ugreen_nas_pool_1_disk_2_temperature
+                name: Temperature
+              - entity: sensor.ugreen_nas_pool_1_disk_2_power_on_hours
+                name: Power-on hours
+
+      # Network + boot
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_overall_lan_download
+            name: LAN Download
+            icon: mdi:download-network
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_overall_lan_upload
+            name: LAN Upload
+            icon: mdi:upload-network
+          - type: custom:mushroom-entity-card
+            entity: sensor.ugreen_nas_last_boot_timestamp
+            name: Last boot
+            icon: mdi:clock-start

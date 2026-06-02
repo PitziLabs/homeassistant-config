@@ -1,0 +1,137 @@
+title: pve3
+path: pve3-detail
+subview: true
+icon: mdi:server
+type: panel
+cards:
+  - type: vertical-stack
+    cards:
+
+      # Hero
+      - type: custom:mushroom-template-card
+        primary: pve3
+        secondary: >
+          {% if is_state('binary_sensor.pve3_status', 'on') %}
+            Dell OptiPlex 7060 · i5-8500T · 32 GiB · 238 GB NVMe ·
+            pinned host for HAOS VM 100 (USB-pinned) + grafana-stack LXC 105
+          {% else %}DOWN{% endif %}
+        icon: mdi:server
+        icon_color: >
+          {% if is_state('binary_sensor.pve3_status', 'on') %}green{% else %}red{% endif %}
+        entity: binary_sensor.pve3_status
+        tap_action: { action: none }
+
+      # Live resource usage
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.pve3_cpu_usage
+            name: CPU
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 50, red: 80 }
+          - type: gauge
+            entity: sensor.pve3_memory_usage_percentage
+            name: Memory
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 70, red: 85 }
+          - type: gauge
+            entity: sensor.pve3_disk_usage
+            name: Disk
+            min: 0
+            max: 100
+            needle: true
+            severity: { green: 0, yellow: 60, red: 80 }
+
+      # Workloads pinned to this host
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: HAOS
+            secondary: >
+              {% if is_state('binary_sensor.haos_17_1_status', 'on') %}
+                VM 100 · cpu {{ states('sensor.haos_17_1_cpu_usage') | int(0) }}% ·
+                mem {{ states('sensor.haos_17_1_memory_usage_percentage') | int(0) }}%
+              {% else %}VM 100 · DOWN{% endif %}
+            icon: mdi:home-assistant
+            icon_color: >
+              {% if is_state('binary_sensor.haos_17_1_status', 'on') %}green{% else %}red{% endif %}
+            entity: binary_sensor.haos_17_1_status
+            tap_action: { action: more-info }
+
+          - type: custom:mushroom-template-card
+            primary: grafana-stack
+            secondary: >
+              {% if is_state('binary_sensor.grafana_stack_status', 'on') %}
+                LXC 105 · cpu {{ states('sensor.grafana_stack_cpu_usage') | int(0) }}% ·
+                mem {{ states('sensor.grafana_stack_memory_usage_percentage') | int(0) }}%
+              {% else %}LXC 105 · {{ states('binary_sensor.grafana_stack_status') }}{% endif %}
+            icon: mdi:chart-line
+            icon_color: >
+              {% if is_state('binary_sensor.grafana_stack_status', 'on') %}green{% else %}red{% endif %}
+            entity: binary_sensor.grafana_stack_status
+            tap_action: { action: more-info }
+
+      # Backup + boot recency
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            title: Backup (haos-4h job)
+            show_header_toggle: false
+            entities:
+              - entity: binary_sensor.pve3_backup_status
+                name: Last backup status
+              - entity: sensor.pve3_last_backup
+                name: Last backup
+              - entity: sensor.pve3_backup_duration
+                name: Duration
+          - type: custom:mushroom-template-card
+            primary: Uptime
+            secondary: >
+              {% set s = states('sensor.pve3_uptime') | int(-1) %}
+              {% if s < 0 %}—
+              {% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h
+              {% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m
+              {% else %}{{ (s // 60) }}m{% endif %}
+            icon: mdi:clock-outline
+            entity: sensor.pve3_uptime
+            tap_action: { action: more-info }
+
+      # Actions — guarded by hold_action to prevent accidental taps
+      - type: grid
+        columns: 4
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: button.pve3_restart
+            name: Restart node
+            icon: mdi:restart
+            tap_action: { action: none }
+            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_restart } }
+          - type: custom:mushroom-entity-card
+            entity: button.pve3_shut_down
+            name: Shut down
+            icon: mdi:power
+            tap_action: { action: none }
+            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_shut_down } }
+          - type: custom:mushroom-entity-card
+            entity: button.pve3_start_all
+            name: Start all guests
+            icon: mdi:play-circle
+            tap_action: { action: none }
+            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_start_all } }
+          - type: custom:mushroom-entity-card
+            entity: button.pve3_stop_all
+            name: Stop all guests
+            icon: mdi:stop-circle
+            tap_action: { action: none }
+            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_stop_all } }
