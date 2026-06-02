@@ -195,40 +195,47 @@ systemd unit, not the dashboard content it points at.
 ## Live Design Loop (kiosk dashboard)
 
 For non-trivial kiosk dashboard work, prefer the **live preview loop**
-over the slower edit→commit→wait-for-gitops cycle:
+over edit→commit→wait-for-gitops:
 
-```
-edit dashboards/kiosk.yaml  →  kiosk-host/kiosk-preview --open
-                                  ↳ 4–8s: push to HA, F5 Chromium,
-                                    wait for stable frame, snapshot
-                                    back to ./kiosk-preview-<UTC>.png
-                                  ↳ discuss the captured frame
-                                  ↳ repeat
-                                  ↳ commit at logical checkpoints (PR
-                                    + auto-merge, one coherent change
-                                    per PR)
-```
+1. Edit `dashboards/kiosk.yaml`.
+2. Run `kiosk-host/kiosk-preview --open`. ~4–8s end-to-end: pushes to
+   HA, F5s Chromium, captures `./kiosk-preview-<UTC>.png`.
+3. Check the PNG against the **snapshot rubric** in
+   `kiosk-host/README.md § Design session protocol` (target rendered,
+   adjacent cells unchanged, layout intact, state encoding correct).
+4. Iterate or commit per the **stop conditions** in the same section.
+5. Commit at logical checkpoints (PR + auto-merge, one coherent
+   change per PR).
 
-The push goes via `ssh -p 22 root@homeassistant.local 'cat > /homeassistant/dashboards/<name>'`
-(HAOS-host SSH, NOT scp — HAOS port 22 has no sftp-server). The
-HA-side gitops-sync resets `/homeassistant/dashboards/` to `origin/main`
-every 5 min, so each preview survives whatever's left in the current
-poll window. That's the discipline: iterate freely in-session, commit
-when a coherent unit is ready, let gitops make it permanent.
+**Sticky constraints:**
+
+- The push goes via `ssh -p 22 root@homeassistant.local 'cat > …'`
+  (HAOS-host SSH, NOT scp — HAOS port 22 has no sftp-server).
+- The HA-side gitops-sync resets `/homeassistant/dashboards/` to
+  `origin/main` every 5 min, so each preview survives only the
+  current poll window. Commit before it closes if you want the
+  change to persist.
 
 **Live-state caveat.** The captured PNG reflects current entity values
-(alarm color, current Sonos art, "Unavailable" labels on cards whose
+(alarm color, current Sonos art, `Unavailable` labels on cards whose
 entities are genuinely down right now). If a frame surprises you, look
 at the entity, not the dashboard.
 
-**When to skip the loop:** trivial copy edits (just commit), additions
-that reference entities not yet in `context/entities.json` (refresh
-context first), or changes to `extra_module_url` JS resources (need
-the optional HA token for `lovelace.reload_resources`).
+**When to skip the loop:**
 
-Full protocol + setup (HAOS SSH key, xdotool on pve2, optional HA
-token) in `kiosk-host/README.md` § "Live preview iteration" and
-§ "Design session protocol".
+- Trivial copy edits — just commit.
+- Cards that reference entities you haven't confirmed exist — verify
+  via `mcp__Local-HA__ha_search_entities` (live, current-to-the-second)
+  first. **Don't refresh `context/entities.json` for this** — the
+  snapshot is for grep, not for validation, and refreshing it takes
+  a full PR cycle.
+- Theme or `extra_module_url` JS resource changes — those need
+  `lovelace.reload_resources`, which requires the optional HA token.
+
+Full protocol (decision table, rubric, stop conditions,
+troubleshooting, non-kiosk dashboard variant) + setup (HAOS SSH key,
+xdotool on pve2, optional HA token) in `kiosk-host/README.md`
+§ "Live preview iteration" and § "Design session protocol".
 
 ---
 

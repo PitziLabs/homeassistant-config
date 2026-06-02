@@ -145,6 +145,17 @@ kiosk-host/kiosk-preview dashboards/homelab-status.yaml \
 | `--keep` | Suppress the gitops-clobber reminder |
 | `--no-snapshot` | Push + refresh only; no capture (use when you're physically watching the monitor) |
 
+### Decision table: which flags for which file
+
+The flag selection above maps mechanically to the file you're editing:
+
+| You're editing | What you need |
+|---|---|
+| `dashboards/kiosk.yaml` | Nothing — kiosk shows it by default; plain `kiosk-host/kiosk-preview` |
+| Another root manifest (e.g. `dashboards/homelab-status.yaml`) | Pause HA gitops + `kiosk-show --kiosk <URL>` once + `--url <URL>` on the first preview (see *Design session protocol for non-kiosk dashboards*) |
+| A file `!include`d by another dashboard (e.g. `dashboards/homelab-views/*.yaml`) | All of the above **and** `--dashboard-root <root-manifest.yaml>` on every preview (the yaml-mode cache keys off the manifest's mtime, not the child's) |
+| Theme or `extra_module_url` JS resource | Skip the loop — needs `lovelace.reload_resources` which requires the optional HA token (often absent). Commit + wait for gitops instead. |
+
 Under the hood, each call:
 
 1. `python3 yaml.safe_load`s the local file (refuses to push broken YAML).
@@ -192,6 +203,20 @@ Under the hood, each call:
   token at `~/.config/kiosk-preview/ha-token` (mode `0600`). Without
   it the call is skipped and the tool still works for dashboard YAML.
 
+### Troubleshooting
+
+When the loop fails, the symptom usually identifies the stage:
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Errors at *validating YAML* | Local YAML is malformed | Fix locally — the tool refuses to push broken YAML. The error names the line. |
+| Errors at *pushing* | SSH to HAOS port 22 down, or key not authorized | Verify with `ssh -p 22 root@homeassistant.local 'echo ok'`. If it fails, the one-time HAOS `authorized_keys` setup hasn't been done (see *Things to know* above). |
+| Snapshot is a skeleton / loading state | Frame captured before stable; transient HA load fooled the stability heuristic | Re-run `kiosk-preview`. Or capture a fresh frame with `kiosk-host/kiosk-snapshot` (which has no stability check and grabs whatever's currently on the monitor). |
+| Card body shows `Card error: …` | Unknown card type, missing required option, or schema mismatch | Read the error string — it names the field or type. Cross-check the card type via `mcp__Local-HA__ha_read_resource skill://home-assistant-best-practices/references/dashboard-cards.md`. For HACS cards, confirm the card is actually installed via `mcp__Local-HA__ha_hacs_search`. |
+| Card shows `Unavailable` | Entity is genuinely down, OR the entity_id is wrong | `mcp__Local-HA__ha_search_entities` to confirm the entity exists; `ha_get_state` to confirm its current value. **Don't trust `context/entities.json` for this** — it's up to 6h stale. |
+| `curl pve2.local:9999` returns 503 or hangs | `snapshot-server.service` on pve2 is down | `ssh -J root@pve.local root@pve2 'systemctl status snapshot-server.service --no-pager'`; restart if needed. The unit is `PartOf=dashboard-kiosk.service`, so a kiosk restart cycles it too. |
+| F5 doesn't change what's on the monitor | Chromium hung, or `xdotool` not on pve2 | `ssh -J root@pve.local root@pve2 'systemctl restart dashboard-kiosk.service'`; verify `xdotool` is installed (bootstrap apt list). |
+
 ### Design session protocol
 
 For non-trivial kiosk dashboard work (layout changes, theming, new
@@ -202,9 +227,28 @@ edit→commit→wait-5min-for-gitops cycle:
    ```bash
    git checkout main && git pull && git checkout -b kiosk-<topic>
    ```
-2. **Iterate.** Edit `dashboards/kiosk.yaml`, run
-   `kiosk-host/kiosk-preview --open`, look at the PNG, discuss, repeat.
-   Each loop is 4–8s.
+2. **Iterate.** Edit the YAML, run `kiosk-host/kiosk-preview --open`,
+   check the captured PNG against the rubric below, repeat. Each loop
+   is 4–8s.
+
+   **Snapshot rubric** (run after every capture; if any check fails,
+   fix and re-iterate before continuing):
+
+   - **Target card rendered** — not blank, no `Card error: …` string,
+     not stuck on a `Loading…` skeleton.
+   - **Entity states bound** — cards you expected to have data don't
+     show `Unavailable` because of an entity_id typo. Distinguish from
+     entities that are genuinely down by spot-checking
+     `mcp__Local-HA__ha_get_state`.
+   - **Adjacent cards unchanged** — a layout change in one grid cell
+     can ripple. Compare against the previous snapshot side by side
+     and confirm cells you didn't touch are visually identical.
+   - **Layout intact** — no horizontal scrollbars, no card overflowing
+     its grid cell, no cells shrunk to zero height. Look at the cell
+     boundaries, not just the card content.
+   - **State encoding correct** — icons and colors match the entity's
+     current state per the card's `state` blocks (e.g. green hero on a
+     `disarmed` alarm, grey on a presence chip showing `not_home`).
 3. **Checkpoint at logical units.** When a coherent change is ready
    (one card refactored, one theme tweak landed, one alarm-state polish
    complete), commit + PR + arm auto-merge with the usual repo flow.
@@ -215,6 +259,22 @@ edit→commit→wait-5min-for-gitops cycle:
    iterating you have whatever's left in the current poll window. If
    you want a YAML change that survives past the next poll, commit
    and let auto-merge land it.
+
+5. **Stop iterating** when any of these is true:
+
+   - The rubric passes and the change matches the original ask.
+   - **3 consecutive snapshots are visually indistinguishable** —
+     you're polishing past diminishing returns; commit what you have.
+   - **More than ~6 iterations on the same card with no convergence** —
+     likely the wrong card type or a fundamental layout choice. Step
+     back instead of grinding harder; re-read the relevant skill
+     reference (`mcp__Local-HA__ha_read_resource
+     skill://home-assistant-best-practices/references/dashboard-cards.md`)
+     or ask for direction.
+   - **The task as stated is complete** — don't add scope from what
+     the snapshot incidentally surfaces. File a GitHub issue per the
+     repo's "incidentally-observed latent problems" convention if it
+     warrants follow-up.
 
 **Live-state caveats** (look at the captured PNG with these in mind):
 
@@ -253,9 +313,16 @@ the household display:
 1. **Pause the HA-side gitops sync** (otherwise it'll reset
    `/homeassistant/dashboards/` to `origin/main` every 5 min and erase
    any new files you've pushed via kiosk-preview):
+
+   ```yaml
+   # MCP tool call (Local-HA server prefix may differ in cloud sessions):
+   mcp__Local-HA__ha_call_service:
+     domain: automation
+     service: turn_off
+     target:
+       entity_id: automation.gitops_poll_and_deploy
    ```
-   ha_call_service(automation.turn_off, automation.gitops_poll_and_deploy)
-   ```
+
    Or via UI: Settings → Automations → "GitOps: Poll and deploy" → off.
 2. **Redirect pve2's Chromium** to the dashboard you're iterating
    (commandeers the household monitor for the session):
@@ -267,18 +334,27 @@ the household display:
    F5-refresh it — no further `kiosk-show` needed unless the URL
    changes (e.g. navigating to a different view or subview, which
    you can drive in one shot with `kiosk-preview --url <URL>`).
-3. **Iterate.** Same edit → `kiosk-preview` → snapshot → discuss
-   shape as the kiosk dashboard loop. For multi-file dashboards that
-   use `!include`, pass `--dashboard-root <manifest.yaml>` so the
-   yaml-mode dashboard cache (keyed off the manifest's mtime, not
-   the included child's) actually gets busted.
+3. **Iterate.** Same edit → `kiosk-preview` → snapshot → rubric-check
+   shape as the kiosk dashboard loop above (apply the same snapshot
+   rubric and stop conditions). For multi-file dashboards that use
+   `!include`, pass `--dashboard-root <manifest.yaml>` so the yaml-mode
+   dashboard cache (keyed off the manifest's mtime, not the included
+   child's) actually gets busted.
 4. **Restore on the way out** (in this order, after the PR is open
    and ideally merged — otherwise the next gitops poll fetches
    `origin/main` which doesn't yet have your new files and the
    dashboard breaks until merge):
+
+   ```yaml
+   # Re-enable gitops via MCP tool call:
+   mcp__Local-HA__ha_call_service:
+     domain: automation
+     service: turn_on
+     target:
+       entity_id: automation.gitops_poll_and_deploy
+   ```
+
    ```bash
-   # Re-enable gitops
-   ha_call_service(automation.turn_on, automation.gitops_poll_and_deploy)
    # Send the kiosk back to the household dashboard
    ssh -J root@pve.local root@pve2 'kiosk-show --dashboard'
    ```
