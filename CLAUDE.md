@@ -281,23 +281,37 @@ PR that closes it. Origin: kiosk OOM observation 2026-05-31, issue #308.
 ### Every PR opens with an `## Origin` section
 
 Immediately after the one-line summary. This section discloses how the
-change came about and serves as the durable record of what was asked for.
+change came about and serves as the durable record of what was asked
+for, written in **third-person past-tense narrative** referring to the
+requester by name.
 
-- If the prompt was under ~500 characters, quote it verbatim in a
-  blockquote. The directness is the point — don't paraphrase, don't tidy
-  it up.
-- If the prompt was longer or emerged from a back-and-forth conversation,
-  write a 2–4 sentence narrative summary capturing what was asked for,
-  what constraints were specified, and what trade-offs were flagged. Link
-  the conversation if a transcript is available; otherwise summarize only
-  what was actually communicated.
-- Do not speculate about context you weren't given. Summarize only what's
-  in the prompt or conversation you saw.
+Treat the prompts you receive as raw material, not as the artifact
+itself — the PR archive is read months later by reviewers (and future
+Chris) who weren't in the session, and a terse verbatim "make X work"
+reads as noise out of context. A 2–4 sentence narrative translates the
+moment into a durable record.
+
+- **Lead with the requester and what they wanted**, e.g. "Chris wanted
+  the kiosk to surface Chris-Phone and Rachel-S23 presence so the
+  household monitor reflects who's home."
+- **Include the substantive constraints** they specified (e.g.
+  "…somewhere unobtrusive, no layout disruption") and any trade-offs
+  they flagged or accepted.
+- **Don't quote the prompt verbatim**, even when it's short. The
+  directness reads as informal in PR archives — translate to
+  narrative.
+- **For longer or multi-turn sessions**, same 2–4 sentence narrative.
+  Link the transcript if one's available, but summarize the *intent*
+  in your own words rather than dumping the back-and-forth.
+- **Don't speculate about context you weren't given.** Narrate only
+  what was actually communicated. If you're uncertain about intent,
+  say so plainly — don't invent a justification.
 
 ### Every commit carries a `Prompt-Origin:` trailer
 
-Mirroring the PR's Origin section. For short prompts, quote verbatim in a
-YAML block scalar. For long prompts, summarize.
+Mirroring the PR's Origin section in compressed form. Same
+third-person past-tense narrative — one or two sentences, no verbatim
+quoting.
 
 Example:
 
@@ -308,17 +322,16 @@ Single-click toggles on, double-click off, hold cycles scenes.
 New scenes: full-red, full-blue, flickering-candle, white-bright, white-relax.
 
 Prompt-Origin: |
-  Reconfigure sonoff button 2 to control my office lights.
-  Single click on, double click off, hold for scene cycle.
-  Give me a full brightness red scene, a full brightness blue scene,
-  a flickering candlelight scene, and various levels of white
-  (bright, relax, etc.)
+  Chris asked for Sonoff button 2 to be rewired for office lighting:
+  single-click on, double-click off, hold cycles a new scene set
+  covering full-brightness red and blue, a flickering candle, and a
+  range of white temperatures from bright to relax.
 Authored-By: Claude Code
 Co-Authored-By: Chris Pitzi <chris@...>
 ```
 
-The PR description is the human-readable record; the commit trailer is the
-durable, `git log`-greppable one. Both should agree.
+The PR description is the human-readable record; the commit trailer is
+the durable, `git log`-greppable one. Both should agree.
 
 ---
 
