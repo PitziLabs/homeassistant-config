@@ -31,6 +31,35 @@ from pathlib import Path
 
 import yaml
 
+
+# HA's YAML loader recognizes custom tags (!include, !secret, etc.) that
+# stock PyYAML rejects. Register no-op constructors so we can parse the
+# document — we only need to collect entity_id strings, not resolve
+# includes or secrets. HA does the real resolution at fetch time, and
+# included child files are walked directly by this script when passed on
+# the command line (so their entity refs get counted via that path, not
+# transitively through the manifest).
+def _ha_tag_scalar(loader, node):
+    """Returns a string placeholder; the real value isn't needed here."""
+    return f"<{node.tag} {loader.construct_scalar(node)}>"
+
+
+def _ha_tag_list(loader, node):
+    return []
+
+
+def _ha_tag_dict(loader, node):
+    return {}
+
+
+for _tag in ("!include", "!secret", "!env_var"):
+    yaml.SafeLoader.add_constructor(_tag, _ha_tag_scalar)
+for _tag in ("!include_dir_list", "!include_dir_merge_list"):
+    yaml.SafeLoader.add_constructor(_tag, _ha_tag_list)
+for _tag in ("!include_dir_named", "!include_dir_merge_named"):
+    yaml.SafeLoader.add_constructor(_tag, _ha_tag_dict)
+
+
 # A valid entity_id: lowercase domain, dot, object_id. Anything with `{`, `}`,
 # whitespace, or uppercase is a template/placeholder and is skipped.
 ENTITY_RE = re.compile(r"^[a-z_]+\.[a-z0-9_]+$")
