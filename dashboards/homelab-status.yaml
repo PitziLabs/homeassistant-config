@@ -489,92 +489,111 @@ views:
       # ═══════════════════════════════════════════════════════════
       # 7. GitHub — PitziLabs fleet
       # ═══════════════════════════════════════════════════════════
-      # Entity IDs follow HA core `github` integration naming:
-      # sensor.<owner>_<repo>_{latest_commit,open_issues,open_pull_requests}.
-      # Repo hyphens become underscores in the entity_id slug.
+      # Powered by the HACS `github_custom` integration
+      # (boralyl/github-custom-component-tutorial). One sensor per repo;
+      # state is the latest-commit short SHA; attributes carry
+      # open_issues, open_pull_requests, stargazers, forks, etc.
+      # Entity_id slug derives from the per-repo `name` field set
+      # during the UI config flow — "pitzilabs <repo>" → sensor.pitzilabs_<repo>.
       - type: markdown
         content: "### 🐙 GitHub — PitziLabs"
 
-      - type: entities
-        title: Fleet activity
-        show_header_toggle: false
-        entities:
-          - type: section
-            label: firewalla-axiom-pipeline
-          - entity: sensor.pitzilabs_firewalla_axiom_pipeline_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_firewalla_axiom_pipeline_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_firewalla_axiom_pipeline_open_pull_requests
-            name: Open PRs
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: firewalla-axiom-pipeline
+            secondary: >
+              {% set s = states('sensor.pitzilabs_firewalla_axiom_pipeline') %}
+              {% set i = state_attr('sensor.pitzilabs_firewalla_axiom_pipeline', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_firewalla_axiom_pipeline', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_firewalla_axiom_pipeline
+            tap_action: { action: more-info }
 
-          - type: section
-            label: foundry-platform-demo
-          - entity: sensor.pitzilabs_foundry_platform_demo_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_foundry_platform_demo_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_foundry_platform_demo_open_pull_requests
-            name: Open PRs
+          - type: custom:mushroom-template-card
+            primary: foundry-platform-demo
+            secondary: >
+              {% set s = states('sensor.pitzilabs_foundry_platform_demo') %}
+              {% set i = state_attr('sensor.pitzilabs_foundry_platform_demo', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_foundry_platform_demo', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_foundry_platform_demo
+            tap_action: { action: more-info }
 
-          - type: section
-            label: homeassistant-config
-          - entity: sensor.pitzilabs_homeassistant_config_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_homeassistant_config_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_homeassistant_config_open_pull_requests
-            name: Open PRs
+          - type: custom:mushroom-template-card
+            primary: homeassistant-config
+            secondary: >
+              {% set s = states('sensor.pitzilabs_homeassistant_config') %}
+              {% set i = state_attr('sensor.pitzilabs_homeassistant_config', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_homeassistant_config', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_homeassistant_config
+            tap_action: { action: more-info }
 
-          - type: section
-            label: homelab-observability
-          - entity: sensor.pitzilabs_homelab_observability_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_homelab_observability_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_homelab_observability_open_pull_requests
-            name: Open PRs
+          - type: custom:mushroom-template-card
+            primary: homelab-observability
+            secondary: >
+              {% set s = states('sensor.pitzilabs_homelab_observability') %}
+              {% set i = state_attr('sensor.pitzilabs_homelab_observability', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_homelab_observability', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_homelab_observability
+            tap_action: { action: more-info }
 
-          - type: section
-            label: ice-cream-book
-          - entity: sensor.pitzilabs_ice_cream_book_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_ice_cream_book_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_ice_cream_book_open_pull_requests
-            name: Open PRs
+          - type: custom:mushroom-template-card
+            primary: ice-cream-book
+            secondary: >
+              {% set s = states('sensor.pitzilabs_ice_cream_book') %}
+              {% set i = state_attr('sensor.pitzilabs_ice_cream_book', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_ice_cream_book', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_ice_cream_book
+            tap_action: { action: more-info }
 
-          - type: section
-            label: reference-checker
-          - entity: sensor.pitzilabs_reference_checker_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_reference_checker_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_reference_checker_open_pull_requests
-            name: Open PRs
+          - type: custom:mushroom-template-card
+            primary: reference-checker
+            secondary: >
+              {% set s = states('sensor.pitzilabs_reference_checker') %}
+              {% set i = state_attr('sensor.pitzilabs_reference_checker', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_reference_checker', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_reference_checker
+            tap_action: { action: more-info }
 
-          - type: section
-            label: shared-workflows
-          - entity: sensor.pitzilabs_shared_workflows_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_shared_workflows_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_shared_workflows_open_pull_requests
-            name: Open PRs
+          - type: custom:mushroom-template-card
+            primary: shared-workflows
+            secondary: >
+              {% set s = states('sensor.pitzilabs_shared_workflows') %}
+              {% set i = state_attr('sensor.pitzilabs_shared_workflows', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_shared_workflows', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_shared_workflows
+            tap_action: { action: more-info }
 
-          - type: section
-            label: workstation-bootstrap
-          - entity: sensor.pitzilabs_workstation_bootstrap_latest_commit
-            name: Latest Commit
-          - entity: sensor.pitzilabs_workstation_bootstrap_open_issues
-            name: Open Issues
-          - entity: sensor.pitzilabs_workstation_bootstrap_open_pull_requests
-            name: Open PRs
+          - type: custom:mushroom-template-card
+            primary: workstation-bootstrap
+            secondary: >
+              {% set s = states('sensor.pitzilabs_workstation_bootstrap') %}
+              {% set i = state_attr('sensor.pitzilabs_workstation_bootstrap', 'open_issues') | int(0) %}
+              {% set p = state_attr('sensor.pitzilabs_workstation_bootstrap', 'open_pull_requests') | int(0) %}
+              {{ s }} · {{ i }} issues · {{ p }} PRs
+            icon: mdi:github
+            entity: sensor.pitzilabs_workstation_bootstrap
+            tap_action: { action: more-info }
 
       - type: markdown
         content: >
-          _Sensors populate once the HA core `github` integration is configured
-          with the eight PitziLabs/* repos. Until then they read as Unavailable._
+          _Sensors populate once the HACS `github_custom` integration's config
+          flow is completed (paste PAT, add the 8 PitziLabs repo paths)._
 
 
       # ═══════════════════════════════════════════════════════════
