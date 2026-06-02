@@ -624,6 +624,30 @@
     "hidden": false
   },
   {
+    "entity_id": "binary_sensor.firewalla_hannah_s_fire",
+    "friendly_name": "Hannah's Fire",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "binary_sensor.firewalla_jacob_s_fire",
+    "friendly_name": "Jacob's Fire",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "binary_sensor.firewalla_system_status",
+    "friendly_name": "System Status",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.front_door_cloud_connection",
     "friendly_name": "Cloud connection",
     "area_id": null,
@@ -2288,6 +2312,14 @@
     "hidden": false
   },
   {
+    "entity_id": "button.firewalla_sync_runtime",
+    "friendly_name": "Sync runtime",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
     "entity_id": "button.garage_door_1_query_openings",
     "friendly_name": "Query openings",
     "area_id": null,
@@ -3349,6 +3381,30 @@
     "area_id": null,
     "device_id": "acda552ed14727d055f9f552e1c5d305",
     "platform": "esphome",
+    "hidden": false
+  },
+  {
+    "entity_id": "device_tracker.chris_phone_presence",
+    "friendly_name": "Presence",
+    "area_id": null,
+    "device_id": "5dae9e89715f5e6d302f293c915e535f",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "device_tracker.galaxy_s22_presence",
+    "friendly_name": "Presence",
+    "area_id": null,
+    "device_id": "9389db81174d1669f07a6952471f8562",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "device_tracker.rachel_s_s23_presence",
+    "friendly_name": "Presence",
+    "area_id": null,
+    "device_id": "328b7a7d3d550030a0777fdd29fc3a6e",
+    "platform": "firewalla_local",
     "hidden": false
   },
   {
@@ -5333,6 +5389,38 @@
     "area_id": null,
     "device_id": "195dcc63a4724efaa883aef92dd0e00e",
     "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.firewalla_hannah_tablet_usage",
+    "friendly_name": "Hannah-Tablet Usage",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.firewalla_jacob_tablet_usage",
+    "friendly_name": "Jacob-Tablet Usage",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.firewalla_kids_tvs_usage",
+    "friendly_name": "Kids-TVs Usage",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.firewalla_speed_test",
+    "friendly_name": "Speed Test",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
     "hidden": false
   },
   {
@@ -9584,6 +9672,30 @@
     "hidden": false
   },
   {
+    "entity_id": "switch.firewalla_block_category_tlx_fw_youtube_for_2edf2fa2_56bf_4369_924a_4ee9d1d6a4be_kids_tvs",
+    "friendly_name": "block category TLX-fw-youtube for 2edf2fa2-56bf-4369-924a-4ee9d1d6a4be (Kids-TVs)",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.firewalla_block_internet_for_46fa8123_7084_4bae_bea2_af0b4d0555b8_jacob_tablet",
+    "friendly_name": "block internet for 46fa8123-7084-4bae-bea2-af0b4d0555b8 (Jacob-Tablet)",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
+    "entity_id": "switch.firewalla_block_internet_for_d1fa1628_6e6f_4279_8f52_085a095de025_hannah_tablet",
+    "friendly_name": "block internet for d1fa1628-6e6f-4279-8f52-085a095de025 (Hannah-Tablet)",
+    "area_id": null,
+    "device_id": "08d60c9c455ee297c1a4e9e820e8b479",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
     "entity_id": "switch.front_door_led",
     "friendly_name": "LED",
     "area_id": null,
@@ -10293,6 +10405,14 @@
     "area_id": null,
     "device_id": "2a8974ec4d25550b4fb41e361c4fee60",
     "platform": "hassio",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.firewalla_local_update",
+    "friendly_name": "Firewalla Local update",
+    "area_id": null,
+    "device_id": "e953e0fc3003eda5e70e3edcf51ee662",
+    "platform": "hacs",
     "hidden": false
   },
   {
