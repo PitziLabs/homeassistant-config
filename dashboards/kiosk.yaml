@@ -559,7 +559,7 @@ views:
               flex-direction: column;
               gap: 6px;
             }
-            /* Hero + time-since + presence cards — all fixed-height. */
+            /* Hero + presence cards — fixed-height. */
             ha-card hui-vertical-stack-card {
               flex: 1 1 auto;
               min-height: 0;
@@ -568,14 +568,10 @@ views:
               gap: 6px;
             }
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 130px !important;
-              min-height: 130px;
+              flex: 0 0 162px !important;
+              min-height: 162px;
             }
             ha-card hui-vertical-stack-card > :nth-child(2) {
-              flex: 0 0 32px !important;
-              min-height: 32px;
-            }
-            ha-card hui-vertical-stack-card > :nth-child(3) {
               flex: 0 0 120px !important;
               min-height: 120px;
             }
@@ -612,6 +608,20 @@ views:
               entity: switch.meeting_button_in_meeting
             triggers_update:
               - device_tracker.rachel_s_s23_presence
+              - switch.meeting_button_in_meeting
+            custom_fields:
+              duration: >-
+                [[[
+                  if (states['device_tracker.rachel_s_s23_presence']?.state === 'not_home') return '';
+                  const s = states['switch.meeting_button_in_meeting']?.state;
+                  if (s !== 'on' && s !== 'off') return '';
+                  const lc = new Date(states['switch.meeting_button_in_meeting']?.last_changed);
+                  const diffMins = Math.floor((new Date() - lc) / 60000);
+                  const rel = diffMins < 1 ? 'just now'
+                    : diffMins < 60 ? diffMins + ' min'
+                    : Math.floor(diffMins/60) + 'h ' + (diffMins%60) + 'm';
+                  return 'for ' + rel;
+                ]]]
             state:
               # Gray out the whole indicator when Rachel isn't home —
               # meeting status is irrelevant if she's not here.
@@ -675,50 +685,21 @@ views:
                 - justify-self: start
                 - align-self: start
               grid:
-                - grid-template-areas: '"i n" "i l"'
+                - grid-template-areas: '"i n" "i l" "i duration"'
                 - grid-template-columns: 'min-content 1fr'
-                - grid-template-rows: '1fr 1fr'
+                - grid-template-rows: '1fr auto auto'
                 - column-gap: '20px'
                 - row-gap: '4px'
                 - align-items: 'stretch'
                 - height: '100%'
-
-          # --- Time-since indicator ---
-          # Shows "Available for 11m" / "In meeting for 32m" based on the
-          # last_changed of the underlying meeting switch.
-          - type: custom:mushroom-template-card
-            entity: switch.meeting_button_in_meeting
-            primary: |-
-              {% set s = states('switch.meeting_button_in_meeting') %}
-              {% set rel = relative_time(states.switch.meeting_button_in_meeting.last_changed) %}
-              {% if s == 'on' %}In meeting for {{ rel }}
-              {% elif s == 'off' %}Available for {{ rel }}
-              {% else %}—{% endif %}
-            icon: mdi:timer-outline
-            icon_color: blue-grey
-            fill_container: true
-            tap_action: { action: none }
-            card_mod:
-              style: |
-                ha-card {
-                  background: transparent !important;
-                  border: none !important;
-                  box-shadow: none !important;
-                  padding: 2px 8px !important;
-                  height: 100%;
-                  display: flex;
-                  align-items: center;
-                }
-                mushroom-state-info {
-                  --card-primary-font-size: 14px;
-                  --card-primary-font-weight: 500;
-                  --card-primary-color: var(--kiosk-text-secondary);
-                  --card-primary-line-height: 1.2;
-                }
-                mushroom-shape-icon {
-                  --icon-size: 22px;
-                  --shape-color: transparent;
-                }
+              custom_fields:
+                duration:
+                  - font-size: '13px'
+                  - font-weight: '400'
+                  - color: 'var(--kiosk-text-tertiary)'
+                  - padding-top: '3px'
+                  - align-self: 'start'
+                  - justify-self: 'start'
 
           # --- Presence cards: Chris + Rachel (home / away) ---
           # Hero-style button-cards matching the meeting indicator design.
