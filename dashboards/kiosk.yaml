@@ -705,12 +705,33 @@ views:
                   --shape-color: transparent;
                 }
 
-          # --- Outdoor weather chips ---
-          # Temperature, humidity, wind, and next sun event from
+          # --- Presence + outdoor weather chips ---
+          # Chris/Rachel home/away (router-layer presence via Firewalla-Local),
+          # then temperature, humidity, wind, and next sun event from
           # weather.forecast_home + sun.sun.
           - type: custom:mushroom-chips-card
             alignment: spaced
             chips:
+              - type: template
+                entity: device_tracker.chris_phone_presence
+                icon: |-
+                  {% if states('device_tracker.chris_phone_presence') == 'home' %}mdi:account-tie
+                  {% else %}mdi:account-off-outline{% endif %}
+                icon_color: |-
+                  {% if states('device_tracker.chris_phone_presence') == 'home' %}green
+                  {% else %}grey{% endif %}
+                content: Chris
+                tap_action: { action: more-info }
+              - type: template
+                entity: device_tracker.rachel_s_s23_presence
+                icon: |-
+                  {% if states('device_tracker.rachel_s_s23_presence') == 'home' %}mdi:account-heart
+                  {% else %}mdi:account-off-outline{% endif %}
+                icon_color: |-
+                  {% if states('device_tracker.rachel_s_s23_presence') == 'home' %}green
+                  {% else %}grey{% endif %}
+                content: Rachel
+                tap_action: { action: more-info }
               - type: template
                 icon: mdi:thermometer
                 icon_color: amber
