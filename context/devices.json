@@ -310,6 +310,16 @@
     ]
   },
   {
+    "device_id": "312c5a7be0510c34b725aa8ba6abf264",
+    "name": "Github Custom",
+    "manufacturer": "boralyl",
+    "model": "integration",
+    "area_id": null,
+    "integrations": [
+      "hacs"
+    ]
+  },
+  {
     "device_id": "65f099139174f0cdc2bd57357f1b8916",
     "name": "Google AI Conversation",
     "manufacturer": "Google",
