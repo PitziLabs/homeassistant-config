@@ -68,7 +68,7 @@ lovelace:
       mode: yaml
       title: Kiosk
       icon: mdi:monitor-dashboard
-      show_in_sidebar: false
+      show_in_sidebar: true
       filename: dashboards/kiosk.yaml
     dashboard-command-deck:
       mode: yaml
