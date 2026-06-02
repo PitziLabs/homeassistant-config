@@ -90,12 +90,12 @@ views:
                vstack-collapses-to-content failure mode we saw with
                flex: 1 1 auto on the grow side. */
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 190px !important;
-              min-height: 190px;
+              flex: 0 0 215px !important;
+              min-height: 215px;
             }
             ha-card hui-vertical-stack-card > :last-child {
-              flex: 0 0 95px !important;
-              min-height: 95px;
+              flex: 0 0 80px !important;
+              min-height: 80px;
             }
         card:
           type: vertical-stack
