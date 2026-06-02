@@ -559,7 +559,7 @@ views:
               flex-direction: column;
               gap: 6px;
             }
-            /* Hero grows; time-since + weather chips fixed-height. */
+            /* Hero + time-since + presence cards — all fixed-height. */
             ha-card hui-vertical-stack-card {
               flex: 1 1 auto;
               min-height: 0;
@@ -568,16 +568,16 @@ views:
               gap: 6px;
             }
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 170px !important;
-              min-height: 170px;
+              flex: 0 0 130px !important;
+              min-height: 130px;
             }
             ha-card hui-vertical-stack-card > :nth-child(2) {
-              flex: 0 0 36px !important;
-              min-height: 36px;
+              flex: 0 0 32px !important;
+              min-height: 32px;
             }
             ha-card hui-vertical-stack-card > :nth-child(3) {
-              flex: 0 0 80px !important;
-              min-height: 80px;
+              flex: 0 0 120px !important;
+              min-height: 120px;
             }
             /* Same fill cascade as the alarm hero — see comment there. */
             ha-card > * {
@@ -610,7 +610,22 @@ views:
             hold_action:
               action: more-info
               entity: switch.meeting_button_in_meeting
+            triggers_update:
+              - device_tracker.rachel_s_s23_presence
             state:
+              # Gray out the whole indicator when Rachel isn't home —
+              # meeting status is irrelevant if she's not here.
+              - operator: template
+                value: |
+                  [[[ return states['device_tracker.rachel_s_s23_presence'].state === 'not_home'; ]]]
+                icon: mdi:account-off-outline
+                color: 'var(--kiosk-text-tertiary)'
+                label: Not Home
+                styles:
+                  card:
+                    - background-color: 'var(--kiosk-bg-tile)'
+                    - border-left: '4px solid var(--kiosk-text-tertiary)'
+                  label: [{ color: 'var(--kiosk-text-tertiary)' }]
               - value: 'on'
                 icon: mdi:account-voice
                 color: 'var(--kiosk-accent-triggered)'
@@ -644,16 +659,16 @@ views:
                 - height: '100%'
                 - border-radius: '10px'
                 - border: 'none'
-                - padding: '20px 24px'
+                - padding: '12px 24px'
                 - background: 'var(--kiosk-bg-card)'
               name:
-                - font-size: '20px'
+                - font-size: '17px'
                 - font-weight: '500'
                 - color: 'var(--kiosk-text-secondary)'
                 - justify-self: start
                 - align-self: end
               label:
-                - font-size: '28px'
+                - font-size: '24px'
                 - font-weight: '600'
                 - text-transform: 'uppercase'
                 - letter-spacing: '1.5px'
@@ -705,67 +720,97 @@ views:
                   --shape-color: transparent;
                 }
 
-          # --- Presence + outdoor weather chips ---
-          # Chris/Rachel home/away (router-layer presence via Firewalla-Local),
-          # then temperature, humidity, wind, and next sun event from
-          # weather.forecast_home + sun.sun.
-          - type: custom:mushroom-chips-card
-            alignment: spaced
-            chips:
-              - type: template
-                entity: device_tracker.chris_phone_presence
-                icon: |-
-                  {% if states('device_tracker.chris_phone_presence') == 'home' %}mdi:account-tie
-                  {% else %}mdi:account-off-outline{% endif %}
-                icon_color: |-
-                  {% if states('device_tracker.chris_phone_presence') == 'home' %}green
-                  {% else %}grey{% endif %}
-                content: Chris
-                tap_action: { action: more-info }
-              - type: template
-                entity: device_tracker.rachel_s_s23_presence
-                icon: |-
-                  {% if states('device_tracker.rachel_s_s23_presence') == 'home' %}mdi:account-heart
-                  {% else %}mdi:account-off-outline{% endif %}
-                icon_color: |-
-                  {% if states('device_tracker.rachel_s_s23_presence') == 'home' %}green
-                  {% else %}grey{% endif %}
-                content: Rachel
-                tap_action: { action: more-info }
-              - type: template
-                icon: mdi:thermometer
-                icon_color: amber
-                content: '{{ state_attr("weather.forecast_home", "temperature") | round }}°'
-              - type: template
-                icon: mdi:water-percent
-                icon_color: blue
-                content: '{{ state_attr("weather.forecast_home", "humidity") | round }}%'
-              - type: template
-                icon: mdi:weather-windy
-                icon_color: grey
-                content: '{{ state_attr("weather.forecast_home", "wind_speed") | round }} mph'
-              - type: template
-                icon: |-
-                  {% if states('sun.sun') == 'above_horizon' %}mdi:weather-sunset-down
-                  {% else %}mdi:weather-sunset-up{% endif %}
-                icon_color: orange
-                content: |-
-                  {% if states('sun.sun') == 'above_horizon' %}
-                  {{ as_timestamp(state_attr('sun.sun', 'next_setting')) | timestamp_custom('%-I:%M') }}
-                  {% else %}
-                  {{ as_timestamp(state_attr('sun.sun', 'next_rising')) | timestamp_custom('%-I:%M') }}
-                  {% endif %}
+          # --- Presence cards: Chris + Rachel (home / away) ---
+          # Hero-style button-cards matching the meeting indicator design.
+          - type: custom:mod-card
             card_mod:
               style: |
                 ha-card {
-                  background: var(--kiosk-bg-tile) !important;
+                  height: 120px !important;
+                  background: transparent !important;
                   border: none !important;
-                  border-radius: 8px !important;
-                  padding: 8px 8px !important;
-                  height: 100%;
-                  display: flex;
-                  align-items: center;
+                  box-shadow: none !important;
                 }
+            card:
+              type: horizontal-stack
+              cards:
+                - &presence_card
+                  type: custom:button-card
+                  entity: device_tracker.chris_phone_presence
+                  name: Chris
+                  show_name: true
+                  show_state: false
+                  show_label: true
+                  show_icon: true
+                  size: 50%
+                  tap_action: { action: more-info }
+                  state:
+                    - value: 'home'
+                      icon: mdi:account-tie
+                      color: 'var(--kiosk-accent-disarmed)'
+                      label: Home
+                      styles:
+                        card:
+                          - background-color: 'rgba(86, 211, 100, 0.12)'
+                          - border-left: '4px solid var(--kiosk-accent-disarmed)'
+                        label: [{ color: 'var(--kiosk-accent-disarmed)' }]
+                    - value: 'not_home'
+                      icon: mdi:account-off-outline
+                      color: 'var(--kiosk-text-tertiary)'
+                      label: Away
+                      styles:
+                        card:
+                          - background-color: 'var(--kiosk-bg-tile)'
+                        label: [{ color: 'var(--kiosk-text-tertiary)' }]
+                  styles:
+                    card:
+                      - height: '100%'
+                      - border-radius: '10px'
+                      - border: 'none'
+                      - padding: '10px 20px'
+                      - background: 'var(--kiosk-bg-card)'
+                    name:
+                      - font-size: '16px'
+                      - font-weight: '500'
+                      - color: 'var(--kiosk-text-secondary)'
+                      - justify-self: start
+                      - align-self: end
+                    label:
+                      - font-size: '22px'
+                      - font-weight: '600'
+                      - text-transform: 'uppercase'
+                      - letter-spacing: '1.5px'
+                      - justify-self: start
+                      - align-self: start
+                    grid:
+                      - grid-template-areas: '"i n" "i l"'
+                      - grid-template-columns: 'min-content 1fr'
+                      - grid-template-rows: '1fr 1fr'
+                      - column-gap: '16px'
+                      - row-gap: '4px'
+                      - align-items: 'stretch'
+                      - height: '100%'
+                - <<: *presence_card
+                  entity: device_tracker.rachel_s_s23_presence
+                  name: Rachel
+                  state:
+                    - value: 'home'
+                      icon: mdi:account-heart
+                      color: 'var(--kiosk-accent-disarmed)'
+                      label: Home
+                      styles:
+                        card:
+                          - background-color: 'rgba(86, 211, 100, 0.12)'
+                          - border-left: '4px solid var(--kiosk-accent-disarmed)'
+                        label: [{ color: 'var(--kiosk-accent-disarmed)' }]
+                    - value: 'not_home'
+                      icon: mdi:account-off-outline
+                      color: 'var(--kiosk-text-tertiary)'
+                      label: Away
+                      styles:
+                        card:
+                          - background-color: 'var(--kiosk-bg-tile)'
+                        label: [{ color: 'var(--kiosk-text-tertiary)' }]
 
       # ============================================================
       # CLIMATE COLUMN
