@@ -30,16 +30,6 @@
     ]
   },
   {
-    "device_id": "302467d56935e72646a7bb0175a41d8f",
-    "name": "Basement TV",
-    "manufacturer": "TCL",
-    "model": "65R625",
-    "area_id": "basement",
-    "integrations": [
-      "roku"
-    ]
-  },
-  {
     "device_id": "408b1fc93e2e314421a1e463a9072e27",
     "name": "Basement lamp 1",
     "manufacturer": "Ecosmart",
@@ -817,16 +807,6 @@
     "area_id": "office",
     "integrations": [
       "zwave_js"
-    ]
-  },
-  {
-    "device_id": "2e36e6eac114bf2f201c568d60ff792a",
-    "name": "Office TV",
-    "manufacturer": "TCL",
-    "model": "65R625",
-    "area_id": "office",
-    "integrations": [
-      "roku"
     ]
   },
   {
