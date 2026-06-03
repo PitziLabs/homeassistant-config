@@ -17,7 +17,7 @@ views:
     path: today
     icon: mdi:television-clock
     cards:
-      # --- 3-day app activity timeline (all three TVs) ---
+      # --- 3-day app activity timeline ---
       - type: history-graph
         title: TV App Activity — Last 3 Days
         hours_to_show: 72
@@ -25,10 +25,6 @@ views:
         entities:
           - entity: sensor.play_room_tv_active_app
             name: Play Room
-          - entity: sensor.basement_tv_active_app
-            name: Basement
-          - entity: sensor.office_tv_active_app
-            name: Office
 
       # --- Play Room today's totals ---
       - type: entities
@@ -51,43 +47,11 @@ views:
             icon: mdi:movie-open-star
         state_color: false
 
-      # --- Basement today's totals ---
-      - type: entities
-        title: Basement TV — Today
-        entities:
-          - entity: sensor.basement_netflix_today
-            name: Netflix
-            icon: mdi:netflix
-          - entity: sensor.basement_youtube_today
-            name: YouTube
-            icon: mdi:youtube
-          - entity: sensor.basement_prime_video_today
-            name: Prime Video
-            icon: mdi:filmstrip
-
-      # --- Office today's totals ---
-      - type: entities
-        title: Office TV — Today
-        entities:
-          - entity: sensor.office_netflix_today
-            name: Netflix
-            icon: mdi:netflix
-          - entity: sensor.office_youtube_today
-            name: YouTube
-            icon: mdi:youtube
-          - entity: sensor.office_prime_video_today
-            name: Prime Video
-            icon: mdi:filmstrip
-
       # --- Current state at the bottom for live awareness ---
       - type: glance
         title: Right Now
         entities:
           - entity: media_player.play_room_tv
             name: Play Room
-          - entity: media_player.basement_tv
-            name: Basement
-          - entity: media_player.office_tv
-            name: Office
         state_color: true
         show_state: true

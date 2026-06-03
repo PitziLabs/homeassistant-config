@@ -18,12 +18,6 @@ alarm_control_panel.home_alarm   # YAML-defined manual alarm panel (configuratio
 # state (verified ~0.0 h) but no entity-registry entry — they carry no
 # unique_id, so they never appear in context/entities.json. Allowlisted, not
 # pending: a context dump will never resolve them.
-sensor.basement_netflix_today
-sensor.basement_prime_video_today
-sensor.basement_youtube_today
-sensor.office_netflix_today
-sensor.office_prime_video_today
-sensor.office_youtube_today
 sensor.play_room_apple_tv_today
 sensor.play_room_disney_plus_today
 sensor.play_room_netflix_today
