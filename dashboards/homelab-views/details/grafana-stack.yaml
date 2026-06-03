@@ -7,17 +7,20 @@ cards:
   - type: vertical-stack
     cards:
 
-      # Hero
+      # Hero. binary_sensor.grafana_stack_status was orphaned to
+      # `unavailable` when the Proxmox integration re-registered (#333);
+      # sensor.grafana_stack_status_2 is the live string-state replacement
+      # ('running' / 'stopped' / etc).
       - type: custom:mushroom-template-card
         primary: grafana-stack
         secondary: >
-          {% if is_state('binary_sensor.grafana_stack_status', 'on') %}
+          {% if states('sensor.grafana_stack_status_2') == 'running' %}
             LXC 105 on pve3 · Alloy + collectors → Grafana Cloud
-          {% else %}LXC 105 · {{ states('binary_sensor.grafana_stack_status') }}{% endif %}
+          {% else %}LXC 105 · {{ states('sensor.grafana_stack_status_2') }}{% endif %}
         icon: mdi:chart-line
         icon_color: >
-          {% if is_state('binary_sensor.grafana_stack_status', 'on') %}green{% else %}red{% endif %}
-        entity: binary_sensor.grafana_stack_status
+          {% if states('sensor.grafana_stack_status_2') == 'running' %}green{% else %}red{% endif %}
+        entity: sensor.grafana_stack_status_2
         tap_action: { action: none }
 
       # Live state — when the LXC is unavailable, these gauges render as empty
@@ -26,21 +29,21 @@ cards:
         square: false
         cards:
           - type: gauge
-            entity: sensor.grafana_stack_cpu_usage
+            entity: sensor.grafana_stack_cpu_usage_2
             name: CPU
             min: 0
             max: 100
             needle: true
             severity: { green: 0, yellow: 50, red: 80 }
           - type: gauge
-            entity: sensor.grafana_stack_memory_usage_percentage
+            entity: sensor.grafana_stack_memory_usage_percentage_2
             name: Memory
             min: 0
             max: 100
             needle: true
             severity: { green: 0, yellow: 70, red: 85 }
           - type: gauge
-            entity: sensor.grafana_stack_disk_usage
+            entity: sensor.grafana_stack_disk_usage_2
             name: Disk
             min: 0
             max: 100
@@ -53,59 +56,37 @@ cards:
         square: false
         cards:
           - type: custom:mushroom-entity-card
-            entity: sensor.grafana_stack_network_input
+            entity: sensor.grafana_stack_network_input_2
             name: Network in
             icon: mdi:download-network
           - type: custom:mushroom-entity-card
-            entity: sensor.grafana_stack_network_output
+            entity: sensor.grafana_stack_network_output_2
             name: Network out
             icon: mdi:upload-network
           - type: custom:mushroom-template-card
             primary: Uptime
             secondary: >
-              {% set s = states('sensor.grafana_stack_uptime') | int(-1) %}
+              {% set s = states('sensor.grafana_stack_uptime_2') | int(-1) %}
               {% if s < 0 %}—
               {% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h
               {% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m
               {% else %}{{ (s // 60) }}m{% endif %}
             icon: mdi:clock-outline
-            entity: sensor.grafana_stack_uptime
+            entity: sensor.grafana_stack_uptime_2
             tap_action: { action: more-info }
 
-      # Notes + actions
+      # Notes
       - type: markdown
         content: >
           **Role:** Grafana Alloy + receiver collectors, ship logs +
           metrics to Grafana Cloud (`pitzilabs.grafana.net`). Legacy
           local Loki/Prom/Grafana retired 2026-05-27 in the
-          homelab-observability migration. Issue #333 tracks the
-          duplicate `*_2` sensor registration cleanup on this LXC.
+          homelab-observability migration.
 
-      - type: grid
-        columns: 4
-        square: false
-        cards:
-          - type: custom:mushroom-entity-card
-            entity: button.grafana_stack_restart
-            name: Restart LXC
-            icon: mdi:restart
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.grafana_stack_restart } }
-          - type: custom:mushroom-entity-card
-            entity: button.grafana_stack_stop
-            name: Stop
-            icon: mdi:stop-circle
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.grafana_stack_stop } }
-          - type: custom:mushroom-entity-card
-            entity: button.grafana_stack_start
-            name: Start
-            icon: mdi:play-circle
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.grafana_stack_start } }
-          - type: custom:mushroom-entity-card
-            entity: button.grafana_stack_create_snapshot
-            name: Snapshot
-            icon: mdi:camera
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.grafana_stack_create_snapshot } }
+
+          **LXC controls (start/stop/restart/snapshot):** absent from
+          this view because the Proxmox VE integration re-registration
+          (see #333) only minted new `_2` sensors — no replacement
+          `button.grafana_stack_*` entities were created, only the
+          orphaned `unavailable` originals. Control the LXC from
+          Proxmox directly until the integration is cleaned up.

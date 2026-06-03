@@ -29,11 +29,6 @@ sensor.play_room_youtube_today
 media_player.basement_tv
 media_player.office_tv
 
-# --- CyberPower UPS (homelab-status.yaml "UPS" section) ---
-# Integration now online — most sensors resolve in the snapshot and were pruned.
-# Only battery_runtime remains absent (entity not exposed by the integration yet).
-sensor.cyberpower_battery_runtime
-
 # --- Pending integration: PitziLabs/* GitHub sensors (homelab-status.yaml) ---
 # Populated by the HACS `github_custom` integration
 # (boralyl/github-custom-component-tutorial) once configured via its UI flow.

@@ -69,14 +69,14 @@ cards:
           - type: custom:mushroom-template-card
             primary: grafana-stack
             secondary: >
-              {% if is_state('binary_sensor.grafana_stack_status', 'on') %}
-                LXC 105 · cpu {{ states('sensor.grafana_stack_cpu_usage') | int(0) }}% ·
-                mem {{ states('sensor.grafana_stack_memory_usage_percentage') | int(0) }}%
-              {% else %}LXC 105 · {{ states('binary_sensor.grafana_stack_status') }}{% endif %}
+              {% if states('sensor.grafana_stack_status_2') == 'running' %}
+                LXC 105 · cpu {{ states('sensor.grafana_stack_cpu_usage_2') | int(0) }}% ·
+                mem {{ states('sensor.grafana_stack_memory_usage_percentage_2') | int(0) }}%
+              {% else %}LXC 105 · {{ states('sensor.grafana_stack_status_2') }}{% endif %}
             icon: mdi:chart-line
             icon_color: >
-              {% if is_state('binary_sensor.grafana_stack_status', 'on') %}green{% else %}red{% endif %}
-            entity: binary_sensor.grafana_stack_status
+              {% if states('sensor.grafana_stack_status_2') == 'running' %}green{% else %}red{% endif %}
+            entity: sensor.grafana_stack_status_2
             tap_action: { action: more-info }
 
       # Backup + boot recency
