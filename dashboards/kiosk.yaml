@@ -48,7 +48,7 @@ views:
       overflow: hidden
       grid-gap: 8px
       grid-template-columns: 1fr 1fr 1.4fr 1fr
-      grid-template-rows: 300px 1fr
+      grid-template-rows: 340px 1fr
       grid-template-areas: |
         "weather weather alarm   meeting"
         "climate sensors lights  media"
@@ -90,8 +90,8 @@ views:
                vstack-collapses-to-content failure mode we saw with
                flex: 1 1 auto on the grow side. */
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 215px !important;
-              min-height: 215px;
+              flex: 0 0 255px !important;
+              min-height: 255px;
             }
             ha-card hui-vertical-stack-card > :last-child {
               flex: 0 0 80px !important;
@@ -105,8 +105,8 @@ views:
               card_mod:
                 style: |
                   ha-card {
-                    height: 215px !important;
-                    max-height: 215px !important;
+                    height: 255px !important;
+                    max-height: 255px !important;
                     overflow: hidden !important;
                     background: transparent !important;
                     border: none !important;
@@ -114,7 +114,7 @@ views:
                   }
                   ha-card > * {
                     height: 100% !important;
-                    max-height: 215px !important;
+                    max-height: 255px !important;
                     overflow: hidden !important;
                     display: block !important;
                   }
