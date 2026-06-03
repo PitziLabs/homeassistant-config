@@ -156,8 +156,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[0] if forecast|count > 0 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
                       {% set m = {
@@ -203,8 +206,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[1] if forecast|count > 1 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
                       {% set m = {
@@ -229,8 +235,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[2] if forecast|count > 2 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
                       {% set m = {
@@ -255,8 +264,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[3] if forecast|count > 3 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
                       {% set m = {
@@ -876,7 +888,7 @@ views:
                       - type: template
                         icon: mdi:water-percent
                         icon_color: blue
-                        content: '{{ states("sensor.upstairs_humidity") | round }}%'
+                        content: '{% set h = states("sensor.upstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
                       - type: template
                         icon: mdi:thermometer
                         icon_color: amber
@@ -998,7 +1010,7 @@ views:
                       - type: template
                         icon: mdi:water-percent
                         icon_color: blue
-                        content: '{{ states("sensor.downstairs_humidity") | round }}%'
+                        content: '{% set h = states("sensor.downstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
                       - type: template
                         icon: mdi:thermometer
                         icon_color: amber
