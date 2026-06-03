@@ -17,7 +17,7 @@ to them when implementing:
 | `esphome/README.md` | Konnected alarm panels, ESPHome firmware, RTTTL annunciator |
 | `automations/README.md` | UI-vs-git authorship split for automations |
 | `packages/README.md` | HA Version Sync, Meeting Indicator, scene controllers |
-| `dashboards/README.md` | All four Lovelace dashboards (Home, Kiosk, Homelab Status, Command Deck) |
+| `dashboards/README.md` | All three Lovelace dashboards (Home, Kiosk, Homelab Status) |
 | `themes/README.md` | Noctis Kiosk theme, kiosk_polish tokens |
 | `scripts/README.md` | gitops-sync.sh, ha-context-dump.sh, Script auth conventions |
 | `kiosk-host/README.md` | Chromium kiosk launcher running on pve2, gitops pull loop, bootstrap recipe, **live preview iteration loop + design session protocol** |
