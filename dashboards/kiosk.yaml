@@ -48,7 +48,7 @@ views:
       overflow: hidden
       grid-gap: 8px
       grid-template-columns: 1fr 1fr 1.4fr 1fr
-      grid-template-rows: 340px 1fr
+      grid-template-rows: 285px 1fr
       grid-template-areas: |
         "weather weather alarm   meeting"
         "climate sensors lights  media"
@@ -72,52 +72,41 @@ views:
               border-radius: 10px;
               border: none;
               background: linear-gradient(135deg, #1e3a5f 0%, #0f1f3a 100%);
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
               padding: 0;
             }
-            ha-card hui-vertical-stack-card,
-            ha-card > * {
-              flex: 1 1 auto;
-              min-height: 0;
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
+            /* Drive the horizontal-stack as a flex row filling the cell */
+            ha-card > hui-horizontal-stack-card {
+              display: flex !important;
+              flex-direction: row !important;
+              height: 100% !important;
+              gap: 0 !important;
             }
-            /* Fully fixed pixel allocations with !important — same
-               pattern that works in the sensors cell. Avoids the
-               vstack-collapses-to-content failure mode we saw with
-               flex: 1 1 auto on the grow side. */
-            ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 255px !important;
-              min-height: 255px;
+            /* Left (clock): fixed 58% width */
+            ha-card > hui-horizontal-stack-card > :first-child {
+              flex: 0 0 58% !important;
+              height: 100% !important;
+              overflow: hidden !important;
             }
-            ha-card hui-vertical-stack-card > :last-child {
-              flex: 0 0 80px !important;
-              min-height: 80px;
+            /* Right (forecast list): fills remainder */
+            ha-card > hui-horizontal-stack-card > :last-child {
+              flex: 1 1 0 !important;
+              height: 100% !important;
             }
         card:
-          type: vertical-stack
+          type: horizontal-stack
           cards:
-            # --- Clock + current conditions (forecast disabled; strip below handles it) ---
+            # --- Left: clock-weather-card ---
             - type: custom:mod-card
               card_mod:
                 style: |
                   ha-card {
-                    height: 255px !important;
-                    max-height: 255px !important;
+                    height: 100% !important;
                     overflow: hidden !important;
                     background: transparent !important;
                     border: none !important;
                     box-shadow: none !important;
                   }
-                  ha-card > * {
-                    height: 100% !important;
-                    max-height: 255px !important;
-                    overflow: hidden !important;
-                    display: block !important;
-                  }
+                  ha-card > * { height: 100% !important; display: block !important; }
               card:
                 type: custom:clock-weather-card
                 entity: weather.forecast_home
@@ -133,27 +122,33 @@ views:
                       height: 100%;
                     }
 
-            # --- 4-day forecast strip from sensor.weather_forecast_daily ---
-            # weather.forecast_home no longer exposes a static `forecast`
-            # attribute (HA deprecated it); the trigger-based template
-            # sensor.weather_forecast_daily in configuration.yaml is the
-            # supported path now.
+            # --- Right: 4-day forecast as vertical list ---
             - type: custom:mod-card
               card_mod:
                 style: |
                   ha-card {
-                    height: 80px !important;
-                    background: rgba(0,0,0,0.18);
-                    border: none;
-                    border-radius: 8px;
-                    padding: 4px;
-                  }
-                  ha-card > * {
                     height: 100% !important;
-                    display: block !important;
+                    background: transparent !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    padding: 8px 8px 8px 0;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    gap: 4px !important;
+                  }
+                  ha-card > hui-vertical-stack-card {
+                    flex: 1 1 auto !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    gap: 4px !important;
+                    min-height: 0 !important;
+                  }
+                  ha-card > hui-vertical-stack-card > * {
+                    flex: 1 1 0 !important;
+                    min-height: 0 !important;
                   }
               card:
-                type: horizontal-stack
+                type: vertical-stack
                 cards:
                   - &forecast_day
                     type: custom:mushroom-template-card
@@ -165,19 +160,7 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
-                      {% set m = {'clear-night':'mdi:weather-night',
-                                  'sunny':'mdi:weather-sunny',
-                                  'cloudy':'mdi:weather-cloudy',
-                                  'partlycloudy':'mdi:weather-partly-cloudy',
-                                  'rainy':'mdi:weather-rainy',
-                                  'pouring':'mdi:weather-pouring',
-                                  'snowy':'mdi:weather-snowy',
-                                  'snowy-rainy':'mdi:weather-snowy-rainy',
-                                  'windy':'mdi:weather-windy',
-                                  'fog':'mdi:weather-fog',
-                                  'lightning':'mdi:weather-lightning',
-                                  'lightning-rainy':'mdi:weather-lightning-rainy',
-                                  'hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
@@ -185,32 +168,28 @@ views:
                       {% if c in ['sunny','clear-night'] %}amber
                       {% elif c in ['rainy','pouring','snowy-rainy'] %}blue
                       {% elif c == 'snowy' %}light-blue
-                      {% else %}grey
-                      {% endif %}
+                      {% else %}grey{% endif %}
                     layout: horizontal
                     fill_container: true
                     tap_action: { action: none }
                     card_mod:
                       style: |
                         ha-card {
-                          background: rgba(255,255,255,0.04) !important;
+                          background: rgba(255,255,255,0.05) !important;
                           border: none !important;
                           box-shadow: none !important;
                           border-radius: 6px !important;
-                          padding: 2px !important;
+                          padding: 2px 6px !important;
                         }
                         mushroom-state-info {
-                          --card-primary-font-size: 11px;
+                          --card-primary-font-size: 13px;
                           --card-primary-font-weight: 600;
                           --card-primary-color: var(--kiosk-text-primary);
                           --card-primary-text-transform: uppercase;
-                          --card-secondary-font-size: 11px;
+                          --card-secondary-font-size: 12px;
                           --card-secondary-color: var(--kiosk-text-secondary);
                         }
-                        mushroom-shape-icon {
-                          --icon-size: 24px;
-                          --shape-color: transparent;
-                        }
+                        mushroom-shape-icon { --icon-size: 28px; --shape-color: transparent; }
                   - <<: *forecast_day
                     primary: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
@@ -220,19 +199,7 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
-                      {% set m = {'clear-night':'mdi:weather-night',
-                                  'sunny':'mdi:weather-sunny',
-                                  'cloudy':'mdi:weather-cloudy',
-                                  'partlycloudy':'mdi:weather-partly-cloudy',
-                                  'rainy':'mdi:weather-rainy',
-                                  'pouring':'mdi:weather-pouring',
-                                  'snowy':'mdi:weather-snowy',
-                                  'snowy-rainy':'mdi:weather-snowy-rainy',
-                                  'windy':'mdi:weather-windy',
-                                  'fog':'mdi:weather-fog',
-                                  'lightning':'mdi:weather-lightning',
-                                  'lightning-rainy':'mdi:weather-lightning-rainy',
-                                  'hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
@@ -240,8 +207,7 @@ views:
                       {% if c in ['sunny','clear-night'] %}amber
                       {% elif c in ['rainy','pouring','snowy-rainy'] %}blue
                       {% elif c == 'snowy' %}light-blue
-                      {% else %}grey
-                      {% endif %}
+                      {% else %}grey{% endif %}
                   - <<: *forecast_day
                     primary: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
@@ -251,19 +217,7 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
-                      {% set m = {'clear-night':'mdi:weather-night',
-                                  'sunny':'mdi:weather-sunny',
-                                  'cloudy':'mdi:weather-cloudy',
-                                  'partlycloudy':'mdi:weather-partly-cloudy',
-                                  'rainy':'mdi:weather-rainy',
-                                  'pouring':'mdi:weather-pouring',
-                                  'snowy':'mdi:weather-snowy',
-                                  'snowy-rainy':'mdi:weather-snowy-rainy',
-                                  'windy':'mdi:weather-windy',
-                                  'fog':'mdi:weather-fog',
-                                  'lightning':'mdi:weather-lightning',
-                                  'lightning-rainy':'mdi:weather-lightning-rainy',
-                                  'hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
@@ -271,8 +225,7 @@ views:
                       {% if c in ['sunny','clear-night'] %}amber
                       {% elif c in ['rainy','pouring','snowy-rainy'] %}blue
                       {% elif c == 'snowy' %}light-blue
-                      {% else %}grey
-                      {% endif %}
+                      {% else %}grey{% endif %}
                   - <<: *forecast_day
                     primary: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
@@ -282,19 +235,7 @@ views:
                       {{ fc.temperature | round }}° / {{ fc.templow | round }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
-                      {% set m = {'clear-night':'mdi:weather-night',
-                                  'sunny':'mdi:weather-sunny',
-                                  'cloudy':'mdi:weather-cloudy',
-                                  'partlycloudy':'mdi:weather-partly-cloudy',
-                                  'rainy':'mdi:weather-rainy',
-                                  'pouring':'mdi:weather-pouring',
-                                  'snowy':'mdi:weather-snowy',
-                                  'snowy-rainy':'mdi:weather-snowy-rainy',
-                                  'windy':'mdi:weather-windy',
-                                  'fog':'mdi:weather-fog',
-                                  'lightning':'mdi:weather-lightning',
-                                  'lightning-rainy':'mdi:weather-lightning-rainy',
-                                  'hail':'mdi:weather-hail'} %}
+                      {% set m = {'clear-night':'mdi:weather-night','sunny':'mdi:weather-sunny','cloudy':'mdi:weather-cloudy','partlycloudy':'mdi:weather-partly-cloudy','rainy':'mdi:weather-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','fog':'mdi:weather-fog','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','hail':'mdi:weather-hail'} %}
                       {{ m.get(fc.condition, 'mdi:weather-cloudy') }}
                     icon_color: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
@@ -302,8 +243,8 @@ views:
                       {% if c in ['sunny','clear-night'] %}amber
                       {% elif c in ['rainy','pouring','snowy-rainy'] %}blue
                       {% elif c == 'snowy' %}light-blue
-                      {% else %}grey
-                      {% endif %}
+                      {% else %}grey{% endif %}
+
 
       # ============================================================
       # ALARM CELL — hero + arm/disarm action row
@@ -335,8 +276,8 @@ views:
               gap: 8px;
             }
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 200px !important;
-              min-height: 200px;
+              flex: 0 0 190px !important;
+              min-height: 190px;
             }
             ha-card hui-vertical-stack-card > :last-child {
               flex: 0 0 90px !important;
