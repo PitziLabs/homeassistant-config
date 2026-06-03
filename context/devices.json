@@ -940,6 +940,16 @@
     ]
   },
   {
+    "device_id": "b56910935c247db7e662ea02528f172d",
+    "name": "Rachel-Laptop",
+    "manufacturer": "Firewalla",
+    "model": "Tracked client",
+    "area_id": null,
+    "integrations": [
+      "firewalla_local"
+    ]
+  },
+  {
     "device_id": "328b7a7d3d550030a0777fdd29fc3a6e",
     "name": "Rachel-s-S23",
     "manufacturer": "Firewalla",
