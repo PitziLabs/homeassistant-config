@@ -14,7 +14,11 @@
 set -eu
 
 KIOSK_MODE="kiosk"
-KIOSK_URL="http://homeassistant.local:8123/dashboard-kiosk/home"
+# Staging: household monitor renders the co-design sandbox
+# (/dashboard-kiosk-codesign/home). Iterate against that URL and promote
+# to /dashboard-kiosk/home when satisfied. Promotion is a content copy:
+# `cp dashboards/kiosk-codesign.yaml dashboards/kiosk.yaml` + PR.
+KIOSK_URL="http://homeassistant.local:8123/dashboard-kiosk-codesign/home"
 
 if [ -r /etc/default/dashboard-kiosk ]; then
   # shellcheck disable=SC1091
