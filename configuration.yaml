@@ -70,6 +70,17 @@ lovelace:
       icon: mdi:monitor-dashboard
       show_in_sidebar: true
       filename: dashboards/kiosk.yaml
+    # Co-design sandbox copy — same content as dashboard-kiosk, used as
+    # an iteration target so changes don't disturb the household monitor
+    # (which still points at /dashboard-kiosk/home). Preview via
+    # kiosk-host/kiosk-preview dashboards/kiosk-codesign.yaml \
+    #   --url http://homeassistant.local:8123/dashboard-kiosk-codesign/home
+    dashboard-kiosk-codesign:
+      mode: yaml
+      title: Kiosk (Co-design)
+      icon: mdi:monitor-edit
+      show_in_sidebar: true
+      filename: dashboards/kiosk-codesign.yaml
     dashboard-command-deck:
       mode: yaml
       filename: dashboards/command-deck.yaml
