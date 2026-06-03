@@ -51,7 +51,12 @@ jobs:
         run: python3 -m pip install --quiet pyyaml
 
       - name: Check dashboard entity references
+        # Recurses into dashboards/homelab-views/ — without `find`, the
+        # shell glob `dashboards/*.yaml` only matches top-level files and
+        # silently skips every fleet entity inside the lens/detail
+        # subview includes (#343). Excludes entity-allowlist.txt by name
+        # since the script expects YAML and the allowlist is plain text.
         run: |
           python3 scripts/check-dashboard-entities.py --strict \
             --allowlist dashboards/entity-allowlist.txt \
-            dashboards/*.yaml
+            $(find dashboards -type f -name '*.yaml' ! -name 'entity-allowlist.txt')
