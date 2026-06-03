@@ -81,12 +81,6 @@ lovelace:
       icon: mdi:monitor-edit
       show_in_sidebar: true
       filename: dashboards/kiosk-codesign.yaml
-    dashboard-command-deck:
-      mode: yaml
-      filename: dashboards/command-deck.yaml
-      title: Command Deck
-      icon: mdi:gamepad-variant
-      show_in_sidebar: true
     dashboard-screen-time:
       mode: yaml
       filename: dashboards/screen-time.yaml
