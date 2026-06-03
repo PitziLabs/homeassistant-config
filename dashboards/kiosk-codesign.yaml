@@ -814,19 +814,20 @@ views:
               card:
                 type: vertical-stack
                 cards:
-                  # Active mode (heat / cool / heat_cool): show the BTUI dial
+                  # Active mode (heat / cool / heat_cool): show the dial card.
+                  # Built-in `type: thermostat` works with any climate entity;
+                  # was custom:better-thermostat-ui-card but that card targets
+                  # the Better Thermostat HACS integration and error-bands on
+                  # plain climate entities (#354).
                   - type: conditional
                     conditions:
                       - condition: state
                         entity: climate.upstairs
                         state_not: 'off'
                     card:
-                      type: custom:better-thermostat-ui-card
+                      type: thermostat
                       entity: climate.upstairs
                       name: Upstairs
-                      humidity: sensor.upstairs_humidity
-                      disable_buttons: false
-                      disable_menu: false
                       card_mod:
                         style: |
                           ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
@@ -937,18 +938,17 @@ views:
                 type: vertical-stack
                 cards:
                   # Active mode (heat / cool / heat_cool): show the BTUI dial
+                  # Active mode (heat / cool / heat_cool): built-in dial.
+                  # See upstairs note above (#354).
                   - type: conditional
                     conditions:
                       - condition: state
                         entity: climate.downstairs
                         state_not: 'off'
                     card:
-                      type: custom:better-thermostat-ui-card
+                      type: thermostat
                       entity: climate.downstairs
                       name: Downstairs
-                      humidity: sensor.downstairs_humidity
-                      disable_buttons: false
-                      disable_menu: false
                       card_mod:
                         style: |
                           ha-card { background: transparent !important; border: none !important; box-shadow: none !important; }
