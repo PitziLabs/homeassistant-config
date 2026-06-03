@@ -18,22 +18,11 @@ alarm_control_panel.home_alarm   # YAML-defined manual alarm panel (configuratio
 # state (verified ~0.0 h) but no entity-registry entry — they carry no
 # unique_id, so they never appear in context/entities.json. Allowlisted, not
 # pending: a context dump will never resolve them.
-sensor.basement_netflix_today
-sensor.basement_prime_video_today
-sensor.basement_youtube_today
-sensor.office_netflix_today
-sensor.office_prime_video_today
-sensor.office_youtube_today
 sensor.play_room_apple_tv_today
 sensor.play_room_disney_plus_today
 sensor.play_room_netflix_today
 sensor.play_room_prime_video_today
 sensor.play_room_youtube_today
-
-# --- Pending integration: TV media players (kiosk.yaml, screen-time.yaml) ---
-# Basement and Office TVs via some integration not yet active in HA.
-media_player.basement_tv
-media_player.office_tv
 
 # --- CyberPower UPS (homelab-status.yaml "UPS" section) ---
 # Integration now online — most sensors resolve in the snapshot and were pruned.
