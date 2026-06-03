@@ -299,7 +299,10 @@ views:
               gap: 8px;
             }
             /* Flex cascade through the vertical-stack so the hero
-               grows and the action row stays a fixed 90px. */
+               grows and the action row stays a fixed 84px. Hero 185 +
+               gap 8 + action 84 = 277, leaving an ~8px bottom margin
+               inside the 285px cell so the action row clears the
+               lights cell below. */
             ha-card hui-vertical-stack-card {
               flex: 1 1 auto;
               min-height: 0;
@@ -308,12 +311,12 @@ views:
               gap: 8px;
             }
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 190px !important;
-              min-height: 190px;
+              flex: 0 0 185px !important;
+              min-height: 185px;
             }
             ha-card hui-vertical-stack-card > :last-child {
-              flex: 0 0 90px !important;
-              min-height: 90px;
+              flex: 0 0 84px !important;
+              min-height: 84px;
             }
             ha-card > * {
               flex: 1 1 auto;
@@ -329,13 +332,13 @@ views:
             card_mod:
               style: |
                 ha-card {
-                  height: 200px !important;
+                  height: 185px !important;
                   background: transparent !important;
                   border: none !important;
                   box-shadow: none !important;
                 }
                 /* Force the button-card host element to fill the
-                   200px slot — the inner styles.card.height: 100%
+                   185px slot — the inner styles.card.height: 100%
                    only resolves if this host is also 100%. */
                 ha-card > * {
                   height: 100% !important;
@@ -460,7 +463,7 @@ views:
             card_mod:
               style: |
                 ha-card {
-                  height: 90px !important;
+                  height: 84px !important;
                   background: transparent !important;
                   border: none !important;
                   box-shadow: none !important;
@@ -541,8 +544,8 @@ views:
               gap: 6px;
             }
             ha-card hui-vertical-stack-card > :first-child {
-              flex: 0 0 162px !important;
-              min-height: 162px;
+              flex: 0 0 151px !important;
+              min-height: 151px;
             }
             ha-card hui-vertical-stack-card > :nth-child(2) {
               flex: 0 0 120px !important;
@@ -639,7 +642,7 @@ views:
                   label: [{ color: 'var(--kiosk-text-tertiary)' }]
             styles:
               card:
-                - height: '100%'
+                - height: '151px'
                 - border-radius: '10px'
                 - border: 'none'
                 - padding: '12px 24px'

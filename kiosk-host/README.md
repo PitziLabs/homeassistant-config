@@ -135,12 +135,18 @@ kiosk-host/kiosk-preview dashboards/homelab-views/hardware.yaml \
 # `kiosk-show --kiosk <URL>` instead of F5 (~10–15s vs ~3s for F5)
 kiosk-host/kiosk-preview dashboards/homelab-status.yaml \
   --url http://homeassistant.local:8123/dashboard-homelab-status/ups-detail
+
+# Debug overlay: distinct pure-color outline per grid-area cell, so a
+# snapshot can be measured by color (see Design session protocol §
+# "Measuring layout precisely"). Injected on a temp copy — never committed.
+kiosk-host/kiosk-preview --debug-cells --open
 ```
 
 | Flag | When to reach for it |
 |---|---|
 | `--dashboard-root FILE` | The pushed file is `!include`d by another dashboard YAML; pass the manifest path |
 | `--url URL` | Chromium needs to point at a different URL (new dashboard, view, or subview); skips F5 for a `kiosk-show` restart |
+| `--debug-cells` | You need to measure cell geometry precisely — injects a distinct color outline per grid-area cell (temp copy only; never commits borders) |
 | `--open` | xdg-open the captured PNG after capture |
 | `--keep` | Suppress the gitops-clobber reminder |
 | `--no-snapshot` | Push + refresh only; no capture (use when you're physically watching the monitor) |
@@ -275,6 +281,65 @@ edit→commit→wait-5min-for-gitops cycle:
      the snapshot incidentally surfaces. File a GitHub issue per the
      repo's "incidentally-observed latent problems" convention if it
      warrants follow-up.
+
+**Measuring layout precisely — when eyeballing fails.** Brightness
+heuristics and thumbnails lie. Two compounding traps, and the tools that
+beat them. (Every one of these produced a wrong "confirmed" in the
+session that wrote this — take them seriously.)
+
+*The traps.* Kiosk cards are dark-on-dark with no borders, so you cannot
+see where one cell's box ends and the next begins, and a downscaled
+thumbnail blurs every edge into the background. A model that measures
+"where does the content end" by scanning for bright pixels will (a)
+latch onto the nearest bright glyph *across* a cell boundary and
+misattribute it (e.g. read album art two rows down as the presence
+cell), and (b) mistake a top-aligned text label for the bottom of its
+card box, inventing a gap that isn't there. Eyeballing column x-ranges
+instead of computing them from the grid's `fr` units makes a measurement
+window straddle two cells.
+
+*Tool 1 — `kiosk-preview --debug-cells`.* Pushes a temp copy of the YAML
+with a distinct pure-color outline injected per grid-area cell
+(weather=cyan, alarm=magenta, meeting=yellow, …); the local file and the
+committed dashboard never carry borders. Each cell's true box is then one
+`np.where(color)` away, independent of its contents:
+
+```python
+from PIL import Image; import numpy as np
+a = np.asarray(Image.open('kiosk-preview-<ts>.png').convert('RGB')).astype(int)
+R, G, B = a[:,:,0], a[:,:,1], a[:,:,2]
+def box(c):
+    r, g, b = c
+    m = (abs(R-r) < 40) & (abs(G-g) < 40) & (abs(B-b) < 40)
+    ys, xs = np.where(m)
+    return (xs.min(), xs.max(), ys.min(), ys.max())
+print('alarm cell box', box((255, 0, 255)))   # magenta
+```
+
+With the box known, measure content *inside* it — and measure the card
+*box*, not its text. Detect a card's accent border color (e.g. the green
+`--kiosk-accent-disarmed` ≈ `(86,211,100)` left border), not the label
+glyphs; the label is top-aligned, so reading it as the card bottom is how
+you hallucinate a gap. A cell whose content box reaches the colored
+outline is filling its cell; one that stops well short is underfilling;
+one whose content extends *past* the outline is overflowing into its
+neighbor.
+
+*Tool 2 — zoom in, crop at native resolution.* Never judge typography or
+alignment from the downscaled full-frame PNG. Crop the region of interest
+at full 2560-wide resolution and read *that*:
+
+```python
+Image.open('shot.png').crop((1168, 0, 2545, 300)).save('/tmp/z.png')
+```
+
+A clipped clock digit or a 20px gap is obvious at native res and
+invisible in a thumbnail. Crop first, then look.
+
+*Discipline.* Do not say "confirmed" / "flush" / "aligned" from a
+thumbnail or a brightness scan. Either the colored box bounds agree or a
+native-resolution crop shows it plainly. If two readings disagree, the
+measurement is wrong — re-measure, don't rationalize.
 
 **Live-state caveats** (look at the captured PNG with these in mind):
 

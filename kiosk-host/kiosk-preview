@@ -4,7 +4,7 @@
 #
 # Usage:
 #   kiosk-preview [YAML_PATH] [--open] [--keep] [--no-snapshot]
-#                 [--dashboard-root FILE] [--url URL]
+#                 [--dashboard-root FILE] [--url URL] [--debug-cells]
 #   kiosk-preview --help
 #
 # Defaults YAML_PATH to ./dashboards/kiosk.yaml (run from the repo root).
@@ -12,6 +12,16 @@
 # under dashboards/), sends F5 to Chromium on pve2 via xdotool, and
 # curls a fresh snapshot back to ./kiosk-preview-<UTC>.png (--open
 # xdg-opens it).
+#
+#   --debug-cells           Inject a distinct pure-color outline per
+#                           grid-area cell into the pushed YAML (the local
+#                           file is never modified — injection happens on a
+#                           temp copy). Each cell box becomes detectable by
+#                           a single color, so a screenshot can be measured
+#                           with `np.where(color)` instead of guessing box
+#                           edges from dark-on-dark content. A design-debug
+#                           aid — see kiosk-host/README.md § Design session
+#                           protocol. Off by default; never commit borders.
 #
 # Iterating a non-flat dashboard (lens views, drill-down subviews, etc.):
 #   --dashboard-root FILE   Touches FILE on HA after the push, to bust
@@ -81,6 +91,7 @@ keep_after_session=0
 snapshot=1
 dashboard_root=""
 url=""
+debug_cells=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help) usage; exit 0;;
@@ -93,6 +104,7 @@ while [[ $# -gt 0 ]]; do
     --url)
       [[ $# -lt 2 ]] && { err "--url requires an argument"; exit 2; }
       url="$2"; shift 2;;
+    --debug-cells) debug_cells=1; shift;;
     -*) err "unknown flag: $1"; usage >&2; exit 2;;
     *) yaml_path="$1"; shift;;
   esac
@@ -177,6 +189,57 @@ target_base=$(basename "$target_path")
 ts=$(date -u +%Y%m%dT%H%M%SZ)
 total_start=$EPOCHREALTIME
 
+# --- 1b. Debug-cell outline injection (--debug-cells) ----------------------
+# Give each grid-area cell a distinct pure-color outline so a screenshot can
+# be measured by color (np.where) instead of guessing box edges from
+# dark-on-dark content. Injection runs on a temp copy — the local file and
+# the committed dashboard never carry borders. The deployed preview still
+# self-resets on the next gitops poll like any other preview push.
+push_source="$yaml_path"
+debug_tmp=""
+if (( debug_cells == 1 )); then
+  step "injecting debug-cell outlines (temp copy)"
+  debug_tmp=$(mktemp --suffix=.yaml)
+  if python3 - "$yaml_path" "$debug_tmp" <<'PY_EOF'
+import sys, re
+src, dst = sys.argv[1], sys.argv[2]
+lines = open(src).read().split('\n')
+# Deterministic palette: high-saturation, easy to isolate by exact color.
+palette = ['#00ffff', '#ff00ff', '#ffff00', '#ff8000', '#00ff00', '#ff0000',
+           '#8000ff', '#00ff80', '#ff0080', '#80ff00', '#0080ff', '#ff4040']
+grid_re = re.compile(r'grid-area:\s*([A-Za-z0-9_-]+)')
+known, out, i, n = {}, [], 0, 0
+while i < len(lines):
+    out.append(lines[i])
+    if 'view_layout:' in lines[i] and 'grid-area:' in lines[i]:
+        m = grid_re.search(lines[i])
+        area = m.group(1) if m else f'cell{n}'
+        color = known.setdefault(area, palette[len(known) % len(palette)])
+        # Inject the outline right after the cell's first `ha-card {`.
+        j = i + 1
+        while j < len(lines) and j < i + 8:
+            out.append(lines[j])
+            if lines[j].strip() == 'ha-card {':
+                pad = ' ' * (len(lines[j]) - len(lines[j].lstrip()) + 2)
+                out.append(f'{pad}outline: 8px solid {color} !important;')
+                out.append(f'{pad}outline-offset: -8px !important;')
+                n += 1
+                i = j
+                break
+            j += 1
+    i += 1
+open(dst, 'w').write('\n'.join(out))
+sys.stderr.write(f'  injected {n} cell outlines\n')
+PY_EOF
+  then
+    push_source="$debug_tmp"
+    ok "debug-cell outlines injected"
+  else
+    err "debug-cell injection failed; pushing original YAML"
+    rm -f "$debug_tmp"; debug_tmp=""
+  fi
+fi
+
 # --- 2. Push to HA ---------------------------------------------------------
 step "pushing → ${HA_USER}@${HA_HOST}:${target_path}"
 push_start=$EPOCHREALTIME
@@ -187,13 +250,15 @@ push_start=$EPOCHREALTIME
 if ! ssh -p "$HA_SSH_PORT" -o ConnectTimeout=5 -o BatchMode=yes \
         "${HA_USER}@${HA_HOST}" \
         "set -e; mkdir -p '${target_dir}'; tmp='${target_dir}/.${target_base}.preview-tmp'; cat > \"\$tmp\" && mv \"\$tmp\" '${target_path}'" \
-        < "$yaml_path"; then
+        < "$push_source"; then
   err "ssh-stdin push to HA failed. Verify SSH access:"
   err "  ssh -p ${HA_SSH_PORT} ${HA_USER}@${HA_HOST} 'echo ok'"
   err "If you haven't set up HAOS SSH yet, see HA docs:"
   err "  https://developers.home-assistant.io/docs/operating-system/debugging"
+  [[ -n "$debug_tmp" ]] && rm -f "$debug_tmp"
   exit 1
 fi
+[[ -n "$debug_tmp" ]] && rm -f "$debug_tmp"
 push_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $push_start) * 1000 }")
 ok "pushed (${push_ms}ms)"
 
