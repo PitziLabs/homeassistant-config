@@ -1098,8 +1098,11 @@ views:
                     overflow: hidden;
                     background: var(--kiosk-bg-tile);
                   }
-                  /* Picture-entity fill: stretch the image to the tile. */
-                  ha-card hui-image, ha-card .image {
+                  /* Picture-entity fill: stretch image OR live <video> to the tile.
+                     camera_view: live renders <ha-camera-stream>/<video>,
+                     not <hui-image>, so the video selector matters too. */
+                  ha-card hui-image, ha-card .image,
+                  ha-card ha-camera-stream, ha-card video {
                     height: 100% !important;
                     width: 100% !important;
                     object-fit: cover !important;
@@ -1107,7 +1110,11 @@ views:
               card:
                 type: picture-entity
                 entity: camera.front_door
-                camera_view: auto
+                # `live` uses the camera's HLS stream (session-based) so the
+                # tile keeps painting indefinitely. `auto` was falling back to
+                # a snapshot whose Nest access token rotates every few minutes,
+                # going black between refreshes (#355).
+                camera_view: live
                 show_name: false
                 show_state: false
                 tap_action: { action: more-info }
