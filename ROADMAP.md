@@ -13,6 +13,16 @@ work actually starts.
 - **Roku integration** — Two Rokus unreachable; possible Firewalla Smart
   Protect interference. Diagnose, then decide whether to whitelist or drop.
 
+## Presence
+
+- **Firewalla `consider_home` tuning** — Default window flaps Android
+  device_trackers to `not_home` during routine doze (observed on
+  Rachel-s-S23; see #365). Person aggregation now papers over it for
+  Rachel via the laptop tracker, but bumping the Firewalla integration's
+  `consider_home` to ~900s would also debounce single-source phone
+  trackers (`device_tracker.galaxy_s22_presence`,
+  `device_tracker.chris_phone_presence`).
+
 ## Dashboards
 
 - **Roblox activity detector** — Query Loki for Zeek DNS logs matching
