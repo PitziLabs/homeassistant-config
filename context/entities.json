@@ -3336,6 +3336,14 @@
     "hidden": false
   },
   {
+    "entity_id": "device_tracker.rachel_laptop_presence",
+    "friendly_name": "Presence",
+    "area_id": null,
+    "device_id": "b56910935c247db7e662ea02528f172d",
+    "platform": "firewalla_local",
+    "hidden": false
+  },
+  {
     "entity_id": "device_tracker.rachel_s_s23_presence",
     "friendly_name": "Presence",
     "area_id": null,
@@ -4274,6 +4282,14 @@
   {
     "entity_id": "person.kiosker",
     "friendly_name": "Kiosk",
+    "area_id": null,
+    "device_id": null,
+    "platform": "person",
+    "hidden": false
+  },
+  {
+    "entity_id": "person.rachel_morse",
+    "friendly_name": "Rachel Morse",
     "area_id": null,
     "device_id": null,
     "platform": "person",
