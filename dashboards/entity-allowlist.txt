@@ -30,6 +30,11 @@ sensor.play_room_netflix_today
 sensor.play_room_prime_video_today
 sensor.play_room_youtube_today
 
+# --- Pending integration: TV media players (kiosk.yaml, screen-time.yaml) ---
+# Basement and Office TVs via some integration not yet active in HA.
+media_player.basement_tv
+media_player.office_tv
+
 # --- CyberPower UPS (homelab-status.yaml "UPS" section) ---
 # Integration now online — most sensors resolve in the snapshot and were pruned.
 # Only battery_runtime remains absent (entity not exposed by the integration yet).
