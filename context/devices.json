@@ -353,7 +353,7 @@
     "device_id": "65f099139174f0cdc2bd57357f1b8916",
     "name": "Google AI Conversation",
     "manufacturer": "Google",
-    "model": "gemini-2.5-flash",
+    "model": "gemini-3.1-flash-lite",
     "area_id": null,
     "integrations": [
       "google_generative_ai_conversation"
@@ -363,7 +363,7 @@
     "device_id": "7be4bf3ffcfc1a618bf6167dc3c6c830",
     "name": "Google AI STT",
     "manufacturer": "Google",
-    "model": "gemini-2.5-flash",
+    "model": "gemini-3.1-flash-lite",
     "area_id": null,
     "integrations": [
       "google_generative_ai_conversation"
@@ -383,7 +383,7 @@
     "device_id": "0112d3561bba9a2931bc4fe269b8d18b",
     "name": "Google AI Task",
     "manufacturer": "Google",
-    "model": "gemini-2.5-flash",
+    "model": "gemini-3.1-flash-lite",
     "area_id": null,
     "integrations": [
       "google_generative_ai_conversation"
