@@ -1,0 +1,32 @@
+# Fires when either basement water leak sensor reports wet. Critical-channel
+# push to the phone (bypasses Do Not Disturb on Android) plus a persistent
+# in-HA notification. The Samjin sensors live by the water heater and the
+# HVAC condensate ejector pump — both basement floor risks.
+- id: basement_water_leak_detected
+  alias: 'Water leak detected'
+  description: >-
+    Notifies the phone and posts a persistent notification when either
+    basement Samjin leak sensor goes wet. Tag includes the entity_id so
+    the two sensors don't overwrite each other in the notification tray.
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.water_heater_leak
+        - binary_sensor.hvac_pump_leak
+      to: 'on'
+  actions:
+    - action: notify.mobile_app_sm_s926u1
+      data:
+        title: 'Water leak detected'
+        message: '{{ trigger.to_state.name }} reports wet.'
+        data:
+          tag: 'water-leak-{{ trigger.entity_id }}'
+          channel: alarm_stream
+          importance: high
+          priority: high
+          ttl: 0
+    - action: notify.persistent_notification
+      data:
+        title: 'Water leak detected'
+        message: '{{ trigger.to_state.name }} reports wet.'
