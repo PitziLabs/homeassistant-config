@@ -58,12 +58,14 @@
 # applying. Transitioning into any flicker scene calls script.turn_on so the
 # apply script fires-and-forgets — it never waits on the infinite loop.
 #
-# Live brightness: input_number.office_brightness (10-100, step 10) is the
+# Live brightness: input_number.office_brightness (10-100, step 5) is the
 # brightness applied by every scene. Static scenes read it directly;
 # flicker tick scales its 75-92% random band by `helper / 100`. apply_scene
 # resets the helper to the new scene's default brightness on every tap/cycle
 # (1=100, 2=40, 3=100, 4-11=100) — pass `reset_brightness: false` to render
-# without touching the helper (used by ZEN77 hold-to-dim/brighten).
+# without touching the helper (used by ZEN77 hold-to-dim/brighten). Step 5
+# keeps the ZEN77 hold-ramp visibly smooth; static scene branches add a
+# 0.3 s transition so each ramp step interpolates on the bulbs.
 
 counter:
   office_sonoff_scene:
@@ -79,7 +81,7 @@ input_number:
     name: Office Brightness
     min: 10
     max: 100
-    step: 10
+    step: 5
     unit_of_measurement: '%'
     icon: mdi:brightness-6
 
@@ -138,6 +140,7 @@ script:
                 data:
                   brightness_pct: "{{ states('input_number.office_brightness') | int(100) }}"
                   color_temp_kelvin: 2700
+                  transition: 0.3
           - conditions: "{{ states('counter.office_sonoff_scene') == '2' }}"
             sequence:
               - action: light.turn_on
@@ -146,6 +149,7 @@ script:
                 data:
                   brightness_pct: "{{ states('input_number.office_brightness') | int(40) }}"
                   color_temp_kelvin: 2200
+                  transition: 0.3
           - conditions: "{{ states('counter.office_sonoff_scene') == '3' }}"
             sequence:
               - action: light.turn_on
@@ -154,6 +158,7 @@ script:
                 data:
                   brightness_pct: "{{ states('input_number.office_brightness') | int(100) }}"
                   color_temp_kelvin: 5000
+                  transition: 0.3
           # Scenes 4-11 are all flicker variants; the loop reads its target
           # color from a palette dict keyed on the counter, so we just turn
           # it on for any scene >= 4 and cycling between hues changes
