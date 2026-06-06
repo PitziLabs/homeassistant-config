@@ -800,6 +800,14 @@
     "hidden": false
   },
   {
+    "entity_id": "binary_sensor.hvac_pump_leak",
+    "friendly_name": null,
+    "area_id": "basement",
+    "device_id": "0c1cf5187aae961f937de4a704ef1e97",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.jacobsroom",
     "friendly_name": null,
     "area_id": null,
@@ -1976,6 +1984,14 @@
     "hidden": false
   },
   {
+    "entity_id": "binary_sensor.water_heater_leak",
+    "friendly_name": null,
+    "area_id": "basement",
+    "device_id": "71689f9f9308a5cdb3b13c266e6a6352",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.win_11_ws_status",
     "friendly_name": "Status",
     "area_id": null,
@@ -2488,6 +2504,14 @@
     "hidden": false
   },
   {
+    "entity_id": "button.hvac_pump_leak_identify",
+    "friendly_name": "Identify",
+    "area_id": null,
+    "device_id": "0c1cf5187aae961f937de4a704ef1e97",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
     "entity_id": "button.ignore_all_issues",
     "friendly_name": "Ignore all",
     "area_id": null,
@@ -2989,6 +3013,14 @@
     "area_id": null,
     "device_id": "86650065abdf35fe3adf954137114c65",
     "platform": "watchman",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.water_heater_leak_identify",
+    "friendly_name": "Identify",
+    "area_id": null,
+    "device_id": "71689f9f9308a5cdb3b13c266e6a6352",
+    "platform": "zha",
     "hidden": false
   },
   {
@@ -5741,6 +5773,22 @@
     "area_id": null,
     "device_id": "9631b6b4ce7273e2ea22fee521cbedd2",
     "platform": "spook",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.hvac_pump_leak_battery",
+    "friendly_name": "Battery",
+    "area_id": null,
+    "device_id": "0c1cf5187aae961f937de4a704ef1e97",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.hvac_pump_leak_temperature",
+    "friendly_name": "Temperature",
+    "area_id": null,
+    "device_id": "0c1cf5187aae961f937de4a704ef1e97",
+    "platform": "zha",
     "hidden": false
   },
   {
@@ -8952,6 +9000,22 @@
     "hidden": false
   },
   {
+    "entity_id": "sensor.water_heater_leak_battery",
+    "friendly_name": "Battery",
+    "area_id": null,
+    "device_id": "71689f9f9308a5cdb3b13c266e6a6352",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.water_heater_leak_temperature",
+    "friendly_name": "Temperature",
+    "area_id": null,
+    "device_id": "71689f9f9308a5cdb3b13c266e6a6352",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
     "entity_id": "sensor.water_heaters",
     "friendly_name": "Water heaters",
     "area_id": null,
@@ -10400,6 +10464,14 @@
     "hidden": false
   },
   {
+    "entity_id": "update.hvac_pump_leak_firmware",
+    "friendly_name": "Firmware",
+    "area_id": null,
+    "device_id": "0c1cf5187aae961f937de4a704ef1e97",
+    "platform": "zha",
+    "hidden": false
+  },
+  {
     "entity_id": "update.kid_room_1_firmware",
     "friendly_name": "Firmware",
     "area_id": null,
@@ -10581,6 +10653,14 @@
     "area_id": null,
     "device_id": "54aa9a26d90cc6dd75026830728e93f8",
     "platform": "hacs",
+    "hidden": false
+  },
+  {
+    "entity_id": "update.water_heater_leak_firmware",
+    "friendly_name": "Firmware",
+    "area_id": null,
+    "device_id": "71689f9f9308a5cdb3b13c266e6a6352",
+    "platform": "zha",
     "hidden": false
   },
   {

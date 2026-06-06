@@ -440,6 +440,16 @@
     ]
   },
   {
+    "device_id": "0c1cf5187aae961f937de4a704ef1e97",
+    "name": "HVAC Pump Leak",
+    "manufacturer": "Samjin",
+    "model": "water",
+    "area_id": "basement",
+    "integrations": [
+      "zha"
+    ]
+  },
+  {
     "device_id": "1b107e9a6eee09cb82e777bd3e3f745c",
     "name": "Hangout space",
     "manufacturer": "Ecosmart",
@@ -1277,6 +1287,16 @@
     "area_id": "office",
     "integrations": [
       "watchman"
+    ]
+  },
+  {
+    "device_id": "71689f9f9308a5cdb3b13c266e6a6352",
+    "name": "Water Heater Leak",
+    "manufacturer": "Samjin",
+    "model": "water",
+    "area_id": "basement",
+    "integrations": [
+      "zha"
     ]
   },
   {
