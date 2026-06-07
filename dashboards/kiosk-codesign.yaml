@@ -1,11 +1,19 @@
 # =================================================================
-# KIOSK CO-DESIGN SANDBOX — duplicate of kiosk.yaml for iteration.
-# Edit freely; the household kiosk monitor still points at the
-# canonical /dashboard-kiosk/home, so changes here don't disturb it.
-# Preview with: kiosk-host/kiosk-preview dashboards/kiosk-codesign.yaml \
-#   --url http://homeassistant.local:8123/dashboard-kiosk-codesign/home
-# =================================================================
+# AUTO-GENERATED — DO NOT EDIT BY HAND.
+# Mirror of dashboards/kiosk.yaml, produced by
+# scripts/sync-kiosk-codesign.sh. Edit kiosk.yaml, then run that
+# script to refresh this file. CI (Tests > Codesign Sync) fails if
+# this file drifts from production.
 #
+# Purpose: preview kiosk changes at /dashboard-kiosk-codesign/home
+# without touching the household monitor (/dashboard-kiosk/home).
+# Preview with:
+#   kiosk-host/kiosk-preview dashboards/kiosk-codesign.yaml \
+#     --url http://homeassistant.local:8123/dashboard-kiosk-codesign/home
+#
+# Only the first view's tab title/icon differ from production; all
+# cards, templates, and entity references are identical.
+# =================================================================
 # KIOSK DASHBOARD — V3 (interactive desktop layout)
 # Primary home-state display, scaled for a 2560x1440 monitor driven
 # by mouse + keyboard. Every card supports its native interactions:
@@ -163,8 +171,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[0] if forecast|count > 0 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[0] %}
                       {% set m = {
@@ -210,8 +221,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[1] if forecast|count > 1 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[1] %}
                       {% set m = {
@@ -236,8 +250,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[2] if forecast|count > 2 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[2] %}
                       {% set m = {
@@ -262,8 +279,11 @@ views:
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
                       {{ (fc.datetime | as_datetime | as_local).strftime('%a') }}
                     secondary: |-
-                      {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
-                      {{ fc.temperature | round }}° / {{ fc.templow | round }}°
+                      {% set forecast = state_attr('sensor.weather_forecast_daily', 'forecast') or [] %}
+                      {% set fc = forecast[3] if forecast|count > 3 else {} %}
+                      {% set t = fc.get('temperature') %}
+                      {% set tl = fc.get('templow') %}
+                      {{ (t | round) if t is not none else "—" }}° / {{ (tl | round) if tl is not none else "—" }}°
                     icon: |-
                       {% set fc = state_attr('sensor.weather_forecast_daily', 'forecast')[3] %}
                       {% set m = {
@@ -884,7 +904,7 @@ views:
                       - type: template
                         icon: mdi:water-percent
                         icon_color: blue
-                        content: '{{ states("sensor.upstairs_humidity") | round }}%'
+                        content: '{% set h = states("sensor.upstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
                       - type: template
                         icon: mdi:thermometer
                         icon_color: amber
@@ -1005,7 +1025,7 @@ views:
                       - type: template
                         icon: mdi:water-percent
                         icon_color: blue
-                        content: '{{ states("sensor.downstairs_humidity") | round }}%'
+                        content: '{% set h = states("sensor.downstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
                       - type: template
                         icon: mdi:thermometer
                         icon_color: amber
@@ -1082,7 +1102,10 @@ views:
         card:
           type: vertical-stack
           cards:
-            # --- Front-door camera (Nest) ---
+            # --- Front-door camera (Nest) — snapshot + tap-to-stream hybrid ---
+            # Displays a static snapshot by default (~zero bandwidth).
+            # Tap opens more-info dialog showing live HLS stream for ~30s before dismiss.
+            # This cuts uplink by ~95% vs continuous streaming while preserving on-demand access.
             - type: custom:mod-card
               card_mod:
                 style: |
@@ -1093,11 +1116,7 @@ views:
                     overflow: hidden;
                     background: var(--kiosk-bg-tile);
                   }
-                  /* Picture-entity fill: stretch image OR live <video> to the tile.
-                     camera_view: live renders <ha-camera-stream>/<video>,
-                     not <hui-image>, so the video selector matters too. */
-                  ha-card hui-image, ha-card .image,
-                  ha-card ha-camera-stream, ha-card video {
+                  ha-card hui-image, ha-card .image {
                     height: 100% !important;
                     width: 100% !important;
                     object-fit: cover !important;
@@ -1105,11 +1124,9 @@ views:
               card:
                 type: picture-entity
                 entity: camera.front_door
-                # `live` uses the camera's HLS stream (session-based) so the
-                # tile keeps painting indefinitely. `auto` was falling back to
-                # a snapshot whose Nest access token rotates every few minutes,
-                # going black between refreshes (#355).
-                camera_view: live
+                # snapshot = static image refreshed ~1min (no continuous stream).
+                # Tap action opens more-info dialog which shows live HLS stream.
+                camera_view: snapshot
                 show_name: false
                 show_state: false
                 tap_action: { action: more-info }
