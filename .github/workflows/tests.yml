@@ -37,6 +37,19 @@ jobs:
       - name: Run bats suite
         run: bats tests/
 
+  codesign-sync:
+    name: Codesign Sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # dashboards/kiosk-codesign.yaml is a generated mirror of kiosk.yaml.
+      # Fail the build if production moved ahead without the mirror being
+      # regenerated (run scripts/sync-kiosk-codesign.sh and commit). Keeps
+      # the co-design preview from silently drifting behind the live kiosk.
+      - name: Check codesign mirrors production kiosk
+        run: scripts/sync-kiosk-codesign.sh --check
+
   dashboard-entities:
     name: Dashboard Entities
     runs-on: ubuntu-latest
