@@ -480,6 +480,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.water_leak_detected",
+    "friendly_name": "Water leak detected",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.any_light_on",
     "friendly_name": "Any Light On",
     "area_id": null,
