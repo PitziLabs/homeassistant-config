@@ -1,0 +1,43 @@
+# Outdoor lights on a sunset-to-9:30pm schedule.
+# Turns ALL outside lights on at sunset and back off at 9:30 PM. "All outside
+# lights" here is the repo's canonical outdoor set: the `light.outdoor` group
+# (front door, front lantern, garage front, garage side, shed) plus the
+# `switch.back_porch` switch — the same entities behind
+# `binary_sensor.outdoor_lights_on` and `sensor.lights_on_outdoor_count`.
+# Because the group spans a light + a switch domain, the actions use
+# `homeassistant.turn_on` / `homeassistant.turn_off`, which dispatch to the
+# correct domain service for each entity.
+- id: front_yard_lights_schedule
+  alias: 'Outdoor lights — sunset on, 9:30 PM off'
+  description: >-
+    Turns all outdoor lights (the light.outdoor group plus the back porch) on at
+    sunset and off at 9:30 PM. Requested by Jacob.
+  mode: single
+  triggers:
+    - trigger: sun
+      event: sunset
+      id: 'sunset_on'
+    - trigger: time
+      at: '21:30:00'
+      id: 'off_time'
+  conditions: []
+  actions:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: 'sunset_on'
+          sequence:
+            - action: homeassistant.turn_on
+              target:
+                entity_id:
+                  - light.outdoor
+                  - switch.back_porch
+        - conditions:
+            - condition: trigger
+              id: 'off_time'
+          sequence:
+            - action: homeassistant.turn_off
+              target:
+                entity_id:
+                  - light.outdoor
+                  - switch.back_porch
