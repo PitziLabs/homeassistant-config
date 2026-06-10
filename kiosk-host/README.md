@@ -29,7 +29,7 @@ itself lives in `dashboards/kiosk.yaml`; these files configure the
 | `kiosk-snapshot` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
 | `kiosk-preview` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
 | `kiosk-serve` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
-| `pages/*.html` | (pushed on demand to `/opt/claude-kiosk/` by `kiosk-serve`) | n/a | n/a | n/a |
+| `pages/` (library + `library.json` + vendored `assets/`) | (pushed on demand to `/opt/claude-kiosk/` by `kiosk-serve`) | n/a | n/a | n/a |
 
 Also on pve2, *not* managed by the loop:
 
@@ -112,36 +112,53 @@ state.
 
 ## Serving arbitrary pages (`kiosk-serve`)
 
-`kiosk-serve` is the "put a page Claude generated on the office screen"
-tool — the sibling to `kiosk-preview` (which is specialised to dashboard
-YAML). Give it a local `.html` file (or a directory with an `index.html`)
-and it pushes the content to `/opt/claude-kiosk/` on pve2, serves it with
-a transient `systemd` unit (`claude-kiosk-www`, default port 8088, bound
-so Chromium reaches it at `http://localhost:8088/`), points the kiosk at
-it, and grabs a snapshot so you can confirm what actually rendered —
-Mermaid/WebGL render client-side, so a blind push can lie.
+`kiosk-serve` is the "put a page on the office screen" tool — the sibling
+to `kiosk-preview` (which is specialised to dashboard YAML). It pushes
+content to `/opt/claude-kiosk/` on pve2, serves it with a transient
+`systemd` unit (`claude-kiosk-www`, default port 8088, bound so Chromium
+reaches it at `http://localhost:8088/`), points the kiosk at it, and grabs
+a snapshot so you can confirm what actually rendered — Mermaid/WebGL render
+client-side, so a blind push can lie.
 
 Run it from your workstation (it is not deployed to pve2):
 
 ```bash
-# Push a page, serve it, point the kiosk, snapshot → ./kiosk-serve-<UTC>.png
-kiosk-host/kiosk-serve kiosk-host/pages/homelab-architecture.html --open
+# Tagged library page — instant recall, vendored Mermaid (offline render)
+kiosk-host/kiosk-serve --page arch --open
+kiosk-host/kiosk-serve --list             # list pages + aliases
 
-# Heavy WebGL needs longer to settle before the snapshot
-kiosk-host/kiosk-serve some-page.html --settle 12
+# Ad-hoc: any local .html file (or a dir with an index.html)
+kiosk-host/kiosk-serve some-page.html --settle 12   # bump settle for heavy WebGL
 
-# Just re-grab the current frame
+# Re-grab the current frame; or stop + snap back to the dashboard
 kiosk-host/kiosk-serve --snapshot --open
-
-# Stop the web server and snap back to the household dashboard
 kiosk-host/kiosk-serve --stop
 ```
 
-If the kiosk is already on the serve URL, re-serving refreshes with `F5`
-(no Chromium relaunch, no flicker) instead of a full `kiosk-show`
-restart — so iterating on a page is fast. `pages/` holds reusable pages
-worth keeping in git (e.g. `homelab-architecture.html`, a Mermaid diagram
-of the cluster); ad-hoc one-offs can point `kiosk-serve` at any local file.
+If the kiosk is already on the target URL, re-serving refreshes with `F5`
+(no Chromium relaunch, no flicker) instead of a full `kiosk-show` restart —
+so iterating on a page is fast.
+
+### Page library (`pages/`)
+
+`pages/` is the tagged library of reusable wall views, keyed by
+`pages/library.json` (name + title + aliases). Resolve and serve one with
+`kiosk-serve --page <name-or-alias>`:
+
+| Page | Aliases | Shows |
+|---|---|---|
+| `arch` | architecture, homelab | Cluster + gateway + Cloud architecture |
+| `network` | net, topology | Firewalla / LAN topology with host IPs |
+| `obs` | observability, metrics, alloy | Alloy → Grafana Cloud metrics/logs flow |
+
+Add a page by dropping an HTML file in `pages/` that links the shared
+`assets/kiosk.css` + `assets/mermaid.min.js` + `assets/mermaid-init.js`,
+then adding a `library.json` entry. `--page` serves the whole `pages/`
+directory, so the vendored, pinned `assets/mermaid.min.js` (~2.5 MB) travels
+with it — **library pages render offline, with no CDN round-trip.** Ad-hoc
+one-off files served directly don't get the vendored asset; use the library
+(or inline your own JS) if you need offline render. This is also the "cache":
+promote a good generated page into `pages/` and it's instant next time.
 
 **Snapshot-server independence.** `kiosk-serve` (and `kiosk-snapshot`, and
 the 6-hourly `ha-context-dump`) depend on `snapshot-server` on pve2

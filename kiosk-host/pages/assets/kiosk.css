@@ -1,0 +1,22 @@
+/* Shared kiosk page theme — dark wall-display aesthetic for the 2560x1440
+   office monitor. Pages link this + assets/mermaid.min.js + mermaid-init.js
+   and supply only a <header>, a .mermaid graph, and a <footer>. */
+:root { color-scheme: dark; }
+html, body {
+  margin: 0; height: 100%;
+  background: radial-gradient(ellipse at top, #16263f 0%, #0a1120 55%, #060a14 100%);
+  color: #e6edf6;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+.wrap { height: 100%; display: flex; flex-direction: column; padding: 26px 38px; box-sizing: border-box; }
+header { display: flex; align-items: baseline; gap: 18px; border-bottom: 2px solid rgba(86,158,255,.25); padding-bottom: 14px; flex: 0 0 auto; }
+h1 { margin: 0; font-size: 40px; font-weight: 650; letter-spacing: .5px; }
+h1 .accent { color: #6ab7ff; }
+.sub { font-size: 19px; color: #93a4ba; font-weight: 400; }
+.diagram { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 14px 0; }
+/* Force the Mermaid SVG to scale UP to fill the cell (its viewBox preserves
+   aspect ratio); without this it renders at natural size and looks tiny. */
+.diagram svg { width: 100% !important; height: 100% !important; max-width: none !important; }
+footer { display: flex; justify-content: space-between; align-items: center; color: #7d8ea4; font-size: 17px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.06); flex: 0 0 auto; }
+.pill { background: rgba(106,183,255,.12); border: 1px solid rgba(106,183,255,.3); color: #acd2ff; padding: 3px 12px; border-radius: 999px; font-size: 15px; }
