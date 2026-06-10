@@ -368,6 +368,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.outdoor_lights_sunset_on_9_30_pm_off",
+    "friendly_name": "Outdoor lights — sunset on, 9:30 PM off",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.playroom_area_fix_trigger_on_button_press",
     "friendly_name": "Playroom Area Fix: trigger on button press",
     "area_id": null,
