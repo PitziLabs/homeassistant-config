@@ -28,8 +28,6 @@ itself lives in `dashboards/kiosk.yaml`; these files configure the
 | `gitops-pull.timer` | `/etc/systemd/system/dashboard-kiosk-gitops.timer` | `0644` | `root:root` | bootstrap only |
 | `kiosk-snapshot` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
 | `kiosk-preview` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
-| `kiosk-serve` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
-| `pages/` (library + `library.json` + vendored `assets/`) | (pushed on demand to `/opt/claude-kiosk/` by `kiosk-serve`) | n/a | n/a | n/a |
 
 Also on pve2, *not* managed by the loop:
 
@@ -110,66 +108,40 @@ Even when Playwright works, prefer `kiosk-snapshot` for kiosk captures —
 Playwright would render a clean, just-authed session, missing the live
 state.
 
-## Serving arbitrary pages (`kiosk-serve`)
+## Serving arbitrary pages → moved to `office-presence`
 
-`kiosk-serve` is the "put a page on the office screen" tool — the sibling
-to `kiosk-preview` (which is specialised to dashboard YAML). It pushes
-content to `/opt/claude-kiosk/` on pve2, serves it with a transient
-`systemd` unit (`claude-kiosk-www`, default port 8088, bound so Chromium
-reaches it at `http://localhost:8088/`), points the kiosk at it, and grabs
-a snapshot so you can confirm what actually rendered — Mermaid/WebGL render
-client-side, so a blind push can lie.
-
-Run it from your workstation (it is not deployed to pve2):
+The workstation control surface for putting pages/URLs on the office
+monitor — the `kiosk` CLI, the page library, and the URL favorites — now
+lives in the **private** [`office-presence`](https://github.com/PitziLabs/office-presence)
+repo, installed on `PATH`:
 
 ```bash
-# Tagged library page — instant recall, vendored Mermaid (offline render)
-kiosk-host/kiosk-serve --page arch --open
-kiosk-host/kiosk-serve --list             # list pages + aliases
-
-# Ad-hoc: any local .html file (or a dir with an index.html)
-kiosk-host/kiosk-serve some-page.html --settle 12   # bump settle for heavy WebGL
-
-# Re-grab the current frame; or stop + snap back to the dashboard
-kiosk-host/kiosk-serve --snapshot --open
-kiosk-host/kiosk-serve --stop
+kiosk page arch          # tagged library page (offline Mermaid)
+kiosk url nullschool     # saved URL favorite
+kiosk show https://…     # any http(s) URL
+kiosk snap --open        # grab the current frame
+kiosk home               # back to the household dashboard
 ```
 
-If the kiosk is already on the target URL, re-serving refreshes with `F5`
-(no Chromium relaunch, no flicker) instead of a full `kiosk-show` restart —
-so iterating on a page is fast.
+Only the **pve2 display-host plumbing stays here** — `kiosk-show` (point
+the HDMI at a URL), `snapshot-server` (`:9999` live frame), and
+`dashboard-kiosk.service` (the household-dashboard runner) — because it
+renders the household dashboard and is gitops-deployed from this repo.
+`office-presence`'s `kiosk` drives these over SSH; it pushes page content
+to `/opt/claude-kiosk/` on pve2 and serves it with a transient
+`claude-kiosk-www` unit on `:8088`.
 
-### Page library (`pages/`)
+### Snapshot-server independence
 
-`pages/` is the tagged library of reusable wall views, keyed by
-`pages/library.json` (name + title + aliases). Resolve and serve one with
-`kiosk-serve --page <name-or-alias>`:
-
-| Page | Aliases | Shows |
-|---|---|---|
-| `arch` | architecture, homelab | Cluster + gateway + Cloud architecture |
-| `network` | net, topology | Firewalla / LAN topology with host IPs |
-| `obs` | observability, metrics, alloy | Alloy → Grafana Cloud metrics/logs flow |
-
-Add a page by dropping an HTML file in `pages/` that links the shared
-`assets/kiosk.css` + `assets/mermaid.min.js` + `assets/mermaid-init.js`,
-then adding a `library.json` entry. `--page` serves the whole `pages/`
-directory, so the vendored, pinned `assets/mermaid.min.js` (~2.5 MB) travels
-with it — **library pages render offline, with no CDN round-trip.** Ad-hoc
-one-off files served directly don't get the vendored asset; use the library
-(or inline your own JS) if you need offline render. This is also the "cache":
-promote a good generated page into `pages/` and it's instant next time.
-
-**Snapshot-server independence.** `kiosk-serve` (and `kiosk-snapshot`, and
-the 6-hourly `ha-context-dump`) depend on `snapshot-server` on pve2
-(`:9999`). That unit is deliberately **not** `PartOf=dashboard-kiosk.service`:
-it scrots X `:0`, which outlives Chromium restarts. It used to be coupled,
-so every `kiosk-show`/`kiosk-serve` URL change (each restarts the kiosk)
-tore it down — and `PartOf` propagates *stop* but not *start*, so nothing
-brought it back until the next drift-triggered gitops run. It stayed dead
-for ~6 days. It is now independent + `enabled` + `Restart=on-failure`, so
-it survives kiosk churn and reboots. As a belt-and-braces measure
-`kiosk-serve` also re-`start`s it before each capture.
+`snapshot-server` on pve2 (`:9999`) — used by `office-presence`'s `kiosk`,
+by `kiosk-snapshot`, and by the 6-hourly `ha-context-dump` — is
+deliberately **not** `PartOf=dashboard-kiosk.service`: it scrots X `:0`,
+which outlives Chromium restarts. It used to be coupled, so every
+`kiosk-show` URL change (each restarts the kiosk) tore it down — and
+`PartOf` propagates *stop* but not *start*, so nothing brought it back
+until the next drift-triggered gitops run. It stayed dead for ~6 days. It
+is now independent + `enabled` + `Restart=on-failure`, so it survives
+kiosk churn and reboots.
 
 ## Live preview iteration (`kiosk-preview`)
 
