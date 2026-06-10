@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# kiosk-serve — put an arbitrary local HTML page (or directory) on pve2's
+# office monitor, then snapshot the result. The "show me a diagram" sibling
+# to kiosk-preview (which is specialised to dashboard YAML).
+#
+# What it does, in one shot:
+#   1. Pushes a local .html file (or a directory) to /opt/claude-kiosk on pve2.
+#   2. Serves it with a transient systemd unit (claude-kiosk-www) on $PORT,
+#      bound to 0.0.0.0 — Chromium reaches it at http://localhost:$PORT/.
+#   3. Points the kiosk at it. If the kiosk is already on that URL, refreshes
+#      with F5 (fast, no relaunch) instead of a full kiosk-show restart.
+#   4. Ensures the snapshot server is up and grabs ./kiosk-serve-<UTC>.png so
+#      you can SEE what rendered (Mermaid/WebGL/etc. render client-side, so a
+#      blind push can lie — always check the frame).
+#
+# Runs from your workstation (NOT deployed to pve2), same as kiosk-preview.
+# Requires SSH access to pve2 via the pve jump host, and xdotool + scrot on
+# pve2 (already present for kiosk-preview / snapshot-server).
+#
+# Usage:
+#   kiosk-serve PAGE.html            Push, serve, point kiosk, snapshot.
+#   kiosk-serve DIR/                 Serve a directory (must contain index.html).
+#   kiosk-serve PAGE.html --open     ...and xdg-open the snapshot when done.
+#   kiosk-serve --snapshot           Just grab the current frame (no push).
+#   kiosk-serve --dashboard          Snap the kiosk back to the HA dashboard.
+#   kiosk-serve --stop               Snap back AND stop the web server.
+#   kiosk-serve --show               Print kiosk + web-server state.
+#
+# Options:
+#   --port N        Web-server port (default 8088).
+#   --settle SECS   Wait before snapshot (default 7; bump for heavy WebGL).
+#   --no-snapshot   Skip the snapshot step.
+#   --open          xdg-open the captured PNG.
+set -euo pipefail
+
+readonly REMOTE="root@pve2"
+readonly JUMP="root@pve.local"
+SSH=(ssh -J "$JUMP" -o ConnectTimeout=4 -o BatchMode=yes "$REMOTE")
+
+readonly CONTENT_DIR="/opt/claude-kiosk"
+readonly WWW_UNIT="claude-kiosk-www"
+readonly SNAP_UNIT="snapshot-server.service"
+readonly SNAP_PORT=9999
+
+PORT=8088
+SETTLE=7
+DO_SNAPSHOT=1
+DO_OPEN=0
+ACTION=""        # serve | snapshot | dashboard | stop | show
+TARGET=""        # local file or dir for serve
+
+die() { echo "kiosk-serve: $*" >&2; exit 1; }
+
+# ---- arg parse --------------------------------------------------------------
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --snapshot)   ACTION=snapshot ;;
+    --dashboard)  ACTION=dashboard ;;
+    --stop)       ACTION=stop ;;
+    --show)       ACTION=show ;;
+    --open)       DO_OPEN=1 ;;
+    --no-snapshot) DO_SNAPSHOT=0 ;;
+    --port)       PORT="${2:?--port needs a value}"; shift ;;
+    --settle)     SETTLE="${2:?--settle needs a value}"; shift ;;
+    -h|--help)    sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*)           die "unknown option: $1" ;;
+    *)            TARGET="$1"; ACTION="${ACTION:-serve}" ;;
+  esac
+  shift
+done
+[[ -z "$ACTION" ]] && { sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
+
+readonly URL="http://localhost:${PORT}/"
+
+# ---- helpers ----------------------------------------------------------------
+snapshot() {
+  # snapshot-server is fetched THROUGH the ssh jump (curl on pve2 → stdout),
+  # so it never depends on the workstation routing/mDNS to pve2 directly.
+  # Re-ensure it's running first: kiosk restarts can tear it down on hosts
+  # still running the old PartOf-coupled unit.
+  local out; out="kiosk-serve-$(date -u +%Y%m%dT%H%M%SZ).png"
+  "${SSH[@]}" "systemctl is-active --quiet ${SNAP_UNIT} || systemctl start ${SNAP_UNIT}" 2>/dev/null || true
+  if "${SSH[@]}" "curl -fsS http://localhost:${SNAP_PORT}/" > "$out" 2>/dev/null && [[ -s "$out" ]]; then
+    echo "kiosk-serve: snapshot → ${out} ($(stat -c%s "$out") bytes)"
+    [[ "$DO_OPEN" == 1 ]] && command -v xdg-open >/dev/null && xdg-open "$out" >/dev/null 2>&1 || true
+  else
+    rm -f "$out"
+    echo "kiosk-serve: snapshot failed (is snapshot-server healthy on pve2?)" >&2
+  fi
+}
+
+point_kiosk() {
+  # F5 if already on our URL (fast, no Chromium relaunch); else kiosk-show.
+  local current
+  current=$("${SSH[@]}" "kiosk-show --show 2>/dev/null | sed -n 's/^KIOSK_URL=//p'" || true)
+  if [[ "$current" == "$URL" ]]; then
+    echo "kiosk-serve: already on ${URL} — refreshing (F5)"
+    "${SSH[@]}" "DISPLAY=:0 XAUTHORITY=/root/.Xauthority xdotool key F5" || true
+  else
+    "${SSH[@]}" "kiosk-show --kiosk '${URL}'"
+  fi
+}
+
+# ---- actions ----------------------------------------------------------------
+case "$ACTION" in
+  show)
+    "${SSH[@]}" "kiosk-show --show; echo '--- web server ---'; systemctl is-active ${WWW_UNIT}.service 2>/dev/null || echo 'claude-kiosk-www: inactive'"
+    exit 0
+    ;;
+  dashboard)
+    "${SSH[@]}" "kiosk-show --dashboard"
+    exit 0
+    ;;
+  stop)
+    "${SSH[@]}" "kiosk-show --dashboard; systemctl stop ${WWW_UNIT}.service 2>/dev/null; systemctl reset-failed ${WWW_UNIT}.service 2>/dev/null; rm -rf ${CONTENT_DIR}; echo 'kiosk-serve: stopped web server, snapped back to dashboard'"
+    exit 0
+    ;;
+  snapshot)
+    snapshot
+    exit 0
+    ;;
+  serve)
+    [[ -e "$TARGET" ]] || die "no such file or directory: $TARGET"
+    # Push content.
+    if [[ -d "$TARGET" ]]; then
+      [[ -f "$TARGET/index.html" ]] || die "directory has no index.html: $TARGET"
+      tar -C "$TARGET" -czf - . | "${SSH[@]}" \
+        "rm -rf ${CONTENT_DIR}; mkdir -p ${CONTENT_DIR}; tar -C ${CONTENT_DIR} -xzf -"
+    else
+      [[ "$TARGET" == *.html ]] || echo "kiosk-serve: note — serving '${TARGET##*/}' as index.html" >&2
+      "${SSH[@]}" "mkdir -p ${CONTENT_DIR}; rm -f ${CONTENT_DIR}/index.html; cat > ${CONTENT_DIR}/index.html" < "$TARGET"
+    fi
+    # (Re)start the web server. Restarting it does NOT restart Chromium, so no
+    # flicker; it only re-binds the port and serves the fresh content dir.
+    "${SSH[@]}" "
+      systemctl reset-failed ${WWW_UNIT}.service 2>/dev/null || true
+      systemctl stop ${WWW_UNIT}.service 2>/dev/null || true
+      systemd-run --unit=${WWW_UNIT} --collect \
+        /usr/bin/python3 -m http.server ${PORT} --bind 0.0.0.0 --directory ${CONTENT_DIR} >/dev/null
+      echo 'kiosk-serve: serving ${CONTENT_DIR} on :${PORT}'
+    "
+    point_kiosk
+    if [[ "$DO_SNAPSHOT" == 1 ]]; then
+      sleep "$SETTLE"
+      snapshot
+    fi
+    ;;
+esac

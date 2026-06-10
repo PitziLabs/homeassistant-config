@@ -181,11 +181,11 @@ main() {
     systemctl restart "$KIOSK_UNIT"
   fi
 
-  # snapshot-server is PartOf dashboard-kiosk.service, so a kiosk restart
-  # will have already stopped it. Either way, restart on drift to pick up
-  # changes; enable in case it's not enabled yet (idempotent).
-  if [[ "$snap_changed" == true || "$snap_unit_changed" == true \
-        || "$script_changed" == true || "$unit_changed" == true ]]; then
+  # snapshot-server is independent of the kiosk lifecycle (no PartOf), so a
+  # kiosk-only change no longer needs to touch it. Restart only when its own
+  # script or unit drifted; enable --now is idempotent and also heals a host
+  # where it was previously left stopped.
+  if [[ "$snap_changed" == true || "$snap_unit_changed" == true ]]; then
     systemctl enable --now "$SNAP_UNIT" >/dev/null 2>&1 || true
     log INFO "Restarting ${SNAP_UNIT}"
     systemctl restart "$SNAP_UNIT"

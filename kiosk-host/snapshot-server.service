@@ -2,9 +2,14 @@
 Description=Kiosk Snapshot Server (returns a live scrot on HTTP GET)
 After=dashboard-kiosk.service network-online.target
 Wants=network-online.target
-# Bind to the kiosk session so we stop when the display is restarted —
-# the gitops loop also restarts us explicitly if our script or unit drifts.
-PartOf=dashboard-kiosk.service
+# Deliberately NOT PartOf/BindsTo dashboard-kiosk.service. scrot captures
+# X display :0, which outlives Chromium restarts — so there's no reason to
+# die with the kiosk. The old PartOf coupling meant every `kiosk-show` URL
+# change (which restarts dashboard-kiosk.service) tore this down via stop-
+# propagation, and PartOf does NOT propagate start, so nothing brought it
+# back until the next drift-triggered gitops run. It stayed dead for days.
+# Independent + enabled + Restart=on-failure keeps it alive across kiosk
+# churn (now frequent, via kiosk-serve) and across reboots.
 
 [Service]
 Type=simple
