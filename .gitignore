@@ -57,5 +57,8 @@ ha-context-dump.log.*
 __pycache__/
 *.pyc
 
-# kiosk-snapshot tool output — throwaway frame grabs from pve2's display
-/kiosk-snapshot-*.png
+# Kiosk frame grabs — throwaway snapshots from pve2's display
+# (kiosk-snapshot, kiosk-preview, kiosk-serve, scrot dumps, comparisons)
+/kiosk-*.png
+/ha-login-*.png
+/screen-time-render.png

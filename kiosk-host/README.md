@@ -28,6 +28,8 @@ itself lives in `dashboards/kiosk.yaml`; these files configure the
 | `gitops-pull.timer` | `/etc/systemd/system/dashboard-kiosk-gitops.timer` | `0644` | `root:root` | bootstrap only |
 | `kiosk-snapshot` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
 | `kiosk-preview` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
+| `kiosk-serve` | (run from your workstation, not deployed) | `0755` | n/a | n/a |
+| `pages/*.html` | (pushed on demand to `/opt/claude-kiosk/` by `kiosk-serve`) | n/a | n/a | n/a |
 
 Also on pve2, *not* managed by the loop:
 
@@ -107,6 +109,50 @@ launch (Gdk portal / sandbox crashes have been seen on the workstation).
 Even when Playwright works, prefer `kiosk-snapshot` for kiosk captures —
 Playwright would render a clean, just-authed session, missing the live
 state.
+
+## Serving arbitrary pages (`kiosk-serve`)
+
+`kiosk-serve` is the "put a page Claude generated on the office screen"
+tool — the sibling to `kiosk-preview` (which is specialised to dashboard
+YAML). Give it a local `.html` file (or a directory with an `index.html`)
+and it pushes the content to `/opt/claude-kiosk/` on pve2, serves it with
+a transient `systemd` unit (`claude-kiosk-www`, default port 8088, bound
+so Chromium reaches it at `http://localhost:8088/`), points the kiosk at
+it, and grabs a snapshot so you can confirm what actually rendered —
+Mermaid/WebGL render client-side, so a blind push can lie.
+
+Run it from your workstation (it is not deployed to pve2):
+
+```bash
+# Push a page, serve it, point the kiosk, snapshot → ./kiosk-serve-<UTC>.png
+kiosk-host/kiosk-serve kiosk-host/pages/homelab-architecture.html --open
+
+# Heavy WebGL needs longer to settle before the snapshot
+kiosk-host/kiosk-serve some-page.html --settle 12
+
+# Just re-grab the current frame
+kiosk-host/kiosk-serve --snapshot --open
+
+# Stop the web server and snap back to the household dashboard
+kiosk-host/kiosk-serve --stop
+```
+
+If the kiosk is already on the serve URL, re-serving refreshes with `F5`
+(no Chromium relaunch, no flicker) instead of a full `kiosk-show`
+restart — so iterating on a page is fast. `pages/` holds reusable pages
+worth keeping in git (e.g. `homelab-architecture.html`, a Mermaid diagram
+of the cluster); ad-hoc one-offs can point `kiosk-serve` at any local file.
+
+**Snapshot-server independence.** `kiosk-serve` (and `kiosk-snapshot`, and
+the 6-hourly `ha-context-dump`) depend on `snapshot-server` on pve2
+(`:9999`). That unit is deliberately **not** `PartOf=dashboard-kiosk.service`:
+it scrots X `:0`, which outlives Chromium restarts. It used to be coupled,
+so every `kiosk-show`/`kiosk-serve` URL change (each restarts the kiosk)
+tore it down — and `PartOf` propagates *stop* but not *start*, so nothing
+brought it back until the next drift-triggered gitops run. It stayed dead
+for ~6 days. It is now independent + `enabled` + `Restart=on-failure`, so
+it survives kiosk churn and reboots. As a belt-and-braces measure
+`kiosk-serve` also re-`start`s it before each capture.
 
 ## Live preview iteration (`kiosk-preview`)
 
