@@ -21,8 +21,15 @@ KIOSK_MODE="kiosk"
 KIOSK_URL="http://homeassistant.local:8123/dashboard-kiosk-codesign/home"
 
 if [ -r /etc/default/dashboard-kiosk ]; then
-  # shellcheck disable=SC1091
-  . /etc/default/dashboard-kiosk
+  # Parse the state file literally — do NOT source it. Sourcing runs it as
+  # shell, so a KIOSK_URL with '&' query separators (any real dashboard link)
+  # is split into backgrounded var-assignments in subshells: the value never
+  # lands in this shell and we silently fall back to the default URL. sed
+  # pulls the raw value, '&' and all. kiosk-show writes these unquoted.
+  _mode=$(sed -n 's/^KIOSK_MODE=//p' /etc/default/dashboard-kiosk | tail -n1)
+  _url=$(sed -n 's/^KIOSK_URL=//p' /etc/default/dashboard-kiosk | tail -n1)
+  if [ -n "$_mode" ]; then KIOSK_MODE="$_mode"; fi
+  if [ -n "$_url" ]; then KIOSK_URL="$_url"; fi
 fi
 
 xrandr --output HDMI-2 --mode 2560x1440 --rate 60
