@@ -1,0 +1,5 @@
+{
+  "arch":    { "file": "homelab-architecture.html", "title": "Homelab Architecture",  "aliases": ["architecture", "homelab"] },
+  "network": { "file": "network-topology.html",     "title": "Network Topology",     "aliases": ["net", "topology"] },
+  "obs":     { "file": "observability-flow.html",    "title": "Observability Flow",   "aliases": ["observability", "metrics", "alloy"] }
+}
