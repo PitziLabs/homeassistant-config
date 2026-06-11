@@ -3,8 +3,9 @@
 # Tests for scripts/sync-kiosk-codesign.sh — regenerates kiosk-codesign.yaml as
 # a mirror of kiosk.yaml. Codesign used to drift behind production (fixes landed
 # in kiosk.yaml and were never back-ported), so the suite proves the generator
-# mirrors body content verbatim, relabels only the first view's tab title/icon,
-# and that --check is a real drift guard (passes in sync, fails on drift). Paths
+# mirrors body content verbatim, relabels the first view's tab title/icon and
+# swaps its theme to Kiosk Codesign, and that --check is a real drift guard
+# (passes in sync, fails on drift). Paths
 # are redirected to a temp dir via KIOSK_SRC/KIOSK_DST so the real dashboards are
 # never touched.
 
@@ -18,6 +19,7 @@ views:
   - title: Home
     path: home
     icon: mdi:monitor-dashboard
+    theme: Kiosk Polish
     cards:
       - type: picture-entity
         entity: camera.front_door
@@ -39,6 +41,13 @@ EOF
   # production marker values must not survive in the mirror
   ! grep -q "^  - title: Home$" "$KIOSK_DST"
   ! grep -q "^    icon: mdi:monitor-dashboard$" "$KIOSK_DST"
+}
+
+@test "swaps the sandbox view theme to Kiosk Codesign" {
+  bash "$SCRIPT" --write
+  grep -q "^    theme: Kiosk Codesign$" "$KIOSK_DST"
+  # production theme must not survive in the mirror
+  ! grep -q "^    theme: Kiosk Polish$" "$KIOSK_DST"
 }
 
 @test "mirrors body content verbatim (camera fix carries over)" {
