@@ -10,9 +10,12 @@
 # snapshot fix shipped). This script makes production the single source of
 # truth — codesign is generated, never hand-edited.
 #
-# The only intentional difference is the first view's tab title/icon, swapped
-# to a "Co-design" marker so the preview is visually distinguishable. Every
-# card, template, and entity reference is identical to production.
+# The intentional differences are cosmetic only: the first view's tab
+# title/icon are swapped to a "Co-design" marker, and its theme is swapped
+# from "Kiosk Polish" to "Kiosk Codesign" so the sandbox renders the
+# instrument-panel design study (themes/kiosk_codesign.yaml) without forking
+# the cards. Every card, template, and entity reference is identical to
+# production.
 #
 # Usage:
 #   sync-kiosk-codesign.sh            Regenerate codesign in place (default).
@@ -52,11 +55,12 @@ generate() {
 #   kiosk-host/kiosk-preview dashboards/kiosk-codesign.yaml \
 #     --url http://homeassistant.local:8123/dashboard-kiosk-codesign/home
 #
-# Only the first view's tab title/icon differ from production; all
-# cards, templates, and entity references are identical.
+# Only the first view's tab title/icon and theme differ from production;
+# all cards, templates, and entity references are identical.
 EOF
   sed -e 's|^  - title: Home$|  - title: Co-design|' \
       -e 's|^    icon: mdi:monitor-dashboard$|    icon: mdi:monitor-edit|' \
+      -e 's|^    theme: Kiosk Polish$|    theme: Kiosk Codesign|' \
       "$SRC"
 }
 

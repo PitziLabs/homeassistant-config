@@ -11,8 +11,8 @@
 #   kiosk-host/kiosk-preview dashboards/kiosk-codesign.yaml \
 #     --url http://homeassistant.local:8123/dashboard-kiosk-codesign/home
 #
-# Only the first view's tab title/icon differ from production; all
-# cards, templates, and entity references are identical.
+# Only the first view's tab title/icon and theme differ from production;
+# all cards, templates, and entity references are identical.
 # =================================================================
 # KIOSK DASHBOARD — V3 (interactive desktop layout)
 # Primary home-state display, scaled for a 2560x1440 monitor driven
@@ -54,7 +54,7 @@ views:
   - title: Co-design
     path: home
     icon: mdi:monitor-edit
-    theme: Kiosk Polish
+    theme: Kiosk Codesign
     type: custom:grid-layout
     layout:
       height: 100vh
