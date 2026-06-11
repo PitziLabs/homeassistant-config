@@ -29,7 +29,7 @@ to them when implementing:
 | `dashboards/README.md` | All three Lovelace dashboards (Home, Kiosk, Homelab Status) |
 | `themes/README.md` | Noctis Kiosk theme, kiosk_polish tokens |
 | `scripts/README.md` | gitops-sync.sh, ha-context-dump.sh, Script auth conventions |
-| `kiosk-host/README.md` | Chromium kiosk launcher running on pve2, gitops pull loop, bootstrap recipe, **live preview iteration loop + design session protocol** |
+| `kiosk-host/README.md` | `kiosk-preview` / `kiosk-snapshot` — workstation tools for iterating the HA kiosk dashboard (**live preview loop + design session protocol**). Display-host plumbing moved to `office-presence/host/`. |
 | `context/README.md` | What each `context/*.json` file is |
 | `docs/` | Long-form design notes, migration write-ups |
 
@@ -169,35 +169,24 @@ The complementary `ha-context-dump.sh` (driven by
 `context/` snapshot → drift PR — see `scripts/README.md` and
 *HA Runtime State Context* below.
 
-### Parallel loop: `kiosk-host/` on pve2
+### Display host on pve2 — gitops moved to `office-presence`
 
-A second gitops loop covers the Chromium kiosk display host (the NUC
-that drives the household 2560x1440 monitor). It is shaped to mirror
-this one but runs *outside* HA:
+The Chromium kiosk display host (the NUC driving the household 2560x1440
+monitor) used to be deployed by a second gitops loop sourced from this repo's
+`kiosk-host/`. **That plumbing moved to
+[`office-presence/host/`](https://github.com/PitziLabs/office-presence)** —
+`dashboard-kiosk.{sh,service}`, `kiosk-show`, `snapshot-server`, and the
+`dashboard-kiosk-gitops` loop now live there, and pve2's loop pulls
+`office-presence` (private → read-only deploy key). The workstation CLI that
+drives the screen is `surface`, in that repo.
 
-- **Where:** a clone of this repo at `/opt/homeassistant-config` on
-  pve2 (a Proxmox quorum node — see `~/CLAUDE.md` for the inventory).
-- **Cadence:** systemd timer `dashboard-kiosk-gitops.timer`, every
-  5 minutes, oneshot via `dashboard-kiosk-gitops.service`.
-- **Scope:** `kiosk-host/dashboard-kiosk.sh` →
-  `/usr/local/bin/dashboard-kiosk.sh` and
-  `kiosk-host/dashboard-kiosk.service` →
-  `/etc/systemd/system/dashboard-kiosk.service`. Validates with
-  `bash -n` and `systemd-analyze verify` before installing.
-- **Restart discipline:** `cmp -s` per file decides whether to install;
-  `systemctl restart dashboard-kiosk.service` only fires when at least
-  one of the two files actually changed. No-op polls don't touch the
-  display — editing kiosk artifacts via a PR is a hands-off deploy
-  without the screen-flicker tax.
-- **Self-exclusion:** the loop's own `.service` and `.timer` units are
-  deliberately *not* managed by the loop, so a broken update can't
-  leave pve2 unable to fix itself. Both are bootstrap-only.
+What stays in this repo:
 
-Full details (deploy / bootstrap / force-pull / verify / disable) live
-in `kiosk-host/README.md`. The kiosk dashboard YAML itself
-(`dashboards/kiosk.yaml`) is still deployed by the HA-side loop above —
-the pve2 loop only handles the display host's runner script and
-systemd unit, not the dashboard content it points at.
+- **`dashboards/kiosk.yaml`** — the HA Lovelace kiosk dashboard the display
+  renders by default — is still deployed by the **HA-side** loop above
+  (`scripts/gitops-sync.sh`), not the pve2 display-host loop.
+- **`kiosk-host/kiosk-preview` / `kiosk-snapshot`** — workstation tools for
+  iterating that dashboard. See `kiosk-host/README.md`.
 
 ---
 
