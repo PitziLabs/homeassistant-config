@@ -125,13 +125,18 @@ helper — is in `docs/cross-layer-changes.md`.
   wrapped in `type: conditional` so each tile appears only when the entity
   is on; per-room "All off" tiles use `binary_sensor.*_lights_on` template
   sensors.
-- **Kiosk uses typed cards, not html-template-card.** The kiosk view is
-  itself a `custom:grid-layout`; each cell is a typed card
-  (`mushroom-light-card`, `button-card`, `mini-media-player`,
-  `clock-weather-card`, `better-thermostat-ui-card`) wrapped in
-  `custom:mod-card`. State-driven colors live in per-card `state` blocks
-  and `card_mod` styles — no Jinja-templated HTML, no DOMPurify fight.
-  Unavailable handling lives inside each card's state list.
+- **Kiosk uses HA-native `sections`, no hard pixel-fit.** The kiosk view
+  is `type: sections` (`max_columns: 3`) — cards size to their content,
+  sections reflow responsively, and the page scrolls if content exceeds
+  the screen. There is deliberately **no** `custom:grid-layout`, no
+  `custom:mod-card` height-cascade wrappers, and no fixed-pixel "fit
+  2560x1440 without a scrollbar" sizing (that pixel-fit design was
+  retired 2026-06-11 — abandoning the size-fit requirement was a
+  deliberate call). Each cell is still a typed card (`button-card`,
+  `mushroom-*`, `mini-media-player`, `clock-weather-card`, `thermostat`
+  dial); state-driven colors live in per-card `state` blocks + theme
+  tokens — no Jinja-templated HTML, no DOMPurify fight. Unavailable
+  handling lives inside each card's state list.
 - **Alarm color semantics (kiosk hero):** green = disarmed, amber =
   arming/armed_home/armed_away, red = pending/triggered, with a pulse
   animation on triggered. State-driven via `button-card` `state` blocks.
