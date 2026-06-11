@@ -14,32 +14,25 @@ Mobile-first control interface. Design principle: show only what's active.
 
 ## `kiosk.yaml` — Kiosk view (`/dashboard-kiosk/home`)
 
-Primary 2560x1440 monitor display driven by mouse + keyboard.
+Primary display on the pve2 2560x1440 wall monitor ("the presence monitor"), driven by mouse + keyboard.
 
-- **View IS the grid** — the view itself is `type: custom:grid-layout` with `height: 100vh`; no nested panel-mode wrapper
-- **Typed cards per cell** — every panel is a typed Lovelace card (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card` so the ha-card host provides the height cascade
-- **State-driven styling** — colors live in per-card `state` blocks (`button-card`) and `card_mod` styles, not Jinja-templated HTML. The alarm hero pulses on triggered.
-- **Interactive** — light tiles toggle on tap (hold = more-info); sensors, alarm, TVs, and the climate standby tiles open more-info dialogs; BTUI thermostat dials expose +/- and menu controls; mini-media-player tiles show play/pause, prev/next, volume, progress, and power overlaid on the artwork; the meeting indicator card toggles `switch.meeting_button_in_meeting` on tap
-- **Unavailable handling** — declared inside each card's `state` list (e.g. a `value: unavailable` block on a button-card), not via wrapper conditionals
+- **Native `sections` view — no hard layout** — the view is `type: sections` (`max_columns: 3`). Cards size to their content, sections reflow responsively, and the page scrolls if content exceeds the screen. There is **no** `custom:grid-layout`, no `custom:mod-card` height-cascade wrapper, and no fixed-pixel "fit 2560x1440 without a scrollbar" math. The previous pixel-fit grid-layout design was retired 2026-06-11 — the size-fit requirement was deliberately abandoned.
+- **Typed cards per section** — every tile is a typed Lovelace card (`button-card`, `mushroom-light-card`, `mushroom-chips-card`, `mini-media-player`, `clock-weather-card`, `thermostat` dial). Multi-tile rows use nested `type: grid` cards.
+- **State-driven styling** — colors live in per-card `state` blocks (`button-card`) + theme tokens, not Jinja-templated HTML. The alarm hero pulses on triggered.
+- **Interactive** — light tiles toggle on tap (hold = more-info); sensors, alarm, TVs, and the climate standby tiles open more-info dialogs; thermostat dials expose +/- and menu controls; mini-media-player tiles show transport + volume overlaid on artwork; the meeting indicator toggles `switch.meeting_button_in_meeting` on tap.
+- **Unavailable handling** — declared inside each card's `state` list (e.g. a `value: unavailable` block on a button-card), not via wrapper conditionals.
 
-**Grid structure:**
-```
-grid-template-columns: 1fr 1fr 1.4fr 1fr
-grid-template-rows:    300px 1fr
-grid-template-areas:
-  "weather weather alarm   meeting"
-  "climate sensors lights  media"
-```
+**Sections** (reflow across `max_columns: 3`, each introduced by a native `heading` card):
 
-| Cell | Contents |
+| Section | Contents |
 |------|----------|
-| weather | `clock-weather-card` with 3-row forecast (top-left, spans 2 cols) |
-| alarm | `button-card` hero for `alarm_control_panel.home_alarm` (top, third col) |
-| meeting | `button-card` for the `light.meeting_light` indicator; taps `switch.meeting_button_in_meeting` (top, fourth col) |
-| climate | 2 `better-thermostat-ui-card` dials stacked, each with a `mushroom-chips-card` strip (humidity, setpoint, HVAC action); standby mode swaps the dial for a large current-temp tile |
-| sensors | 8 `button-card` tiles in a 2×4 internal grid (4 doors + 2 garage covers + 2 motion) |
-| lights | 18 `mushroom-light-card` tiles grouped into 5 room sections (Family, Kitchen, Office, Hallways, Outdoor) with per-section header markdown cards |
-| media | 6 `mini-media-player` cards (album art via `artwork: full-cover-fit`, controls overlaid) in a 2×3 internal grid + TVs row |
+| Weather | single `clock-weather-card` (clock + current conditions + 5-row forecast) |
+| Security | `button-card` alarm hero for `alarm_control_panel.home_alarm` + arm/disarm row (3 buttons) + front-door camera (`picture-entity`, snapshot) |
+| Openings | 8 `button-card` tiles in a 2-col grid (4 doors + 2 garage covers + 2 motion) |
+| Presence | meeting-indicator `button-card` (taps `switch.meeting_button_in_meeting`) + Chris/Rachel presence tiles |
+| Climate | 2 `thermostat` dials (Upstairs/Downstairs), each with a `mushroom-chips-card` strip (humidity, setpoint, HVAC action); standby mode swaps the dial for a large current-temp tile |
+| Lights | 18 `mushroom-light-card` tiles grouped into 5 room sub-grids (Family, Kitchen, Office, Hallways, Outdoor) under `heading` subtitles |
+| Media | 5 `mini-media-player` cards (album art via `artwork: full-cover-fit`) in a 2-col grid + a TV `button-card` |
 
 ### Kiosk Mode
 
@@ -89,9 +82,9 @@ The whole structure is designed for live iteration via `kiosk-host/kiosk-preview
 |------|---------|
 | [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Home view light/entity/alarm cards; `mushroom-light-card` per light on kiosk |
 | [mini-media-player](https://github.com/kalkih/mini-media-player) | Sonos cards on Home view; kiosk media cells with `artwork: full-cover-fit` |
-| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | `custom:grid-layout` — used as the kiosk VIEW type (not nested) |
-| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS + `custom:mod-card` cell wrapper |
+| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | No longer used by the kiosk (it moved to native `type: sections` 2026-06-11); retained as a HACS dep for other views |
+| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS (`card-mod-root`) + per-card `card_mod` (e.g. the kiosk media-tile group-dimming) |
 | [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, heater, TVs row in kiosk view |
-| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in kiosk view |
+| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | No longer used by the kiosk (native `thermostat` dial since #354); retained as a HACS dep |
 | [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Sidebar/header hiding for wall display |
 | [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Combined clock + 4-day forecast on kiosk top strip |
