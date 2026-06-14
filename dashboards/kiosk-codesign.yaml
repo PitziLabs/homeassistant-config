@@ -20,16 +20,47 @@
 #
 # Layout philosophy: NO hard pixel-fit. Uses HA's native `sections`
 # view — cards size to their content, sections reflow responsively
-# across max_columns, and the page scrolls if content exceeds the
-# screen. There is deliberately no height:100% cascade, no fixed-pixel
-# row math, and no "tuned to avoid a scrollbar at 2560x1440" sizing.
-# This replaced the previous custom:grid-layout + mod-card pixel-fit
-# design on 2026-06-11.
+# across max_columns. There is deliberately no height:100% cascade and
+# no fixed-pixel row math. This replaced the custom:grid-layout +
+# mod-card pixel-fit design on 2026-06-11.
 #
-# Cards: typed cards per section (button-card for state-encoded tiles,
-# mushroom for lights/chips, mini-media-player for Sonos, thermostat
-# dial for climate, clock-weather-card for weather). State-driven
-# colors live in per-card `state` blocks + theme tokens — no Jinja HTML.
+# Width fill: max_columns is 5. HA caps each sections column at ~500px
+# and centers the grid, so on the 2560px wall display fewer columns
+# leave wide black bars on each side (3 cols ≈ 530px bars; 5 cols ≈
+# ~38px).
+#
+# Section ORDER is load-bearing. HA's sections view places sections
+# round-robin by order (section i -> column i mod 5) and sizes each
+# grid row to its tallest section. There are exactly TEN sections (two
+# clean rows — an 11th would force a third row that overflows 1440 and
+# clips the bottom), hand-ordered to PAIR a big tile section with a
+# short non-tile section per column so the five columns land within
+# ~200px of each other AND the page never scrolls:
+#   c1 Weather              + Openings (doors/garage/motion)
+#   c2 Upstairs climate     + Hallway/Outdoor lights
+#   c3 Downstairs climate   + Office lights
+#   c4 Security/Presence    + Home Status (env + safety)
+#   c5 Media                + Family/Kitchen lights
+# Because of round-robin, the YAML order is the column-interleave (the
+# first five sections are the top row, the next five the bottom row),
+# NOT the visual top-to-bottom order of a single column. YAML anchors
+# (&climate_block, &mlight) are defined in whichever section appears
+# first in document order and reused by later ones.
+#
+# Design language (one tile family across the board): button-card,
+# dark tile base, big icon over name over value. State drives icon
+# color + background tint (intensity can scale with magnitude, e.g.
+# light brightness); a LEFT 4px accent = "active/identity" (alarm,
+# presence, a light that's on); a FULL 2px border = "alert" (door/
+# garage open, motion, leak wet, alarm triggered) — reserved for things
+# that demand attention. Color semantics via theme tokens: green =
+# safe/home/closed, red = open/alert, amber = lights/in-transit,
+# blue = media/cool. Climate uses the native thermostat dial; weather
+# the clock-weather-card; Sonos the mini-media-player.
+#
+# The Nest doorbell camera was removed 2026-06-13 — its cloud
+# integration does not serve a still snapshot, so camera_view:snapshot
+# rendered a dead black box dead-center.
 #
 # Iterate via the codesign sandbox (/dashboard-kiosk-codesign/home),
 # a CI-mirrored copy; see scripts/sync-kiosk-codesign.sh.
@@ -50,10 +81,10 @@ views:
     icon: mdi:monitor-edit
     theme: Kiosk Codesign
     type: sections
-    max_columns: 3
+    max_columns: 5
     sections:
 
-      # ========================= WEATHER =========================
+      # ===== c1 top ===== WEATHER ================================
       - type: grid
         cards:
           - type: heading
@@ -67,9 +98,132 @@ views:
             hide_today_section: false
             hide_forecast_section: false
 
-      # ========================= SECURITY ========================
-      # Alarm hero + arm/disarm row + door/garage/motion sensors +
-      # front-door camera. (Was the separate "alarm" + "sensors" cells.)
+      # ===== c2 top ===== CLIMATE · UPSTAIRS (defines block) =====
+      - type: grid
+        cards:
+          - type: heading
+            heading: Upstairs
+            heading_style: title
+          - &climate_block
+            type: vertical-stack
+            cards:
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.upstairs
+                    state_not: 'off'
+                card:
+                  type: thermostat
+                  entity: climate.upstairs
+                  name: Upstairs
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.upstairs
+                    state: 'off'
+                card:
+                  type: custom:mushroom-template-card
+                  entity: climate.upstairs
+                  primary: |-
+                    {% set t = state_attr(config.entity, "current_temperature") %}
+                    {{ (t | round(1)) if t is not none else "—" }}°F
+                  secondary: "Upstairs · Standby"
+                  icon: mdi:thermometer
+                  icon_color: blue-grey
+                  fill_container: true
+                  tap_action: { action: more-info }
+              - type: custom:mushroom-chips-card
+                alignment: center
+                chips:
+                  - type: template
+                    icon: mdi:water-percent
+                    icon_color: blue
+                    content: '{% set h = states("sensor.upstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
+                  - type: template
+                    icon: mdi:thermometer
+                    icon_color: amber
+                    content: |-
+                      {% set t = state_attr("climate.upstairs", "temperature") %}
+                      {% set tl = state_attr("climate.upstairs", "target_temp_low") %}
+                      {% set th = state_attr("climate.upstairs", "target_temp_high") %}
+                      {% if t is not none %}Set {{ t | round }}°
+                      {% elif tl is not none and th is not none %}{{ tl | round }}–{{ th | round }}°
+                      {% else %}—{% endif %}
+                  - type: template
+                    icon: |-
+                      {% set a = state_attr("climate.upstairs", "hvac_action") %}
+                      {% if a == "heating" %}mdi:fire{% elif a == "cooling" %}mdi:snowflake{% elif a == "idle" %}mdi:thermometer-check{% else %}mdi:thermometer-off{% endif %}
+                    icon_color: |-
+                      {% set a = state_attr("climate.upstairs", "hvac_action") %}
+                      {% if a == "heating" %}red{% elif a == "cooling" %}blue{% else %}grey{% endif %}
+                    content: |-
+                      {% set a = state_attr("climate.upstairs", "hvac_action") %}
+                      {{ a | title if a else "Off" }}
+
+      # ===== c3 top ===== CLIMATE · DOWNSTAIRS ===================
+      - type: grid
+        cards:
+          - type: heading
+            heading: Downstairs
+            heading_style: title
+          - <<: *climate_block
+            cards:
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.downstairs
+                    state_not: 'off'
+                card:
+                  type: thermostat
+                  entity: climate.downstairs
+                  name: Downstairs
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.downstairs
+                    state: 'off'
+                card:
+                  type: custom:mushroom-template-card
+                  entity: climate.downstairs
+                  primary: |-
+                    {% set t = state_attr(config.entity, "current_temperature") %}
+                    {{ (t | round(1)) if t is not none else "—" }}°F
+                  secondary: "Downstairs · Standby"
+                  icon: mdi:thermometer
+                  icon_color: blue-grey
+                  fill_container: true
+                  tap_action: { action: more-info }
+              - type: custom:mushroom-chips-card
+                alignment: center
+                chips:
+                  - type: template
+                    icon: mdi:water-percent
+                    icon_color: blue
+                    content: '{% set h = states("sensor.downstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
+                  - type: template
+                    icon: mdi:thermometer
+                    icon_color: amber
+                    content: |-
+                      {% set t = state_attr("climate.downstairs", "temperature") %}
+                      {% set tl = state_attr("climate.downstairs", "target_temp_low") %}
+                      {% set th = state_attr("climate.downstairs", "target_temp_high") %}
+                      {% if t is not none %}Set {{ t | round }}°
+                      {% elif tl is not none and th is not none %}{{ tl | round }}–{{ th | round }}°
+                      {% else %}—{% endif %}
+                  - type: template
+                    icon: |-
+                      {% set a = state_attr("climate.downstairs", "hvac_action") %}
+                      {% if a == "heating" %}mdi:fire{% elif a == "cooling" %}mdi:snowflake{% elif a == "idle" %}mdi:thermometer-check{% else %}mdi:thermometer-off{% endif %}
+                    icon_color: |-
+                      {% set a = state_attr("climate.downstairs", "hvac_action") %}
+                      {% if a == "heating" %}red{% elif a == "cooling" %}blue{% else %}grey{% endif %}
+                    content: |-
+                      {% set a = state_attr("climate.downstairs", "hvac_action") %}
+                      {{ a | title if a else "Off" }}
+
+      # ===== c4 top ===== SECURITY & PRESENCE ====================
+      # Alarm hero + arm/disarm row, then meeting indicator +
+      # Chris/Rachel presence.
       - type: grid
         cards:
           - type: heading
@@ -219,192 +373,10 @@ views:
                 icon: mdi:shield-off
                 tap_action: { action: more-info, entity: alarm_control_panel.home_alarm }
 
-          # --- Front-door camera (snapshot; tap = live more-info) ---
-          - type: picture-entity
-            entity: camera.front_door
-            camera_view: snapshot
-            show_name: false
-            show_state: false
-            tap_action: { action: more-info }
-
-      # ========================= OPENINGS ========================
-      # Doors, garage covers, motion — split out of Security so the
-      # masonry can balance this tall block independently.
-      - type: grid
-        cards:
-          - type: heading
-            heading: Openings
-            heading_style: title
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - &door_sensor
-                type: custom:button-card
-                entity: binary_sensor.main_panel_front_door
-                name: Front
-                show_name: true
-                show_state: true
-                show_icon: true
-                size: 60%
-                tap_action: { action: more-info }
-                state:
-                  - value: 'on'
-                    icon: mdi:door-open
-                    color: 'var(--kiosk-accent-triggered)'
-                    styles:
-                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
-                  - value: 'off'
-                    icon: mdi:door-closed
-                    color: 'var(--kiosk-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
-                  - operator: default
-                    icon: mdi:door
-                    color: 'var(--kiosk-text-tertiary)'
-                    styles:
-                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
-                styles:
-                  card:
-                    - background: 'var(--kiosk-bg-tile)'
-                    - border-radius: '8px'
-                    - border: 'none'
-                    - padding: '14px 12px'
-                  name:
-                    - font-size: '16px'
-                    - font-weight: '500'
-                    - color: 'var(--kiosk-text-secondary)'
-                    - padding-top: '6px'
-                  state:
-                    - font-size: '18px'
-                    - text-transform: 'uppercase'
-                    - font-weight: '600'
-                    - letter-spacing: '0.5px'
-                    - padding-top: '2px'
-              - <<: *door_sensor
-                entity: binary_sensor.main_panel_sliding_door
-                name: Sliding
-                state:
-                  - value: 'on'
-                    icon: mdi:door-sliding-open
-                    color: 'var(--kiosk-accent-triggered)'
-                    styles:
-                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
-                  - value: 'off'
-                    icon: mdi:door-sliding
-                    color: 'var(--kiosk-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
-                  - operator: default
-                    icon: mdi:door-sliding
-                    color: 'var(--kiosk-text-tertiary)'
-                    styles:
-                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
-              - <<: *door_sensor
-                entity: binary_sensor.main_panel_garage_door
-                name: Garage Entry
-              - <<: *door_sensor
-                entity: binary_sensor.main_panel_basement_door
-                name: Basement
-              - &garage_cover
-                type: custom:button-card
-                entity: cover.garage_door_1_door
-                name: Garage 1
-                show_name: true
-                show_state: true
-                show_icon: true
-                size: 60%
-                tap_action: { action: more-info }
-                state:
-                  - value: 'closed'
-                    icon: mdi:garage
-                    color: 'var(--kiosk-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
-                  - value: 'open'
-                    icon: mdi:garage-open-variant
-                    color: 'var(--kiosk-accent-triggered)'
-                    styles:
-                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
-                  - operator: regex
-                    value: '^(opening|closing)$'
-                    icon: mdi:garage-alert-variant
-                    color: 'var(--kiosk-accent-lights)'
-                    styles:
-                      card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
-                styles:
-                  card:
-                    - background: 'var(--kiosk-bg-tile)'
-                    - border-radius: '8px'
-                    - border: 'none'
-                    - padding: '14px 12px'
-                  name:
-                    - font-size: '16px'
-                    - font-weight: '500'
-                    - color: 'var(--kiosk-text-secondary)'
-                    - padding-top: '6px'
-                  state:
-                    - font-size: '18px'
-                    - text-transform: 'uppercase'
-                    - font-weight: '600'
-                    - letter-spacing: '0.5px'
-                    - padding-top: '2px'
-              - <<: *garage_cover
-                entity: cover.garage_door_2_door
-                name: Garage 2
-              - &motion_sensor
-                type: custom:button-card
-                entity: binary_sensor.main_panel_family_room_motion
-                name: Family
-                show_name: true
-                show_state: true
-                show_icon: true
-                size: 60%
-                tap_action: { action: more-info }
-                state:
-                  - value: 'on'
-                    icon: mdi:motion-sensor
-                    color: 'var(--kiosk-accent-triggered)'
-                    styles:
-                      card: [{ background-color: 'rgba(248, 81, 73, 0.20)' }, { animation: 'pulse 1s infinite' }]
-                  - value: 'off'
-                    icon: mdi:motion-sensor-off
-                    color: 'var(--kiosk-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
-                  - operator: default
-                    icon: mdi:motion-sensor-off
-                    color: 'var(--kiosk-text-tertiary)'
-                    styles:
-                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
-                styles:
-                  card:
-                    - background: 'var(--kiosk-bg-tile)'
-                    - border-radius: '8px'
-                    - border: 'none'
-                    - padding: '14px 12px'
-                  name:
-                    - font-size: '16px'
-                    - font-weight: '500'
-                    - color: 'var(--kiosk-text-secondary)'
-                    - padding-top: '6px'
-                  state:
-                    - font-size: '18px'
-                    - text-transform: 'uppercase'
-                    - font-weight: '600'
-                    - letter-spacing: '0.5px'
-                    - padding-top: '2px'
-              - <<: *motion_sensor
-                entity: binary_sensor.main_panel_office_motion
-                name: Office
-
-      # ========================= PRESENCE ========================
-      # Meeting indicator + Chris/Rachel presence.
-      - type: grid
-        cards:
+          # --- Presence: meeting indicator + Chris/Rachel ---
           - type: heading
             heading: Presence
-            heading_style: title
+            heading_style: subtitle
 
           - type: custom:button-card
             entity: light.meeting_light
@@ -580,217 +552,7 @@ views:
                       card: [{ background-color: 'var(--kiosk-bg-tile)' }]
                       label: [{ color: 'var(--kiosk-text-tertiary)' }]
 
-      # ========================= CLIMATE =========================
-      - type: grid
-        cards:
-          - type: heading
-            heading: Climate
-            heading_style: title
-          - &climate_block
-            type: vertical-stack
-            cards:
-              - type: conditional
-                conditions:
-                  - condition: state
-                    entity: climate.upstairs
-                    state_not: 'off'
-                card:
-                  type: thermostat
-                  entity: climate.upstairs
-                  name: Upstairs
-              - type: conditional
-                conditions:
-                  - condition: state
-                    entity: climate.upstairs
-                    state: 'off'
-                card:
-                  type: custom:mushroom-template-card
-                  entity: climate.upstairs
-                  primary: |-
-                    {% set t = state_attr(config.entity, "current_temperature") %}
-                    {{ (t | round(1)) if t is not none else "—" }}°F
-                  secondary: "Upstairs · Standby"
-                  icon: mdi:thermometer
-                  icon_color: blue-grey
-                  fill_container: true
-                  tap_action: { action: more-info }
-              - type: custom:mushroom-chips-card
-                alignment: center
-                chips:
-                  - type: template
-                    icon: mdi:water-percent
-                    icon_color: blue
-                    content: '{% set h = states("sensor.upstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
-                  - type: template
-                    icon: mdi:thermometer
-                    icon_color: amber
-                    content: |-
-                      {% set t = state_attr("climate.upstairs", "temperature") %}
-                      {% set tl = state_attr("climate.upstairs", "target_temp_low") %}
-                      {% set th = state_attr("climate.upstairs", "target_temp_high") %}
-                      {% if t is not none %}Set {{ t | round }}°
-                      {% elif tl is not none and th is not none %}{{ tl | round }}–{{ th | round }}°
-                      {% else %}—{% endif %}
-                  - type: template
-                    icon: |-
-                      {% set a = state_attr("climate.upstairs", "hvac_action") %}
-                      {% if a == "heating" %}mdi:fire{% elif a == "cooling" %}mdi:snowflake{% elif a == "idle" %}mdi:thermometer-check{% else %}mdi:thermometer-off{% endif %}
-                    icon_color: |-
-                      {% set a = state_attr("climate.upstairs", "hvac_action") %}
-                      {% if a == "heating" %}red{% elif a == "cooling" %}blue{% else %}grey{% endif %}
-                    content: |-
-                      {% set a = state_attr("climate.upstairs", "hvac_action") %}
-                      {{ a | title if a else "Off" }}
-          - <<: *climate_block
-            cards:
-              - type: conditional
-                conditions:
-                  - condition: state
-                    entity: climate.downstairs
-                    state_not: 'off'
-                card:
-                  type: thermostat
-                  entity: climate.downstairs
-                  name: Downstairs
-              - type: conditional
-                conditions:
-                  - condition: state
-                    entity: climate.downstairs
-                    state: 'off'
-                card:
-                  type: custom:mushroom-template-card
-                  entity: climate.downstairs
-                  primary: |-
-                    {% set t = state_attr(config.entity, "current_temperature") %}
-                    {{ (t | round(1)) if t is not none else "—" }}°F
-                  secondary: "Downstairs · Standby"
-                  icon: mdi:thermometer
-                  icon_color: blue-grey
-                  fill_container: true
-                  tap_action: { action: more-info }
-              - type: custom:mushroom-chips-card
-                alignment: center
-                chips:
-                  - type: template
-                    icon: mdi:water-percent
-                    icon_color: blue
-                    content: '{% set h = states("sensor.downstairs_humidity") | float(none) %}{{ (h | round) if h is not none else "—" }}%'
-                  - type: template
-                    icon: mdi:thermometer
-                    icon_color: amber
-                    content: |-
-                      {% set t = state_attr("climate.downstairs", "temperature") %}
-                      {% set tl = state_attr("climate.downstairs", "target_temp_low") %}
-                      {% set th = state_attr("climate.downstairs", "target_temp_high") %}
-                      {% if t is not none %}Set {{ t | round }}°
-                      {% elif tl is not none and th is not none %}{{ tl | round }}–{{ th | round }}°
-                      {% else %}—{% endif %}
-                  - type: template
-                    icon: |-
-                      {% set a = state_attr("climate.downstairs", "hvac_action") %}
-                      {% if a == "heating" %}mdi:fire{% elif a == "cooling" %}mdi:snowflake{% elif a == "idle" %}mdi:thermometer-check{% else %}mdi:thermometer-off{% endif %}
-                    icon_color: |-
-                      {% set a = state_attr("climate.downstairs", "hvac_action") %}
-                      {% if a == "heating" %}red{% elif a == "cooling" %}blue{% else %}grey{% endif %}
-                    content: |-
-                      {% set a = state_attr("climate.downstairs", "hvac_action") %}
-                      {{ a | title if a else "Off" }}
-
-      # ========================== LIGHTS =========================
-      - type: grid
-        cards:
-          - type: heading
-            heading: Lights
-            heading_style: title
-          - type: heading
-            heading: Family Room
-            heading_style: subtitle
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - &mlight { type: 'custom:mushroom-light-card', entity: light.family_room_2, name: Family, layout: vertical, fill_container: true, icon_type: icon }
-              - <<: *mlight
-                entity: light.floor_lamp_composite
-                name: Floor
-          - type: heading
-            heading: Kitchen
-            heading_style: subtitle
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-              - <<: *mlight
-                entity: light.kitchen_island
-                name: Island
-              - <<: *mlight
-                entity: light.kitchen_main
-                name: Kitchen
-              - <<: *mlight
-                entity: light.kitchen_table
-                name: Table
-          - type: heading
-            heading: Office
-            heading_style: subtitle
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-              - <<: *mlight
-                entity: light.bookcase_lamp
-                name: Bookcase
-              - <<: *mlight
-                entity: light.corner_lamp
-                name: Corner
-              - <<: *mlight
-                entity: light.door_lamp
-                name: Door
-              - <<: *mlight
-                entity: light.table_lamp
-                name: Table
-              - <<: *mlight
-                entity: light.desk_lamp_2
-                name: Desk
-              - <<: *mlight
-                entity: light.desk_lamp_2_2
-                name: Desk 2
-          - type: heading
-            heading: Hallways
-            heading_style: subtitle
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - <<: *mlight
-                entity: light.downstairs_hallway
-                name: Down Hall
-              - <<: *mlight
-                entity: light.upstairs_hallway_light
-                name: Up Hall
-          - type: heading
-            heading: Outdoor
-            heading_style: subtitle
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-              - <<: *mlight
-                entity: light.front_door
-                name: Front
-              - <<: *mlight
-                entity: light.front_lantern
-                name: Lantern
-              - <<: *mlight
-                entity: light.garage_front
-                name: Garage Fr
-              - <<: *mlight
-                entity: light.garage_side
-                name: Garage Sd
-              - <<: *mlight
-                entity: light.shed
-                name: Shed
-
-      # ========================== MEDIA ==========================
+      # ===== c5 top ===== MEDIA ==================================
       - type: grid
         cards:
           - type: heading
@@ -868,3 +630,474 @@ views:
               name: [{ font-size: '15px' }, { font-weight: '500' }, { color: 'var(--kiosk-text-secondary)' }, { justify-self: 'start' }]
               state: [{ font-size: '16px' }, { font-weight: '600' }, { text-transform: 'uppercase' }, { justify-self: 'start' }]
               grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '14px' }]
+
+      # ===== c1 bottom ===== OPENINGS (doors/garage/motion) ======
+      # Defines &door_sensor, &garage_cover, &motion_sensor.
+      - type: grid
+        cards:
+          - type: heading
+            heading: Openings
+            heading_style: title
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - &door_sensor
+                type: custom:button-card
+                entity: binary_sensor.main_panel_front_door
+                name: Front
+                show_name: true
+                show_state: true
+                show_icon: true
+                size: 46%
+                tap_action: { action: more-info }
+                state:
+                  - value: 'on'
+                    icon: mdi:door-open
+                    color: 'var(--kiosk-accent-triggered)'
+                    styles:
+                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
+                  - value: 'off'
+                    icon: mdi:door-closed
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                  - operator: default
+                    icon: mdi:door
+                    color: 'var(--kiosk-text-tertiary)'
+                    styles:
+                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
+                styles:
+                  card:
+                    - background: 'var(--kiosk-bg-tile)'
+                    - border-radius: '8px'
+                    - border: 'none'
+                    - padding: '14px 12px'
+                    - min-height: '146px'
+                  name:
+                    - font-size: '16px'
+                    - font-weight: '500'
+                    - color: 'var(--kiosk-text-secondary)'
+                    - padding-top: '6px'
+                  state:
+                    - font-size: '18px'
+                    - text-transform: 'uppercase'
+                    - font-weight: '600'
+                    - letter-spacing: '0.5px'
+                    - padding-top: '2px'
+              - <<: *door_sensor
+                entity: binary_sensor.main_panel_sliding_door
+                name: Sliding
+                state:
+                  - value: 'on'
+                    icon: mdi:door-sliding-open
+                    color: 'var(--kiosk-accent-triggered)'
+                    styles:
+                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
+                  - value: 'off'
+                    icon: mdi:door-sliding
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                  - operator: default
+                    icon: mdi:door-sliding
+                    color: 'var(--kiosk-text-tertiary)'
+                    styles:
+                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
+              - <<: *door_sensor
+                entity: binary_sensor.main_panel_garage_door
+                name: Garage Entry
+              - <<: *door_sensor
+                entity: binary_sensor.main_panel_basement_door
+                name: Basement
+              - &garage_cover
+                type: custom:button-card
+                entity: cover.garage_door_1_door
+                name: Garage 1
+                show_name: true
+                show_state: true
+                show_icon: true
+                size: 46%
+                tap_action: { action: more-info }
+                state:
+                  - value: 'closed'
+                    icon: mdi:garage
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                  - value: 'open'
+                    icon: mdi:garage-open-variant
+                    color: 'var(--kiosk-accent-triggered)'
+                    styles:
+                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
+                  - operator: regex
+                    value: '^(opening|closing)$'
+                    icon: mdi:garage-alert-variant
+                    color: 'var(--kiosk-accent-lights)'
+                    styles:
+                      card: [{ background-color: 'rgba(227, 179, 65, 0.18)' }, { animation: 'pulse 1s infinite' }]
+                styles:
+                  card:
+                    - background: 'var(--kiosk-bg-tile)'
+                    - border-radius: '8px'
+                    - border: 'none'
+                    - padding: '14px 12px'
+                    - min-height: '146px'
+                  name:
+                    - font-size: '16px'
+                    - font-weight: '500'
+                    - color: 'var(--kiosk-text-secondary)'
+                    - padding-top: '6px'
+                  state:
+                    - font-size: '18px'
+                    - text-transform: 'uppercase'
+                    - font-weight: '600'
+                    - letter-spacing: '0.5px'
+                    - padding-top: '2px'
+              - <<: *garage_cover
+                entity: cover.garage_door_2_door
+                name: Garage 2
+              - &motion_sensor
+                type: custom:button-card
+                entity: binary_sensor.main_panel_family_room_motion
+                name: Family
+                show_name: true
+                show_state: true
+                show_icon: true
+                size: 46%
+                tap_action: { action: more-info }
+                state:
+                  - value: 'on'
+                    icon: mdi:motion-sensor
+                    color: 'var(--kiosk-accent-triggered)'
+                    styles:
+                      card: [{ background-color: 'rgba(248, 81, 73, 0.20)' }, { animation: 'pulse 1s infinite' }]
+                  - value: 'off'
+                    icon: mdi:motion-sensor-off
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                  - operator: default
+                    icon: mdi:motion-sensor-off
+                    color: 'var(--kiosk-text-tertiary)'
+                    styles:
+                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
+                styles:
+                  card:
+                    - background: 'var(--kiosk-bg-tile)'
+                    - border-radius: '8px'
+                    - border: 'none'
+                    - padding: '14px 12px'
+                    - min-height: '146px'
+                  name:
+                    - font-size: '16px'
+                    - font-weight: '500'
+                    - color: 'var(--kiosk-text-secondary)'
+                    - padding-top: '6px'
+                  state:
+                    - font-size: '18px'
+                    - text-transform: 'uppercase'
+                    - font-weight: '600'
+                    - letter-spacing: '0.5px'
+                    - padding-top: '2px'
+              - <<: *motion_sensor
+                entity: binary_sensor.main_panel_office_motion
+                name: Office
+
+      # ===== c2 bottom ===== HALLWAY & OUTDOOR LIGHTS (defines &mlight)
+      - type: grid
+        cards:
+          - type: heading
+            heading: Hallways & Outdoor
+            heading_style: title
+          - type: heading
+            heading: Hallways
+            heading_style: subtitle
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - &mlight
+                type: custom:button-card
+                entity: light.downstairs_hallway
+                name: Down Hall
+                show_name: true
+                show_state: true
+                show_icon: true
+                size: 48%
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+                state_display: |
+                  [[[
+                    if (entity.state === 'unavailable') return 'N/A';
+                    if (entity.state !== 'on') return 'OFF';
+                    const b = entity.attributes.brightness;
+                    return b ? Math.round(b / 2.55) + '%' : 'ON';
+                  ]]]
+                state:
+                  - value: 'on'
+                    icon: mdi:lightbulb
+                    color: 'var(--kiosk-accent-lights)'
+                  - value: 'unavailable'
+                    icon: mdi:lightbulb-alert-outline
+                    color: 'var(--kiosk-text-tertiary)'
+                  - operator: default
+                    icon: mdi:lightbulb-outline
+                    color: 'var(--kiosk-text-tertiary)'
+                styles:
+                  card:
+                    - border-radius: '8px'
+                    - border: 'none'
+                    - padding: '14px 12px'
+                    - min-height: '150px'
+                    - background-color: |
+                        [[[
+                          if (entity.state !== 'on') return 'var(--kiosk-bg-tile)';
+                          const b = entity.attributes.brightness || 255;
+                          return `rgba(227, 179, 65, ${(0.10 + 0.24 * (b / 255)).toFixed(2)})`;
+                        ]]]
+                    - border-left: |
+                        [[[ return entity.state === 'on'
+                             ? '4px solid var(--kiosk-accent-lights)'
+                             : '4px solid transparent'; ]]]
+                  name:
+                    - font-size: '15px'
+                    - font-weight: '500'
+                    - color: 'var(--kiosk-text-secondary)'
+                    - padding-top: '6px'
+                  state:
+                    - font-size: '17px'
+                    - font-weight: '600'
+                    - letter-spacing: '0.5px'
+                    - padding-top: '2px'
+              - <<: *mlight
+                entity: light.upstairs_hallway_light
+                name: Up Hall
+          - type: heading
+            heading: Outdoor
+            heading_style: subtitle
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - <<: *mlight
+                entity: light.front_door
+                name: Front
+              - <<: *mlight
+                entity: light.front_lantern
+                name: Lantern
+              - <<: *mlight
+                entity: light.garage_front
+                name: Garage Fr
+              - <<: *mlight
+                entity: light.garage_side
+                name: Garage Sd
+              - <<: *mlight
+                entity: light.shed
+                name: Shed
+
+      # ===== c3 bottom ===== OFFICE LIGHTS =======================
+      - type: grid
+        cards:
+          - type: heading
+            heading: Office
+            heading_style: title
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - <<: *mlight
+                entity: light.bookcase_lamp
+                name: Bookcase
+              - <<: *mlight
+                entity: light.corner_lamp
+                name: Corner
+              - <<: *mlight
+                entity: light.door_lamp
+                name: Door
+              - <<: *mlight
+                entity: light.table_lamp
+                name: Table
+              - <<: *mlight
+                entity: light.desk_lamp_2
+                name: Desk
+              - <<: *mlight
+                entity: light.desk_lamp_2_2
+                name: Desk 2
+
+      # ===== c4 bottom ===== HOME STATUS (defines &status_tile) ==
+      # Environment + safety indicators in the shared tile language:
+      # leak detectors (green dry / red wet), UPS, floor temps
+      # (warm/cool tinted), humidity.
+      - type: grid
+        cards:
+          - type: heading
+            heading: Home Status
+            heading_style: title
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - &status_tile
+                type: custom:button-card
+                entity: binary_sensor.hvac_pump_leak
+                name: HVAC Pump
+                show_name: true
+                show_state: true
+                show_icon: true
+                size: 46%
+                tap_action: { action: more-info }
+                state_display: |
+                  [[[ return entity.state === 'on' ? 'WET'
+                       : entity.state === 'unavailable' ? 'N/A' : 'DRY'; ]]]
+                state:
+                  - value: 'on'
+                    icon: mdi:water-alert
+                    color: 'var(--kiosk-accent-triggered)'
+                    styles:
+                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--kiosk-accent-triggered)' }]
+                  - value: 'off'
+                    icon: mdi:water-check
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
+                  - operator: default
+                    icon: mdi:water-off
+                    color: 'var(--kiosk-text-tertiary)'
+                    styles:
+                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
+                styles:
+                  card:
+                    - background: 'var(--kiosk-bg-tile)'
+                    - border-radius: '8px'
+                    - border: 'none'
+                    - padding: '14px 12px'
+                    - min-height: '150px'
+                  name:
+                    - font-size: '15px'
+                    - font-weight: '500'
+                    - color: 'var(--kiosk-text-secondary)'
+                    - padding-top: '6px'
+                  state:
+                    - font-size: '18px'
+                    - font-weight: '600'
+                    - text-transform: 'uppercase'
+                    - letter-spacing: '0.5px'
+                    - padding-top: '2px'
+              - <<: *status_tile
+                entity: binary_sensor.water_heater_leak
+                name: Water Htr
+              - <<: *status_tile
+                entity: sensor.cyberpower_battery_charge
+                name: UPS
+                icon: mdi:battery-charging
+                state_display: |
+                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '%'; ]]]
+                state:
+                  - operator: template
+                    value: '[[[ return parseFloat(entity.state) <= 20; ]]]'
+                    icon: mdi:battery-alert
+                    color: 'var(--kiosk-accent-triggered)'
+                    styles:
+                      card: [{ background-color: 'rgba(248, 81, 73, 0.15)' }]
+                  - operator: default
+                    icon: mdi:battery-charging
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'var(--kiosk-bg-tile)' }]
+              - <<: *status_tile
+                entity: sensor.upstairs_temperature
+                name: Up Temp
+                icon: mdi:thermometer
+                state_display: |
+                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '°'; ]]]
+                state:
+                  - operator: template
+                    value: '[[[ return parseFloat(entity.state) >= 76; ]]]'
+                    icon: mdi:thermometer-high
+                    color: 'var(--kiosk-accent-climate)'
+                    styles:
+                      card: [{ background-color: 'rgba(240, 136, 62, 0.14)' }]
+                  - operator: template
+                    value: '[[[ return parseFloat(entity.state) <= 68; ]]]'
+                    icon: mdi:thermometer-low
+                    color: 'var(--kiosk-accent-media)'
+                    styles:
+                      card: [{ background-color: 'rgba(88, 166, 255, 0.14)' }]
+                  - operator: default
+                    icon: mdi:thermometer
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'var(--kiosk-bg-tile)' }]
+              - <<: *status_tile
+                entity: sensor.downstairs_temperature
+                name: Down Temp
+                icon: mdi:thermometer
+                state_display: |
+                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '°'; ]]]
+                state:
+                  - operator: template
+                    value: '[[[ return parseFloat(entity.state) >= 76; ]]]'
+                    icon: mdi:thermometer-high
+                    color: 'var(--kiosk-accent-climate)'
+                    styles:
+                      card: [{ background-color: 'rgba(240, 136, 62, 0.14)' }]
+                  - operator: template
+                    value: '[[[ return parseFloat(entity.state) <= 68; ]]]'
+                    icon: mdi:thermometer-low
+                    color: 'var(--kiosk-accent-media)'
+                    styles:
+                      card: [{ background-color: 'rgba(88, 166, 255, 0.14)' }]
+                  - operator: default
+                    icon: mdi:thermometer
+                    color: 'var(--kiosk-accent-sensors)'
+                    styles:
+                      card: [{ background-color: 'var(--kiosk-bg-tile)' }]
+              - <<: *status_tile
+                entity: sensor.upstairs_humidity
+                name: Up Humid
+                icon: mdi:water-percent
+                state_display: |
+                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '%'; ]]]
+                state:
+                  - operator: default
+                    icon: mdi:water-percent
+                    color: 'var(--kiosk-accent-media)'
+                    styles:
+                      card: [{ background-color: 'rgba(88, 166, 255, 0.10)' }]
+
+      # ===== c5 bottom ===== FAMILY & KITCHEN LIGHTS =============
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            heading_style: title
+          - type: heading
+            heading: Family Room
+            heading_style: subtitle
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - <<: *mlight
+                entity: light.family_room_2
+                name: Family
+              - <<: *mlight
+                entity: light.floor_lamp_composite
+                name: Floor
+          - type: heading
+            heading: Kitchen
+            heading_style: subtitle
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - <<: *mlight
+                entity: light.kitchen_island
+                name: Island
+              - <<: *mlight
+                entity: light.kitchen_main
+                name: Kitchen
+              - <<: *mlight
+                entity: light.kitchen_table
+                name: Table
