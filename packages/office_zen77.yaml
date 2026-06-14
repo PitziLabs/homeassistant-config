@@ -22,7 +22,7 @@
 #
 # Bindings:
 #   up tap    → if lights off, reset counter to 1 and apply scene 1;
-#               otherwise advance counter (wraps 11 → 1) and apply.
+#               otherwise advance counter (wraps 9 → 1) and apply.
 #               i.e. first tap turns on, subsequent taps cycle scenes.
 #   down tap  → all 6 office lamps off (counter persists, candle loop killed).
 #   up hold   → ramp the current scene brighter at 5%/~150 ms until the
@@ -79,7 +79,7 @@ automation:
           - if:
               - condition: state
                 entity_id: counter.office_sonoff_scene
-                state: '11'
+                state: '9'
             then:
               - action: counter.set_value
                 target:
