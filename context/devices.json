@@ -1400,6 +1400,26 @@
     ]
   },
   {
+    "device_id": "fea1833d9b8de3f0e9c2ef2726cb5d95",
+    "name": "claude-runner",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
+    "device_id": "b7fd6c1a8ca9b2935092607d7b79125f",
+    "name": "claude-runner-2",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
     "device_id": "c853c4e98d5f7aa5ab06776a212be60c",
     "name": "downstairs hallway",
     "manufacturer": "TP-Link",
