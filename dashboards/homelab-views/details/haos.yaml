@@ -81,32 +81,14 @@ cards:
           pve3 maintenance; live HA-style failover via `ha-manager` is
           impossible without physically moving the radios first.
 
-      # Power actions (hold-to-fire, no accidental taps)
-      - type: grid
-        columns: 4
-        square: false
-        cards:
-          - type: custom:mushroom-entity-card
-            entity: button.haos_17_1_restart
-            name: Restart VM
-            icon: mdi:restart
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.haos_17_1_restart } }
-          - type: custom:mushroom-entity-card
-            entity: button.haos_17_1_shut_down
-            name: Shut down
-            icon: mdi:power
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.haos_17_1_shut_down } }
-          - type: custom:mushroom-entity-card
-            entity: button.haos_17_1_start
-            name: Start
-            icon: mdi:play-circle
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.haos_17_1_start } }
-          - type: custom:mushroom-entity-card
-            entity: button.haos_17_1_create_snapshot
-            name: Snapshot
-            icon: mdi:camera
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.haos_17_1_create_snapshot } }
+      # VM controls removed — the Proxmox button.* entities are unavailable (see #376)
+      - type: markdown
+        content: >
+          **VM controls (restart / shut down / start / snapshot):** absent
+          from this view because the Proxmox VE `button.haos_17_1_*` control
+          entities are `unavailable` from HA (see #376). The integration
+          registers them but isn't actuating them — unlike the live stat
+          sensors on this device, the control buttons stay dead until the
+          Proxmox VE integration is re-paired (and its API token carries VM
+          power-management privileges). Manage VM 100 from Proxmox directly
+          in the meantime.

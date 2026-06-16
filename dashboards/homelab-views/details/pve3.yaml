@@ -106,32 +106,14 @@ cards:
             entity: sensor.pve3_uptime
             tap_action: { action: more-info }
 
-      # Actions — guarded by hold_action to prevent accidental taps
-      - type: grid
-        columns: 4
-        square: false
-        cards:
-          - type: custom:mushroom-entity-card
-            entity: button.pve3_restart
-            name: Restart node
-            icon: mdi:restart
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_restart } }
-          - type: custom:mushroom-entity-card
-            entity: button.pve3_shut_down
-            name: Shut down
-            icon: mdi:power
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_shut_down } }
-          - type: custom:mushroom-entity-card
-            entity: button.pve3_start_all
-            name: Start all guests
-            icon: mdi:play-circle
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_start_all } }
-          - type: custom:mushroom-entity-card
-            entity: button.pve3_stop_all
-            name: Stop all guests
-            icon: mdi:stop-circle
-            tap_action: { action: none }
-            hold_action: { action: call-service, service: button.press, target: { entity_id: button.pve3_stop_all } }
+      # Node controls removed — the Proxmox button.* entities are unavailable (see #376)
+      - type: markdown
+        content: >
+          **Node controls (restart / shut down / start-all / stop-all
+          guests):** absent from this view because the Proxmox VE
+          `button.pve3_*` control entities are `unavailable` from HA (see
+          #376). The live stat sensors on this node still report; only the
+          control buttons are dead — the integration registers them but
+          isn't actuating them until it is re-paired (and its API token
+          carries node power-management privileges). Manage the node from
+          Proxmox directly in the meantime.
