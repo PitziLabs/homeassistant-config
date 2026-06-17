@@ -96,6 +96,14 @@
     "hidden": false
   },
   {
+    "entity_id": "automation.dashboard_import_seed_ui_copy_on_button_press",
+    "friendly_name": "Dashboard Import: seed UI copy on button press",
+    "area_id": null,
+    "device_id": null,
+    "platform": "automation",
+    "hidden": false
+  },
+  {
     "entity_id": "automation.door_chime_when_disarmed",
     "friendly_name": "Door chime when disarmed",
     "area_id": null,
@@ -1093,38 +1101,6 @@
     "area_id": null,
     "device_id": "c13d103ea0a1177f174dba7bd38fbeaa",
     "platform": "tplink",
-    "hidden": false
-  },
-  {
-    "entity_id": "binary_sensor.play_room_tv_headphones_connected",
-    "friendly_name": "Headphones connected",
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
-    "hidden": false
-  },
-  {
-    "entity_id": "binary_sensor.play_room_tv_supports_airplay",
-    "friendly_name": "Supports AirPlay",
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
-    "hidden": false
-  },
-  {
-    "entity_id": "binary_sensor.play_room_tv_supports_ethernet",
-    "friendly_name": "Supports Ethernet",
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
-    "hidden": false
-  },
-  {
-    "entity_id": "binary_sensor.play_room_tv_supports_find_remote",
-    "friendly_name": "Supports find remote",
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
     "hidden": false
   },
   {
@@ -3560,11 +3536,27 @@
     "hidden": false
   },
   {
+    "entity_id": "input_button.seed_ui_dashboard",
+    "friendly_name": "Seed UI-editable dashboard",
+    "area_id": null,
+    "device_id": null,
+    "platform": "input_button",
+    "hidden": false
+  },
+  {
     "entity_id": "input_number.office_brightness",
     "friendly_name": "Office Brightness",
     "area_id": null,
     "device_id": null,
     "platform": "input_number",
+    "hidden": false
+  },
+  {
+    "entity_id": "input_select.dashboard_to_seed",
+    "friendly_name": "Dashboard to seed (UI Edit)",
+    "area_id": null,
+    "device_id": null,
+    "platform": "input_select",
     "hidden": false
   },
   {
@@ -3637,6 +3629,14 @@
     "area_id": null,
     "device_id": "c853c4e98d5f7aa5ab06776a212be60c",
     "platform": "tplink",
+    "hidden": false
+  },
+  {
+    "entity_id": "light.family_room",
+    "friendly_name": "Family Room",
+    "area_id": null,
+    "device_id": null,
+    "platform": "group",
     "hidden": false
   },
   {
@@ -3720,6 +3720,14 @@
     "hidden": false
   },
   {
+    "entity_id": "light.kitchen",
+    "friendly_name": "Kitchen",
+    "area_id": null,
+    "device_id": null,
+    "platform": "group",
+    "hidden": false
+  },
+  {
     "entity_id": "light.kitchen_island",
     "friendly_name": null,
     "area_id": null,
@@ -3757,6 +3765,14 @@
     "area_id": null,
     "device_id": "03ebc1371a65dd35fbc10846dd9811ce",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "light.office_lights",
+    "friendly_name": "Office Lights",
+    "area_id": null,
+    "device_id": null,
+    "platform": "group",
     "hidden": false
   },
   {
@@ -3893,14 +3909,6 @@
     "area_id": null,
     "device_id": "8bf1e839ce7964732ace6d4f811bef3c",
     "platform": "sonos",
-    "hidden": false
-  },
-  {
-    "entity_id": "media_player.play_room_tv",
-    "friendly_name": null,
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
     "hidden": false
   },
   {
@@ -4421,14 +4429,6 @@
     "area_id": null,
     "device_id": null,
     "platform": "person",
-    "hidden": false
-  },
-  {
-    "entity_id": "remote.play_room_tv",
-    "friendly_name": null,
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
     "hidden": false
   },
   {
@@ -6413,22 +6413,6 @@
     "area_id": null,
     "device_id": null,
     "platform": "github_custom",
-    "hidden": false
-  },
-  {
-    "entity_id": "sensor.play_room_tv_active_app",
-    "friendly_name": "Active app",
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
-    "hidden": false
-  },
-  {
-    "entity_id": "sensor.play_room_tv_active_app_id",
-    "friendly_name": "Active app ID",
-    "area_id": null,
-    "device_id": "b5a2eaa1a2840cca8a4a041e7f680bd4",
-    "platform": "roku",
     "hidden": false
   },
   {
