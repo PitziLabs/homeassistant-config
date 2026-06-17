@@ -164,20 +164,15 @@ fetch_home_snapshot() {
             --max-time "$DISPLAY_SNAPSHOT_TIMEOUT" \
             --output "$tmp" \
             "$url" 2>>"$LOG_FILE"; then
-      # PNG magic check: first 4 bytes must be 89 50 4E 47. Read with xxd
-      # if available, otherwise fall back to a size sanity check — real
-      # display frames are hundreds of KB; error bodies are tens of bytes.
+      # PNG magic check: first 4 bytes must be 89 50 4E 47. Use head+od
+      # (POSIX/busybox-safe) instead of xxd — on HAOS Core, xxd is a busybox
+      # symlink that does not support the -p flag and exits with rc 126.
       local valid=false
-      if command -v xxd >/dev/null 2>&1; then
-        if [[ "$(xxd -p -l 4 "$tmp" 2>/dev/null)" == "89504e47" ]]; then
-          valid=true
-        fi
-      else
-        local sz
-        sz=$(stat -c%s "$tmp" 2>/dev/null || echo 0)
-        if (( sz > 10000 )); then
-          valid=true
-        fi
+      local header
+      header=$(head -c 4 "$tmp" 2>/dev/null | od -An -tx1 | tr -d ' \n') \
+        || header=""
+      if [[ "$header" == "89504e47" ]]; then
+        valid=true
       fi
       if [[ "$valid" == true ]]; then
         mv "$tmp" "$out"
@@ -271,7 +266,7 @@ main() {
   log INFO "Building dashboards-storage.json"
   build_dashboards_storage "$STORAGE" > "${CONTEXT_DIR}/dashboards-storage.json"
 
-  fetch_home_snapshot
+  fetch_home_snapshot || true
 
   # Check for diff — most common case is no change
   if [[ -z "$(git -C "$WORKTREE" status --porcelain context/)" ]]; then
