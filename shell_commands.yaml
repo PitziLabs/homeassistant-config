@@ -1,2 +1,3 @@
 gitops_sync: "bash /config/scripts/gitops-sync.sh"
 assign_playroom_areas: "bash /config/scripts/assign-playroom-areas.sh"
+import_dashboard_to_storage: "bash /config/scripts/import-dashboard-to-storage.sh {{ source }}"
