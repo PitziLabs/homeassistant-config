@@ -64,7 +64,7 @@ readonly SECRETS_YAML="${SECRETS_YAML:-/config/secrets.yaml}"
 if [[ ! -f "$SOURCE_YAML" ]]; then
     echo "error: source dashboard not found: $SOURCE_YAML" >&2
     echo "       available dashboards:" >&2
-    ls -1 /config/dashboards/*.yaml 2>/dev/null | sed 's#.*/#         #; s#\.yaml$##' >&2 || true
+    find /config/dashboards -maxdepth 1 -name '*.yaml' 2>/dev/null | sed 's#.*/#         #; s#\.yaml$##' | sort >&2 || true
     exit 1
 fi
 

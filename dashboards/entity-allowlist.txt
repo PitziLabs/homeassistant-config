@@ -43,3 +43,11 @@ sensor.pitzilabs_ice_cream_book
 sensor.pitzilabs_reference_checker
 sensor.pitzilabs_shared_workflows
 sensor.pitzilabs_workstation_bootstrap
+
+# --- Pending snapshot: room light groups (configuration.yaml, #440/#442) ---
+# YAML `light: - platform: group` entities for the whole-room dimmer controls.
+# They carry unique_id, so they WILL land in context/entities.json after this
+# deploys and the next context dump runs — prune these three then.
+light.family_room
+light.kitchen
+light.office_lights
