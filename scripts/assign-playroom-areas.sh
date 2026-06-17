@@ -21,7 +21,7 @@
 # `input_button.assign_playroom_areas` helper in
 # packages/playroom_area_fix.yaml.
 #
-# Token resolution mirrors scripts/import-home-to-storage.sh:
+# Token resolution mirrors scripts/import-dashboard-to-storage.sh:
 #   1. HA_TOKEN env var (one-shot override)
 #   2. ha_token from /config/secrets.yaml (preferred; see
 #      scripts/README.md > "Script auth conventions" for why values are
