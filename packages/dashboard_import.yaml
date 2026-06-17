@@ -27,7 +27,6 @@ input_select:
       - home
       - home-codesign
       - homelab-status
-      - screen-time
 
 input_button:
   seed_ui_dashboard:
