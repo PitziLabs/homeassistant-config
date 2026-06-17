@@ -75,12 +75,6 @@ lovelace:
       icon: mdi:monitor-edit
       show_in_sidebar: true
       filename: dashboards/home-codesign.yaml
-    dashboard-screen-time:
-      mode: yaml
-      filename: dashboards/screen-time.yaml
-      title: Screen Time
-      icon: mdi:television-clock
-      show_in_sidebar: true
 
 # Prometheus
 prometheus:
@@ -337,47 +331,3 @@ template:
         state: "{{ forecast_data['weather.forecast_home'].forecast | length }}"
         attributes:
           forecast: "{{ forecast_data['weather.forecast_home'].forecast }}"
-
-# Screen-time tracking — per (TV × app) daily totals via history_stats.
-# Reads from sensor.<tv>_active_app (Roku integration). Used by the
-# Screen Time dashboard (dashboards/screen-time.yaml). The Roku ECP
-# integration flaps briefly (~10-40s of `unavailable`) during long
-# sessions; history_stats time-in-state counts only the resolved
-# segments, which undercounts by <5% — acceptable without smoothing.
-sensor:
-  # ---- Play Room TV ----
-  - platform: history_stats
-    name: Play Room Netflix Today
-    entity_id: sensor.play_room_tv_active_app
-    state: "Netflix"
-    type: time
-    start: "{{ today_at() }}"
-    end: "{{ now() }}"
-  - platform: history_stats
-    name: Play Room YouTube Today
-    entity_id: sensor.play_room_tv_active_app
-    state: "YouTube"
-    type: time
-    start: "{{ today_at() }}"
-    end: "{{ now() }}"
-  - platform: history_stats
-    name: Play Room Prime Video Today
-    entity_id: sensor.play_room_tv_active_app
-    state: "Prime Video"
-    type: time
-    start: "{{ today_at() }}"
-    end: "{{ now() }}"
-  - platform: history_stats
-    name: Play Room Apple TV Today
-    entity_id: sensor.play_room_tv_active_app
-    state: "Apple TV"
-    type: time
-    start: "{{ today_at() }}"
-    end: "{{ now() }}"
-  - platform: history_stats
-    name: Play Room Disney Plus Today
-    entity_id: sensor.play_room_tv_active_app
-    state: "Disney Plus"
-    type: time
-    start: "{{ today_at() }}"
-    end: "{{ now() }}"

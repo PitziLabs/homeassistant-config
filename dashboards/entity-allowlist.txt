@@ -13,18 +13,3 @@
 
 # --- Valid but unregistered (no unique_id) ---
 alarm_control_panel.home_alarm   # YAML-defined manual alarm panel (configuration.yaml)
-
-# Screen-time per-app duration sensors (screen-time.yaml). These have live
-# state (verified ~0.0 h) but no entity-registry entry — they carry no
-# unique_id, so they never appear in context/entities.json. Allowlisted, not
-# pending: a context dump will never resolve them.
-sensor.play_room_apple_tv_today
-sensor.play_room_disney_plus_today
-sensor.play_room_netflix_today
-sensor.play_room_prime_video_today
-sensor.play_room_youtube_today
-
-# --- Pending integration: TV media players (home.yaml, screen-time.yaml) ---
-# Basement and Office TVs via some integration not yet active in HA.
-media_player.basement_tv
-media_player.office_tv
