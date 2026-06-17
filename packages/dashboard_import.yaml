@@ -1,0 +1,62 @@
+# Button to (re)seed a UI-managed (storage-mode) Lovelace dashboard from its
+# git-managed YAML source, via scripts/import-dashboard-to-storage.sh.
+#
+# Workflow: pick a dashboard in input_select.dashboard_to_seed, press
+# input_button.seed_ui_dashboard. The automation calls
+# shell_command.import_dashboard_to_storage with the selected name; the script
+# creates/overwrites "<Name> (UI Edit)" at url_path /<name>-ui-edit and reports
+# the outcome via a persistent notification.
+#
+# This is the in-HA front end for the CLI documented in scripts/README.md
+# (§ import-dashboard-to-storage.sh) — same script, same auth (ha_token from
+# secrets.yaml), runs inside Core via shell_command rather than docker exec.
+#
+# IMPORTANT: re-seeding OVERWRITES any hand-edits in the UI copy — it reseeds
+# from the official YAML by design. The intended loop is: edit the official
+# YAML → reseed → hand-tweak; or hand-tweak in the UI, then port the change
+# back into the YAML as the durable source-of-truth. The storage copy is
+# gitignored .storage/ runtime state and drifts from git once you edit it.
+#
+# Options must match a dashboard file at /config/dashboards/<name>.yaml.
+
+input_select:
+  dashboard_to_seed:
+    name: "Dashboard to seed (UI Edit)"
+    icon: mdi:view-dashboard-edit
+    options:
+      - home
+      - home-codesign
+      - homelab-status
+      - screen-time
+
+input_button:
+  seed_ui_dashboard:
+    name: "Seed UI-editable dashboard"
+    icon: mdi:database-import
+
+automation:
+  - id: seed_ui_dashboard_trigger
+    alias: "Dashboard Import: seed UI copy on button press"
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: input_button.seed_ui_dashboard
+    actions:
+      - variables:
+          selected: "{{ states('input_select.dashboard_to_seed') }}"
+      - action: shell_command.import_dashboard_to_storage
+        data:
+          source: "{{ selected }}"
+        response_variable: result
+      - action: persistent_notification.create
+        data:
+          title: "Dashboard import"
+          notification_id: seed_ui_dashboard_done
+          message: >-
+            {% if result.returncode == 0 %}
+            ✅ Seeded '{{ selected }}' → UI Edit copy. Open
+            /{{ selected }}-ui-edit to hand-tweak it (re-seeding overwrites edits).
+            {% else %}
+            ❌ Import of '{{ selected }}' failed (code {{ result.returncode }}).
+            stderr: {{ result.stderr }}
+            {% endif %}
