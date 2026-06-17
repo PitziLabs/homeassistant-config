@@ -15,7 +15,7 @@
 # all cards, templates, and entity references are identical.
 # =================================================================
 # HOME DASHBOARD — native `sections` layout
-# Primary home-state display ("the presence monitor") on the pve2
+# Primary home-state display on the pve2
 # 2560x1440 wall monitor, served at /dashboard-home/home.
 #
 # Layout philosophy: NO hard pixel-fit. Uses HA's native `sections`
