@@ -1,11 +1,11 @@
-Kiosk Codesign:
-  # Refined "instrument-panel" variant of Kiosk Polish, applied ONLY to the
-  # co-design sandbox view (/dashboard-kiosk-codesign/home). It deliberately
-  # reuses the same token NAMES as Kiosk Polish so dashboards/kiosk-codesign.yaml
+Home Codesign:
+  # Refined "instrument-panel" variant of Home Polish, applied ONLY to the
+  # co-design sandbox view (/dashboard-home-codesign/home). It deliberately
+  # reuses the same token NAMES as Home Polish so dashboards/home-codesign.yaml
   # re-skins with zero card edits — the sandbox is a CI-enforced byte-mirror of
   # production, so the redesign has to live in the theme, not the cards.
   #
-  # Production (Kiosk Polish, /dashboard-kiosk/home — "the presence monitor")
+  # Production (Home Polish, /dashboard-home/home — "the presence monitor")
   # is untouched.
   #
   # Direction (chosen 2026-06-10): refined / instrument-panel —
@@ -19,31 +19,31 @@ Kiosk Codesign:
   #      a quiet steel chrome.
 
   # --- Base palette: deeper, cooler near-black ---
-  kiosk-bg-page: "#0a0c10"
+  home-bg-page: "#0a0c10"
   # Card/tile backgrounds carry a subtle top-lit gradient for depth. CSS
   # custom properties can hold gradient values and resolve in `background:`,
-  # so every `background: var(--kiosk-bg-card)` in the dashboard gains depth
+  # so every `background: var(--home-bg-card)` in the dashboard gains depth
   # with no card edit.
-  kiosk-bg-card: "linear-gradient(160deg, #1b212b 0%, #11151c 100%)"
-  kiosk-bg-tile: "linear-gradient(160deg, #1c2230 0%, #141922 100%)"
-  kiosk-bg-tile-active-media: "linear-gradient(160deg, #16314f 0%, #0f2236 100%)"
-  kiosk-text-primary: "#eef3f8"
-  kiosk-text-secondary: "#9aa6b2"
-  kiosk-text-tertiary: "#6b7682"
+  home-bg-card: "linear-gradient(160deg, #1b212b 0%, #11151c 100%)"
+  home-bg-tile: "linear-gradient(160deg, #1c2230 0%, #141922 100%)"
+  home-bg-tile-active-media: "linear-gradient(160deg, #16314f 0%, #0f2236 100%)"
+  home-text-primary: "#eef3f8"
+  home-text-secondary: "#9aa6b2"
+  home-text-tertiary: "#6b7682"
 
   # --- Accents ---
   # climate: was neon orange (#f0883e). It is only ever a decorative column
   # border-top, so it's safe to demote to a refined steel chrome that stops
   # competing with the semantic state palette.
-  kiosk-accent-climate: "#5a7ca6"
+  home-accent-climate: "#5a7ca6"
   # sensors / lights / media double as SEMANTIC colors elsewhere in the cards
   # (green = door-safe, amber = garage-in-transit, blue = media) — keep them.
-  kiosk-accent-sensors: "#56d364"
-  kiosk-accent-lights: "#e3b341"
-  kiosk-accent-media: "#58a6ff"
-  kiosk-accent-disarmed: "#56d364"
-  kiosk-accent-armed: "#e3b341"
-  kiosk-accent-triggered: "#f85149"
+  home-accent-sensors: "#56d364"
+  home-accent-lights: "#e3b341"
+  home-accent-media: "#58a6ff"
+  home-accent-disarmed: "#56d364"
+  home-accent-armed: "#e3b341"
+  home-accent-triggered: "#f85149"
 
   # Mushroom sizing — identical to Polish so the lights column still fits
   # 2560x1440 without a page scrollbar.
@@ -56,12 +56,12 @@ Kiosk Codesign:
   state-on-color: "#56d364"
   state-off-color: "#6b7682"
 
-  card-mod-theme: Kiosk Codesign
+  card-mod-theme: Home Codesign
   card-mod-root: |
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-    /* Force kiosk grid background through layout-card (as Kiosk Polish does) */
+    /* Force home grid background through layout-card (as Home Polish does) */
     home-assistant-main {
-      --primary-background-color: var(--kiosk-bg-page);
+      --primary-background-color: var(--home-bg-page);
     }
     /* Global typography swap. font-family is an inherited property, so setting
        it on <html> cascades across shadow-DOM boundaries into every custom

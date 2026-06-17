@@ -24,7 +24,7 @@ sensor.play_room_netflix_today
 sensor.play_room_prime_video_today
 sensor.play_room_youtube_today
 
-# --- Pending integration: TV media players (kiosk.yaml, screen-time.yaml) ---
+# --- Pending integration: TV media players (home.yaml, screen-time.yaml) ---
 # Basement and Office TVs via some integration not yet active in HA.
 media_player.basement_tv
 media_player.office_tv

@@ -60,7 +60,7 @@ run_with_diff() {
 }
 
 @test "dashboard-only change reloads lovelace resources and themes" {
-  run_with_diff "dashboards/kiosk.yaml"
+  run_with_diff "dashboards/home.yaml"
   [ "$status" -eq 0 ]
   grep -qx "CALL lovelace reload_resources" "$CALLS_FILE"
   grep -qx "CALL frontend reload_themes"    "$CALLS_FILE"
@@ -68,7 +68,7 @@ run_with_diff() {
 }
 
 @test "theme-only change reloads themes" {
-  run_with_diff "themes/noctis-kiosk.yaml"
+  run_with_diff "themes/noctis-home.yaml"
   [ "$status" -eq 0 ]
   [ "$(cat "$CALLS_FILE")" = "CALL frontend reload_themes" ]
 }
@@ -140,7 +140,7 @@ run_with_diff() {
   # must short-circuit to a single full restart with no partial reloads.
   run_with_diff "$(printf '%s\n' \
     "configuration.yaml" \
-    "dashboards/kiosk.yaml")"
+    "dashboards/home.yaml")"
   [ "$status" -eq 0 ]
   [ "$(cat "$CALLS_FILE")" = "RESTART" ]
 }

@@ -13,9 +13,9 @@ excluded from git).
 
 When Claude initializes in this directory, open the first response with a
 brief self-introduction as **HA Config Claude** — curator of the HAOS YAML
-source-of-truth (automations, packages, dashboards, kiosk YAML, ESPHome,
+source-of-truth (automations, packages, dashboards, dashboard YAML, ESPHome,
 scripts) and the GitOps pipeline that deploys it. The pve2 host that runs
-the kiosk and the HAOS VM itself are Home Claude's turf — see
+the household display and the HAOS VM itself are Home Claude's turf — see
 `~/CLAUDE.md`. One sentence is plenty; don't make a meal of it.
 
 Subdirectory READMEs are the canonical reference for their domain — defer
@@ -26,10 +26,10 @@ to them when implementing:
 | `esphome/README.md` | Konnected alarm panels, ESPHome firmware, RTTTL annunciator |
 | `automations/README.md` | UI-vs-git authorship split for automations |
 | `packages/README.md` | HA Version Sync, Meeting Indicator, scene controllers |
-| `dashboards/README.md` | All three Lovelace dashboards (Home, Kiosk, Homelab Status) |
-| `themes/README.md` | Noctis Kiosk theme, kiosk_polish tokens |
+| `dashboards/README.md` | All three Lovelace dashboards (Home, Home Co-design, Homelab Status) |
+| `themes/README.md` | Noctis Home theme, home_polish tokens |
 | `scripts/README.md` | gitops-sync.sh, ha-context-dump.sh, Script auth conventions |
-| `kiosk-host/README.md` | `kiosk-preview` / `kiosk-snapshot` — workstation tools for iterating the HA kiosk dashboard (**live preview loop + design session protocol**). Display-host plumbing moved to `office-presence/host/`. |
+| `home-host/README.md` | `home-preview` / `home-snapshot` — workstation tools for iterating the HA home dashboard (**live preview loop + design session protocol**). Display-host plumbing moved to `office-presence/host/`. |
 | `context/README.md` | What each `context/*.json` file is |
 | `docs/` | Long-form design notes, migration write-ups |
 
@@ -125,7 +125,7 @@ helper — is in `docs/cross-layer-changes.md`.
   wrapped in `type: conditional` so each tile appears only when the entity
   is on; per-room "All off" tiles use `binary_sensor.*_lights_on` template
   sensors.
-- **Kiosk uses HA-native `sections`, no hard pixel-fit.** The kiosk view
+- **Home dashboard uses HA-native `sections`, no hard pixel-fit.** The home view
   is `type: sections` (`max_columns: 3`) — cards size to their content,
   sections reflow responsively, and the page scrolls if content exceeds
   the screen. There is deliberately **no** `custom:grid-layout`, no
@@ -137,7 +137,7 @@ helper — is in `docs/cross-layer-changes.md`.
   dial); state-driven colors live in per-card `state` blocks + theme
   tokens — no Jinja-templated HTML, no DOMPurify fight. Unavailable
   handling lives inside each card's state list.
-- **Alarm color semantics (kiosk hero):** green = disarmed, amber =
+- **Alarm color semantics (home hero):** green = disarmed, amber =
   arming/armed_home/armed_away, red = pending/triggered, with a pulse
   animation on triggered. State-driven via `button-card` `state` blocks.
 - **Frontend HACS card loading.** In `configuration.yaml >
@@ -176,35 +176,35 @@ The complementary `ha-context-dump.sh` (driven by
 
 ### Display host on pve2 — gitops moved to `office-presence`
 
-The Chromium kiosk display host (the NUC driving the household 2560x1440
+The Chromium home-dashboard display host (the NUC driving the household 2560x1440
 monitor) used to be deployed by a second gitops loop sourced from this repo's
-`kiosk-host/`. **That plumbing moved to
+`home-host/`. **That plumbing moved to
 [`office-presence/host/`](https://github.com/PitziLabs/office-presence)** —
-`dashboard-kiosk.{sh,service}`, `kiosk-show`, `snapshot-server`, and the
-`dashboard-kiosk-gitops` loop now live there, and pve2's loop pulls
+`dashboard-home.{sh,service}`, `display-show`, `snapshot-server`, and the
+`dashboard-home-gitops` loop now live there, and pve2's loop pulls
 `office-presence` (private → read-only deploy key). The workstation CLI that
 drives the screen is `surface`, in that repo.
 
 What stays in this repo:
 
-- **`dashboards/kiosk.yaml`** — the HA Lovelace kiosk dashboard the display
+- **`dashboards/home.yaml`** — the HA Lovelace home dashboard the display
   renders by default — is still deployed by the **HA-side** loop above
   (`scripts/gitops-sync.sh`), not the pve2 display-host loop.
-- **`kiosk-host/kiosk-preview` / `kiosk-snapshot`** — workstation tools for
-  iterating that dashboard. See `kiosk-host/README.md`.
+- **`home-host/home-preview` / `home-snapshot`** — workstation tools for
+  iterating that dashboard. See `home-host/README.md`.
 
 ---
 
-## Live Design Loop (kiosk dashboard)
+## Live Design Loop (home dashboard)
 
-For non-trivial kiosk dashboard work, prefer the **live preview loop**
+For non-trivial home dashboard work, prefer the **live preview loop**
 over edit→commit→wait-for-gitops:
 
-1. Edit `dashboards/kiosk.yaml`.
-2. Run `kiosk-host/kiosk-preview --open`. ~4–8s end-to-end: pushes to
-   HA, F5s Chromium, captures `./kiosk-preview-<UTC>.png`.
+1. Edit `dashboards/home.yaml`.
+2. Run `home-host/home-preview --open`. ~4–8s end-to-end: pushes to
+   HA, F5s Chromium, captures `./home-preview-<UTC>.png`.
 3. Check the PNG against the **snapshot rubric** in
-   `kiosk-host/README.md § Design session protocol` (target rendered,
+   `home-host/README.md § Design session protocol` (target rendered,
    adjacent cells unchanged, layout intact, state encoding correct).
 4. Iterate or commit per the **stop conditions** in the same section.
 5. Commit at logical checkpoints (PR + auto-merge, one coherent
@@ -236,8 +236,8 @@ at the entity, not the dashboard.
   `lovelace.reload_resources`, which requires the optional HA token.
 
 Full protocol (decision table, rubric, stop conditions,
-troubleshooting, non-kiosk dashboard variant) + setup (HAOS SSH key,
-xdotool on pve2, optional HA token) in `kiosk-host/README.md`
+troubleshooting, non-home-dashboard variant) + setup (HAOS SSH key,
+xdotool on pve2, optional HA token) in `home-host/README.md`
 § "Live preview iteration" and § "Design session protocol".
 
 ---
@@ -279,7 +279,7 @@ have a fix attached.
 
 Use bug/dashboard/automation/etc. labels as appropriate. A future
 session will pick up the issue, do the actual diagnosis, and open the
-PR that closes it. Origin: kiosk OOM observation 2026-05-31, issue #308.
+PR that closes it. Origin: home dashboard OOM observation 2026-05-31, issue #308.
 
 ### `## Origin` section + `Prompt-Origin:` trailer — now fleet-wide
 

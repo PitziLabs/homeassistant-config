@@ -1,6 +1,6 @@
-Noctis Kiosk:
+Noctis Home:
   # Required — must match theme name exactly for card-mod
-  card-mod-theme: Noctis Kiosk
+  card-mod-theme: Noctis Home
 
   # Inherit Noctis base colors
   # (Noctis is loaded separately via HACS, these override specific values)

@@ -1,8 +1,8 @@
 # themes/
 
-Custom Lovelace themes. Loaded via `!include_dir_merge_named themes` in `configuration.yaml`. The Noctis base theme (installed via HACS) is a prerequisite for `noctis_kiosk.yaml`.
+Custom Lovelace themes. Loaded via `!include_dir_merge_named themes` in `configuration.yaml`. The Noctis base theme (installed via HACS) is a prerequisite for `noctis_home.yaml`.
 
-## `noctis_kiosk.yaml` — Active theme
+## `noctis_home.yaml` — Active theme
 
 Extends the Noctis dark palette with a `card-mod-card` block that applies state-based backgrounds to all Mushroom cards globally, without any per-card `card_mod` configuration in the dashboard YAML.
 
@@ -22,7 +22,7 @@ All transitions: `0.4s ease` on both `background` and `box-shadow`.
 
 The `card-mod-card` key injects a CSS + Jinja2 block evaluated in the browser for every card on load and on state change. The `config.type` check routes to the correct rule without any dashboard-side configuration. Adding a new light entity to the dashboard requires zero theme changes — it inherits automatically.
 
-This approach trades one design decision for a runtime dependency: every card evaluation hits the Jinja2 template engine. For a single-display kiosk with a bounded entity count, this is not a practical concern.
+This approach trades one design decision for a runtime dependency: every card evaluation hits the Jinja2 template engine. For a single-display home dashboard with a bounded entity count, this is not a practical concern.
 
 ### Color palette
 
@@ -33,31 +33,31 @@ This approach trades one design decision for a runtime dependency: every card ev
 | `card-background-color` | `#171a21` | Card resting state |
 | `state-icon-active-color` | `#f0b429` | Active entity icons |
 
-## `kiosk_polish.yaml` — Kiosk design tokens
+## `home_polish.yaml` — Home design tokens
 
-Layered on top of `Noctis Kiosk` via the `theme: Kiosk Polish` key on the kiosk view in `dashboards/kiosk.yaml`. Defines `--kiosk-*` CSS custom properties for the 1920x1080 wall-display dashboard so colors, accents, and Mushroom sizing tokens are edited in one place instead of search-and-replace across `kiosk.yaml`.
+Layered on top of `Noctis Home` via the `theme: Home Polish` key on the home view in `dashboards/home.yaml`. Defines `--home-*` CSS custom properties for the 1920x1080 wall-display dashboard so colors, accents, and Mushroom sizing tokens are edited in one place instead of search-and-replace across `home.yaml`.
 
 ### Tokens
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--kiosk-bg-page` | `#0e1117` | Page background (forced via `card-mod-root`) |
-| `--kiosk-bg-card` | `#161b22` | Outer column wrappers (climate/sensors/lights/media/alarm hero) |
-| `--kiosk-bg-tile` | `#1a1f27` | Inner tile backgrounds (per-sensor, per-thermostat, TV row) |
-| `--kiosk-bg-tile-active-media` | `#14283f` | Reserved for active-media tinting |
-| `--kiosk-text-primary` | `#e6edf3` | Reserved for headline text |
-| `--kiosk-text-secondary` | `#8b949e` | Card name labels |
-| `--kiosk-text-tertiary` | `#6e7681` | Off / unavailable icons |
-| `--kiosk-accent-climate` | `#f0883e` | Climate column border-top + heater on |
-| `--kiosk-accent-sensors` | `#56d364` | Sensors column border-top + door/cover closed |
-| `--kiosk-accent-lights` | `#e3b341` | Lights column border-top + cover transition |
-| `--kiosk-accent-media` | `#58a6ff` | Media column border-top + TV on |
-| `--kiosk-accent-disarmed` | `#56d364` | Alarm hero, disarmed state |
-| `--kiosk-accent-armed` | `#e3b341` | Alarm hero, arming/armed states |
-| `--kiosk-accent-triggered` | `#f85149` | Alarm hero pending/triggered + door open + motion |
+| `--home-bg-page` | `#0e1117` | Page background (forced via `card-mod-root`) |
+| `--home-bg-card` | `#161b22` | Outer column wrappers (climate/sensors/lights/media/alarm hero) |
+| `--home-bg-tile` | `#1a1f27` | Inner tile backgrounds (per-sensor, per-thermostat, TV row) |
+| `--home-bg-tile-active-media` | `#14283f` | Reserved for active-media tinting |
+| `--home-text-primary` | `#e6edf3` | Reserved for headline text |
+| `--home-text-secondary` | `#8b949e` | Card name labels |
+| `--home-text-tertiary` | `#6e7681` | Off / unavailable icons |
+| `--home-accent-climate` | `#f0883e` | Climate column border-top + heater on |
+| `--home-accent-sensors` | `#56d364` | Sensors column border-top + door/cover closed |
+| `--home-accent-lights` | `#e3b341` | Lights column border-top + cover transition |
+| `--home-accent-media` | `#58a6ff` | Media column border-top + TV on |
+| `--home-accent-disarmed` | `#56d364` | Alarm hero, disarmed state |
+| `--home-accent-armed` | `#e3b341` | Alarm hero, arming/armed states |
+| `--home-accent-triggered` | `#f85149` | Alarm hero pending/triggered + door open + motion |
 
 Mushroom token overrides (`--mush-icon-size`, `--mush-icon-symbol-size`, `--mush-card-primary-font-size`, `--mush-card-secondary-font-size`) propagate to every `mushroom-light-card` in the lights grid.
 
-## `kiosk_dark.yaml` — Deprecated
+## `home_dark.yaml` — Deprecated
 
-The original custom dark theme, replaced by Noctis Kiosk. Retained for reference. Not applied to any dashboard or view.
+The original custom dark theme, replaced by Noctis Home. Retained for reference. Not applied to any dashboard or view.

@@ -1,8 +1,8 @@
-# Kiosk Layout v4 — Hard-Placed Grid (FINAL)
+# Home Layout v4 — Hard-Placed Grid (FINAL)
 
 **Status:** Approved, to be implemented in follow-up PR
 
-**Target:** 65" TCL 1920×1080, Chromium kiosk, read-only wall display
+**Target:** 65" TCL 1920×1080, Chromium display, read-only wall display
 
 **Architecture:** CSS Grid with `grid-template-areas`, every card explicitly placed via `view_layout`. No `vertical-stack` wrappers. No auto-flow within columns.
 
@@ -100,7 +100,7 @@ HA Core version + GitHub repo commit count today. Sensors for uptime and last Gi
 
 ## What implementation includes
 
-1. Replace entire Kiosk view in `dashboards/home.yaml`
+1. Replace entire Home view in `dashboards/home.yaml`
 2. Fix apexcharts radialBar yaxis config bug
 3. Create `light.floor_lamp_composite` template light in `configuration.yaml`
 4. Switch Sonos from `mushroom-template-card` to `mini-media-player`
@@ -125,6 +125,6 @@ HA Core version + GitHub repo commit count today. Sensors for uptime and last Gi
 
 ## Phase plan
 
-- **Phase 1 (this PR):** Commit this spec to `docs/kiosk-layout.md`.
-- **Phase 2 (follow-up):** Rewrite Kiosk view against this spec.
+- **Phase 1 (this PR):** Commit this spec to `docs/home-layout.md`.
+- **Phase 2 (follow-up):** Rewrite Home view against this spec.
 - **Phase 3+ (future):** Real pipeline viz, sensor-bar chips, GitHub sensors for `PitziLabs/homeassistant-config`, Firewalla integration extensions.

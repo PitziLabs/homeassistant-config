@@ -1,74 +1,74 @@
-# kiosk-host/
+# home-host/ — home-preview & home-snapshot
 
-Workstation tooling for iterating the **Home Assistant Lovelace kiosk
-dashboard** (`dashboards/kiosk.yaml`) that the office display renders by
-default — `kiosk-preview` (fast push-and-snapshot loop) and `kiosk-snapshot`
+Workstation tooling for iterating the **Home Assistant Lovelace home
+dashboard** (`dashboards/home.yaml`) that the office display renders by
+default — `home-preview` (fast push-and-snapshot loop) and `home-snapshot`
 (grab the current frame). Both run from your workstation; neither is deployed.
 
 > **The display-host plumbing moved to `office-presence`.** The generic bits —
-> `kiosk-show` (point the screen at a URL), `snapshot-server` (`:9999` live
-> frame), `dashboard-kiosk.{sh,service}` (the runner), and the gitops loop that
+> `display-show` (point the screen at a URL), `snapshot-server` (`:9999` live
+> frame), `dashboard-display.{sh,service}` (the runner), and the gitops loop that
 > deploys them to pve2 — now live in
 > [`office-presence/host/`](https://github.com/PitziLabs/office-presence/tree/main/host)
-> and are gitops-deployed from there (pve2's `dashboard-kiosk-gitops` loop pulls
+> and are gitops-deployed from there (pve2's `dashboard-display-gitops` loop pulls
 > `office-presence` via a read-only deploy key). The workstation CLI that drives
 > the screen is `surface`, in that repo. Only the HA-dashboard iteration tools
 > remain here.
 
-## Snapshot the live display (`kiosk-snapshot`)
+## Snapshot the live display (`home-snapshot`)
 
-`kiosk-snapshot` grabs the actual rendered frame from pve2's X session — real
-kiosk state (alarm color, live media, `Unavailable` cards), not a fresh
+`home-snapshot` grabs the actual rendered frame from pve2's X session — real
+display state (alarm color, live media, `Unavailable` cards), not a fresh
 just-loaded render. Run from your workstation:
 
 ```bash
-kiosk-host/kiosk-snapshot            # → ./kiosk-snapshot-<UTC>.png
-kiosk-host/kiosk-snapshot --open     # capture + open
+home-host/home-snapshot            # → ./home-snapshot-<UTC>.png
+home-host/home-snapshot --open     # capture + open
 ```
 
 Under the hood: `ssh … pve2`, `scrot` against `DISPLAY=:0`, `scp` back. The
 `:9999` snapshot-server endpoint (which `ha-context-dump` also consumes for
-`context/kiosk-latest.png`) is served by `snapshot-server`, now in
+`context/home-latest.png`) is served by `snapshot-server`, now in
 `office-presence/host/`.
 
-## Live preview iteration (`kiosk-preview`)
+## Live preview iteration (`home-preview`)
 
-`kiosk-preview` is the fast-iteration loop for kiosk dashboard YAML —
+`home-preview` is the fast-iteration loop for home dashboard YAML —
 push a local edit, refresh Chromium, capture the new frame, in
 roughly 3 seconds. Use it when you want to see the rendered result
 of a dashboard change *before* committing.
 
 ```bash
-# Default: pushes ./dashboards/kiosk.yaml, snapshots to cwd
-kiosk-host/kiosk-preview
+# Default: pushes ./dashboards/home.yaml, snapshots to cwd
+home-host/home-preview
 
 # Specify a different YAML and open the snapshot
-kiosk-host/kiosk-preview dashboards/kiosk.yaml --open
+home-host/home-preview dashboards/home.yaml --open
 
 # Push + refresh without capturing (e.g. you're at the monitor)
-kiosk-host/kiosk-preview --no-snapshot
+home-host/home-preview --no-snapshot
 
 # Iterating an !include child — touches the manifest to bust HA's
 # yaml-mode dashboard cache (which keys off the root file's mtime,
 # not the included child's)
-kiosk-host/kiosk-preview dashboards/homelab-views/hardware.yaml \
+home-host/home-preview dashboards/homelab-views/hardware.yaml \
   --dashboard-root dashboards/homelab-status.yaml
 
 # URL change (different view, dashboard, or subview) — does
-# `kiosk-show --kiosk <URL>` instead of F5 (~10–15s vs ~3s for F5)
-kiosk-host/kiosk-preview dashboards/homelab-status.yaml \
+# `display-show --display <URL>` instead of F5 (~10–15s vs ~3s for F5)
+home-host/home-preview dashboards/homelab-status.yaml \
   --url http://homeassistant.local:8123/dashboard-homelab-status/ups-detail
 
 # Debug overlay: distinct pure-color outline per grid-area cell, so a
 # snapshot can be measured by color (see Design session protocol §
 # "Measuring layout precisely"). Injected on a temp copy — never committed.
-kiosk-host/kiosk-preview --debug-cells --open
+home-host/home-preview --debug-cells --open
 ```
 
 | Flag | When to reach for it |
 |---|---|
 | `--dashboard-root FILE` | The pushed file is `!include`d by another dashboard YAML; pass the manifest path |
-| `--url URL` | Chromium needs to point at a different URL (new dashboard, view, or subview); skips F5 for a `kiosk-show` restart |
+| `--url URL` | Chromium needs to point at a different URL (new dashboard, view, or subview); skips F5 for a `display-show` restart |
 | `--debug-cells` | You need to measure cell geometry precisely — injects a distinct color outline per grid-area cell (temp copy only; never commits borders) |
 | `--open` | xdg-open the captured PNG after capture |
 | `--keep` | Suppress the gitops-clobber reminder |
@@ -80,8 +80,8 @@ The flag selection above maps mechanically to the file you're editing:
 
 | You're editing | What you need |
 |---|---|
-| `dashboards/kiosk.yaml` | Nothing — kiosk shows it by default; plain `kiosk-host/kiosk-preview` |
-| Another root manifest (e.g. `dashboards/homelab-status.yaml`) | Pause HA gitops + `kiosk-show --kiosk <URL>` once + `--url <URL>` on the first preview (see *Design session protocol for non-kiosk dashboards*) |
+| `dashboards/home.yaml` | Nothing — home dashboard shows it by default; plain `home-host/home-preview` |
+| Another root manifest (e.g. `dashboards/homelab-status.yaml`) | Pause HA gitops + `display-show --display <URL>` once + `--url <URL>` on the first preview (see *Design session protocol for non-home-dashboard views*) |
 | A file `!include`d by another dashboard (e.g. `dashboards/homelab-views/*.yaml`) | All of the above **and** `--dashboard-root <root-manifest.yaml>` on every preview (the yaml-mode cache keys off the manifest's mtime, not the child's) |
 | Theme or `extra_module_url` JS resource | Skip the loop — needs `lovelace.reload_resources` which requires the optional HA token (often absent). Commit + wait for gitops instead. |
 
@@ -91,7 +91,7 @@ Under the hood, each call:
 2. `ssh -p 22 root@homeassistant.local 'cat > /homeassistant/dashboards/.<name>.preview-tmp && mv ... <name>'` — atomic write via stdin redirect. **Requires** SSH key access to `root@homeassistant.local` port 22 (HAOS host SSH). `scp` does *not* work on HAOS port 22 (no sftp-server); the Core container's `/config` maps to `/homeassistant` on the HAOS host filesystem.
 3. Calls `lovelace.reload_resources` via the HA REST API to clear the
    frontend resource cache. Optional — looks for a long-lived access
-   token at `~/.config/kiosk-preview/ha-token`; skipped silently if
+   token at `~/.config/home-preview/ha-token`; skipped silently if
    absent. yaml-mode dashboards re-read from disk on each fetch, so
    the F5 alone is enough for dashboard YAML; the resource reload only
    matters when you've also touched a JS module under `resources:`.
@@ -100,7 +100,7 @@ Under the hood, each call:
    on pve2 (in the bootstrap apt-install list).
 5. Waits for a **stable** rendered frame, then `curl`s the snapshot
    server (`http://pve2.local:9999/`) into
-   `./kiosk-preview-<UTC-timestamp>.png`. Stability heuristic: short
+   `./home-preview-<UTC-timestamp>.png`. Stability heuristic: short
    initial wait (1.2s), then poll until two consecutive PNG sizes are
    within 1% of each other (or a 6s cap is hit). md5 equality won't
    work — clock seconds + small dashboard animations make settled
@@ -120,8 +120,8 @@ Under the hood, each call:
   visible at the monitor. Don't iterate in moments where it'd disrupt
   someone's view.
 - **First-time SSH setup.** Both the HA host (`homeassistant.local`) and
-  the kiosk-snapshot path (via `pve.local` jump) need your workstation
-  key in their `authorized_keys`. The kiosk-snapshot jump already works
+  the home-snapshot path (via `pve.local` jump) need your workstation
+  key in their `authorized_keys`. The home-snapshot jump already works
   for the rest of this tooling; HA-host SSH (port 22, NOT the
   Terminal & SSH add-on on 22222) needs a one-time `authorized_keys.txt`
   drop on the HAOS data partition — see the HA developer docs. Verify
@@ -129,7 +129,7 @@ Under the hood, each call:
 - **Optional HA token for resource reload.** If you want
   `lovelace.reload_resources` to actually fire (rarely needed for pure
   dashboard YAML edits — see step 3 above), put a long-lived access
-  token at `~/.config/kiosk-preview/ha-token` (mode `0600`). Without
+  token at `~/.config/home-preview/ha-token` (mode `0600`). Without
   it the call is skipped and the tool still works for dashboard YAML.
 
 ### Troubleshooting
@@ -140,23 +140,23 @@ When the loop fails, the symptom usually identifies the stage:
 |---|---|---|
 | Errors at *validating YAML* | Local YAML is malformed | Fix locally — the tool refuses to push broken YAML. The error names the line. |
 | Errors at *pushing* | SSH to HAOS port 22 down, or key not authorized | Verify with `ssh -p 22 root@homeassistant.local 'echo ok'`. If it fails, the one-time HAOS `authorized_keys` setup hasn't been done (see *Things to know* above). |
-| Snapshot is a skeleton / loading state | Frame captured before stable; transient HA load fooled the stability heuristic | Re-run `kiosk-preview`. Or capture a fresh frame with `kiosk-host/kiosk-snapshot` (which has no stability check and grabs whatever's currently on the monitor). |
+| Snapshot is a skeleton / loading state | Frame captured before stable; transient HA load fooled the stability heuristic | Re-run `home-preview`. Or capture a fresh frame with `home-host/home-snapshot` (which has no stability check and grabs whatever's currently on the monitor). |
 | Card body shows `Card error: …` | Unknown card type, missing required option, or schema mismatch | Read the error string — it names the field or type. Cross-check the card type via `mcp__Local-HA__ha_read_resource skill://home-assistant-best-practices/references/dashboard-cards.md`. For HACS cards, confirm the card is actually installed via `mcp__Local-HA__ha_hacs_search`. |
 | Card shows `Unavailable` | Entity is genuinely down, OR the entity_id is wrong | `mcp__Local-HA__ha_search_entities` to confirm the entity exists; `ha_get_state` to confirm its current value. **Don't trust `context/entities.json` for this** — it's up to 6h stale. |
-| `curl pve2.local:9999` returns 503 or hangs | `snapshot-server.service` on pve2 is down | `ssh -J root@pve.local root@pve2 'systemctl status snapshot-server.service --no-pager'`; restart if needed. The unit is `PartOf=dashboard-kiosk.service`, so a kiosk restart cycles it too. |
-| F5 doesn't change what's on the monitor | Chromium hung, or `xdotool` not on pve2 | `ssh -J root@pve.local root@pve2 'systemctl restart dashboard-kiosk.service'`; verify `xdotool` is installed (bootstrap apt list). |
+| `curl pve2.local:9999` returns 503 or hangs | `snapshot-server.service` on pve2 is down | `ssh -J root@pve.local root@pve2 'systemctl status snapshot-server.service --no-pager'`; restart if needed. The unit is `PartOf=dashboard-home.service`, so a display-home restart cycles it too. |
+| F5 doesn't change what's on the monitor | Chromium hung, or `xdotool` not on pve2 | `ssh -J root@pve.local root@pve2 'systemctl restart dashboard-home.service'`; verify `xdotool` is installed (bootstrap apt list). |
 
 ### Design session protocol
 
-For non-trivial kiosk dashboard work (layout changes, theming, new
+For non-trivial home dashboard work (layout changes, theming, new
 cards, alarm-state polish), use this loop instead of the slower
 edit→commit→wait-5min-for-gitops cycle:
 
 1. **Start clean.** Branch off `main`:
    ```bash
-   git checkout main && git pull && git checkout -b kiosk-<topic>
+   git checkout main && git pull && git checkout -b home-<topic>
    ```
-2. **Iterate.** Edit the YAML, run `kiosk-host/kiosk-preview --open`,
+2. **Iterate.** Edit the YAML, run `home-host/home-preview --open`,
    check the captured PNG against the rubric below, repeat. Each loop
    is 4–8s.
 
@@ -210,7 +210,7 @@ heuristics and thumbnails lie. Two compounding traps, and the tools that
 beat them. (Every one of these produced a wrong "confirmed" in the
 session that wrote this — take them seriously.)
 
-*The traps.* Kiosk cards are dark-on-dark with no borders, so you cannot
+*The traps.* Home dashboard cards are dark-on-dark with no borders, so you cannot
 see where one cell's box ends and the next begins, and a downscaled
 thumbnail blurs every edge into the background. A model that measures
 "where does the content end" by scanning for bright pixels will (a)
@@ -221,7 +221,7 @@ card box, inventing a gap that isn't there. Eyeballing column x-ranges
 instead of computing them from the grid's `fr` units makes a measurement
 window straddle two cells.
 
-*Tool 1 — `kiosk-preview --debug-cells`.* Pushes a temp copy of the YAML
+*Tool 1 — `home-preview --debug-cells`.* Pushes a temp copy of the YAML
 with a distinct pure-color outline injected per grid-area cell
 (weather=cyan, alarm=magenta, meeting=yellow, …); the local file and the
 committed dashboard never carry borders. Each cell's true box is then one
@@ -229,7 +229,7 @@ committed dashboard never carry borders. Each cell's true box is then one
 
 ```python
 from PIL import Image; import numpy as np
-a = np.asarray(Image.open('kiosk-preview-<ts>.png').convert('RGB')).astype(int)
+a = np.asarray(Image.open('home-preview-<ts>.png').convert('RGB')).astype(int)
 R, G, B = a[:,:,0], a[:,:,1], a[:,:,2]
 def box(c):
     r, g, b = c
@@ -241,7 +241,7 @@ print('alarm cell box', box((255, 0, 255)))   # magenta
 
 With the box known, measure content *inside* it — and measure the card
 *box*, not its text. Detect a card's accent border color (e.g. the green
-`--kiosk-accent-disarmed` ≈ `(86,211,100)` left border), not the label
+`--home-accent-disarmed` ≈ `(86,211,100)` left border), not the label
 glyphs; the label is top-aligned, so reading it as the card bottom is how
 you hallucinate a gap. A cell whose content box reaches the colored
 outline is filling its cell; one that stops well short is underfilling;
@@ -267,13 +267,13 @@ measurement is wrong — re-measure, don't rationalize.
 **Live-state caveats** (look at the captured PNG with these in mind):
 
 - Cards labeled *Unavailable* reflect the actual current entity
-  states, not a kiosk bug. If you're surprised, check the upstream
+  states, not a home dashboard bug. If you're surprised, check the upstream
   device/integration; consider whether the dashboard should hide vs.
   show unavailable entities for that card type.
 - The clock and Sonos art are dynamic — comparing PNGs from runs a
   few seconds apart won't be pixel-identical even on an unchanged
   dashboard.
-- The snapshot captures the **live** kiosk session (alarm color,
+- The snapshot captures the **live** display session (alarm color,
   current Sonos coordinator, last media played, current weather). If
   a hero card looks empty, the entity may genuinely have no value
   right now — try again later or simulate the state via the HA UI.
@@ -282,7 +282,7 @@ measurement is wrong — re-measure, don't rationalize.
 
 - Trivial copy edits — too much friction; just commit.
 - Adding cards that reference entities not yet in
-  `context/entities.json` — `kiosk-preview` only refreshes Lovelace;
+  `context/entities.json` — `home-preview` only refreshes Lovelace;
   HA must already know about the entity. Refresh the context snapshot
   first (`input_button.ha_context_dump_now`) and let the
   context-snapshot PR land.
@@ -290,9 +290,9 @@ measurement is wrong — re-measure, don't rationalize.
   `lovelace.reload_resources`, which requires the optional HA token
   (see above).
 
-### Design session protocol for non-kiosk dashboards
+### Design session protocol for non-home-dashboard views
 
-Use this when iterating any dashboard that the kiosk *isn't* currently
+Use this when iterating any dashboard that the display *isn't* currently
 displaying — e.g. `homelab-status.yaml`'s lens views, the Home
 dashboard, or a brand-new dashboard whose YAML doesn't yet exist on
 `main`. Same fast iteration shape, plus three setup/teardown steps for
@@ -300,7 +300,7 @@ the household display:
 
 1. **Pause the HA-side gitops sync** (otherwise it'll reset
    `/homeassistant/dashboards/` to `origin/main` every 5 min and erase
-   any new files you've pushed via kiosk-preview):
+   any new files you've pushed via home-preview):
 
    ```yaml
    # MCP tool call (Local-HA server prefix may differ in cloud sessions):
@@ -315,15 +315,15 @@ the household display:
 2. **Redirect pve2's Chromium** to the dashboard you're iterating
    (commandeers the household monitor for the session):
    ```bash
-   ssh -J root@pve.local root@pve2 'kiosk-show --kiosk \
+   ssh -J root@pve.local root@pve2 'display-show --display \
      http://homeassistant.local:8123/dashboard-<id>/<view-path>'
    ```
-   Once Chromium is on the right URL, regular `kiosk-preview` calls
-   F5-refresh it — no further `kiosk-show` needed unless the URL
+   Once Chromium is on the right URL, regular `home-preview` calls
+   F5-refresh it — no further `display-show` needed unless the URL
    changes (e.g. navigating to a different view or subview, which
-   you can drive in one shot with `kiosk-preview --url <URL>`).
-3. **Iterate.** Same edit → `kiosk-preview` → snapshot → rubric-check
-   shape as the kiosk dashboard loop above (apply the same snapshot
+   you can drive in one shot with `home-preview --url <URL>`).
+3. **Iterate.** Same edit → `home-preview` → snapshot → rubric-check
+   shape as the home dashboard loop above (apply the same snapshot
    rubric and stop conditions). For multi-file dashboards that use
    `!include`, pass `--dashboard-root <manifest.yaml>` so the yaml-mode
    dashboard cache (keyed off the manifest's mtime, not the included
@@ -343,13 +343,13 @@ the household display:
    ```
 
    ```bash
-   # Send the kiosk back to the household dashboard
-   ssh -J root@pve.local root@pve2 'kiosk-show --dashboard'
+   # Send the display back to the household dashboard
+   ssh -J root@pve.local root@pve2 'display-show --dashboard'
    ```
-5. **Confirm.** A quick `kiosk-snapshot` after the restore should
-   show the regular household kiosk again.
+5. **Confirm.** A quick `home-snapshot` after the restore should
+   show the regular household home dashboard again.
 
 **Cost to the household:** the wall display flickers when you
-`kiosk-show`, again at the F5 cadence of your iteration, and once more
+`display-show`, again at the F5 cadence of your iteration, and once more
 at the restore. If someone's watching the dashboard at the moment,
 defer the session — iteration is dense and disruptive.
