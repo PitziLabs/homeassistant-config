@@ -12,7 +12,7 @@ Mobile-first control interface. Design principle: show only what's active.
 - **Alarm panel** — always visible at top, with a 3×2 sensor grid showing all door/motion contacts
 - **Weather forecast** — daily summary from Met.no
 
-## `kiosk.yaml` — Kiosk view (`/dashboard-kiosk/home`)
+## `home.yaml` — Home view (`/dashboard-home/home`)
 
 Primary display on the pve2 2560x1440 wall monitor ("the presence monitor"), driven by mouse + keyboard.
 
@@ -34,9 +34,9 @@ Primary display on the pve2 2560x1440 wall monitor ("the presence monitor"), dri
 | Lights | 18 `mushroom-light-card` tiles grouped into 5 room sub-grids (Family, Kitchen, Office, Hallways, Outdoor) under `heading` subtitles |
 | Media | 5 `mini-media-player` cards (album art via `artwork: full-cover-fit`) in a 2-col grid + a TV `button-card` |
 
-### Kiosk Mode
+### kiosk-mode (third-party HACS card)
 
-The `kiosk_mode` block at the top of `kiosk.yaml` hides header and sidebar **only for the `Kiosk` non-admin user** (used historically on the wall-display kiosk). The desktop session logs in as the normal admin user, so the sidebar/header remain available for navigation between dashboards.
+The `kiosk_mode` block at the top of `home.yaml` hides header and sidebar **only for the `Kiosk` non-admin user** (used historically on the wall display). The desktop session logs in as the normal admin user, so the sidebar/header remain available for navigation between dashboards.
 
 ## `homelab-status.yaml` — Homelab Status (mental-map fleet view)
 
@@ -74,17 +74,17 @@ Add a drill-down by dropping a new file under `details/` with a unique `path:`, 
 
 ### Iteration workflow
 
-The whole structure is designed for live iteration via `kiosk-host/kiosk-preview` — see `kiosk-host/README.md § "Design session protocol for non-kiosk dashboards"` for the pause-gitops / redirect-pve2 / restore-at-end protocol. Key flag: pass `--dashboard-root dashboards/homelab-status.yaml` when iterating any `homelab-views/**` file so HA's yaml-mode cache (keyed off the manifest's mtime, not the !include child's) gets busted on each push.
+The whole structure is designed for live iteration via `home-host/home-preview` — see `home-host/README.md § "Design session protocol for non-home dashboards"` for the pause-gitops / redirect-pve2 / restore-at-end protocol. Key flag: pass `--dashboard-root dashboards/homelab-status.yaml` when iterating any `homelab-views/**` file so HA's yaml-mode cache (keyed off the manifest's mtime, not the !include child's) gets busted on each push.
 
 ## HACS Dependencies
 
 | Card | Used by |
 |------|---------|
-| [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Home view light/entity/alarm cards; `mushroom-light-card` per light on kiosk |
-| [mini-media-player](https://github.com/kalkih/mini-media-player) | Sonos cards on Home view; kiosk media cells with `artwork: full-cover-fit` |
-| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | No longer used by the kiosk (it moved to native `type: sections` 2026-06-11); retained as a HACS dep for other views |
-| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS (`card-mod-root`) + per-card `card_mod` (e.g. the kiosk media-tile group-dimming) |
-| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, heater, TVs row in kiosk view |
-| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | No longer used by the kiosk (native `thermostat` dial since #354); retained as a HACS dep |
+| [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Home view light/entity/alarm cards; `mushroom-light-card` per light on home dashboard |
+| [mini-media-player](https://github.com/kalkih/mini-media-player) | Sonos cards on Home view; home dashboard media cells with `artwork: full-cover-fit` |
+| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | No longer used by the home dashboard (it moved to native `type: sections` 2026-06-11); retained as a HACS dep for other views |
+| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS (`card-mod-root`) + per-card `card_mod` (e.g. the home media-tile group-dimming) |
+| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, heater, TVs row in home view |
+| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | No longer used by the home dashboard (native `thermostat` dial since #354); retained as a HACS dep |
 | [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Sidebar/header hiding for wall display |
-| [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Combined clock + 4-day forecast on kiosk top strip |
+| [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Combined clock + 4-day forecast on home dashboard top strip |

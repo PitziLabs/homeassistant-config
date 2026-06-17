@@ -84,7 +84,7 @@ The office speaker carried `media_player.basement` (stale adoption name) while a
 orphaned `media_player.office` ghost occupied the desired id.
 
 1. Mapped consumers: `configuration.yaml` (leader template), `home.yaml`,
-   `command-deck.yaml`, `kiosk.yaml`; `ha_deep_search` confirmed no UI
+   `command-deck.yaml`, `home.yaml`; `ha_deep_search` confirmed no UI
    automations referenced either id.
 2. LIVE: removed the ghost, renamed `media_player.basement` →
    `media_player.office`, verified with `ha_get_state`.

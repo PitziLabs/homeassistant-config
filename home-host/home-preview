@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# kiosk-preview — push a local dashboard YAML to the live HA instance,
-# refresh the household kiosk's Chromium, and snapshot the result.
+# home-preview — push a local dashboard YAML to the live HA instance,
+# refresh the household display's Chromium, and snapshot the result.
 #
 # Usage:
-#   kiosk-preview [YAML_PATH] [--open] [--keep] [--no-snapshot]
+#   home-preview [YAML_PATH] [--open] [--keep] [--no-snapshot]
 #                 [--dashboard-root FILE] [--url URL] [--debug-cells]
-#   kiosk-preview --help
+#   home-preview --help
 #
-# Defaults YAML_PATH to ./dashboards/kiosk.yaml (run from the repo root).
+# Defaults YAML_PATH to ./dashboards/home.yaml (run from the repo root).
 # Pushes to /config/dashboards/<mirrored-path> on HA (preserves subdirs
 # under dashboards/), sends F5 to Chromium on pve2 via xdotool, and
-# curls a fresh snapshot back to ./kiosk-preview-<UTC>.png (--open
+# curls a fresh snapshot back to ./home-preview-<UTC>.png (--open
 # xdg-opens it).
 #
 #   --debug-cells           Inject a distinct pure-color outline per
@@ -20,7 +20,7 @@
 #                           a single color, so a screenshot can be measured
 #                           with `np.where(color)` instead of guessing box
 #                           edges from dark-on-dark content. A design-debug
-#                           aid — see kiosk-host/README.md § Design session
+#                           aid — see home-host/README.md § Design session
 #                           protocol. Off by default; never commit borders.
 #
 # Iterating a non-flat dashboard (lens views, drill-down subviews, etc.):
@@ -31,11 +31,11 @@
 #                           file's mtime changes. Without this flag,
 #                           iterating an included sub-view appears as a
 #                           no-op in Chromium.
-#   --url URL               Point Chromium at URL via `kiosk-show
-#                           --kiosk URL` (full Chromium restart, ~10–15s)
+#   --url URL               Point Chromium at URL via `display-show
+#                           --home URL` (full Chromium restart, ~10–15s)
 #                           instead of sending F5. Use when the dashboard
 #                           URL itself is changing — e.g. switching from
-#                           the kiosk dashboard to homelab-status, or
+#                           the home dashboard to homelab-status, or
 #                           navigating to a subview path. Once the URL
 #                           is settled, drop --url for fast F5 loops.
 #
@@ -43,7 +43,7 @@
 #   1. The HA-side gitops-sync.sh runs every 5 min and resets /config/ to
 #      origin/main — your preview gets clobbered then. That's the feature
 #      (commit when you're done iterating), not a bug.
-#   2. The kiosk display flickers briefly on F5 and goes blank during
+#   2. The display flickers briefly on F5 and goes blank during
 #      --url restarts. Don't run this in a household-visibility-sensitive
 #      moment.
 #
@@ -54,7 +54,7 @@
 #     The Core container's /config maps to /homeassistant on the host.
 #   - SSH access to root@pve2 via the root@pve.local jump host (standard).
 #   - xdotool installed on pve2 (added to bootstrap in README.md).
-#   - kiosk-show installed at /usr/local/bin/kiosk-show on pve2 (--url mode).
+#   - display-show installed at /usr/local/bin/display-show on pve2 (--url mode).
 set -euo pipefail
 
 readonly HA_HOST="homeassistant.local"
@@ -65,9 +65,9 @@ readonly HA_SSH_PORT=22
 # on the host. scp doesn't work here (no sftp-server); we use ssh-stdin
 # redirect with `cat >` instead, which only needs basic shell builtins.
 readonly HA_TARGET_DIR="/homeassistant/dashboards"
-readonly KIOSK_JUMP="root@pve.local"
-readonly KIOSK_HOST="root@pve2"
-readonly KIOSK_SNAPSHOT_URL="http://pve2.local:9999/"
+readonly DISPLAY_JUMP="root@pve.local"
+readonly DISPLAY_HOST="root@pve2"
+readonly DISPLAY_SNAPSHOT_URL="http://pve2.local:9999/"
 # Give Chromium an initial beat before polling for a stable frame.
 # Too short → first poll catches mid-paint; too long → wasted seconds.
 readonly INITIAL_WAIT_SEC=1.2
@@ -85,7 +85,7 @@ err() { printf '\033[31m✗\033[0m %s\n' "$*" >&2; }
 ok()  { printf '\033[32m✓\033[0m %s\n' "$*"; }
 step() { printf '\033[36m→\033[0m %s\n' "$*"; }
 
-yaml_path="dashboards/kiosk.yaml"
+yaml_path="dashboards/home.yaml"
 open_after=0
 keep_after_session=0
 snapshot=1
@@ -166,7 +166,7 @@ fi
 #      /homeassistant/dashboards/homelab-views/hardware.yaml). Required
 #      for nested layouts like the homelab-status lens views.
 #   2. Otherwise → fall back to basename (legacy behavior, matches the
-#      original kiosk.yaml use case).
+#      original home.yaml use case).
 # Validation refuses path traversal (..) and characters outside the safe
 # set, applied to either case.
 if [[ "$yaml_path" == dashboards/* ]]; then
@@ -283,31 +283,31 @@ if [[ -n "$dashboard_root" && "$dashboard_root" != "$yaml_path" ]]; then
   fi
 fi
 
-# --- 3. Reload + (F5 | kiosk-show) -----------------------------------------
+# --- 3. Reload + (F5 | display-show) -----------------------------------------
 # Default path: F5 the existing Chromium so it re-fetches the dashboard
 # config (yaml-mode dashboards re-read from disk on each fetch).
 # lovelace.reload_resources clears any client-side module/resource caches
 # (rarely needed for pure dashboard YAML edits; matters when an
 # extra_module_url JS resource changes).
 #
-# --url path: skip F5, run `kiosk-show --kiosk <url>` on pve2 instead.
-# This restarts the dashboard-kiosk.service systemd unit, which respawns
+# --url path: skip F5, run `display-show --display <url>` on pve2 instead.
+# This restarts the dashboard-home.service systemd unit, which respawns
 # Chromium pointed at the new URL. Use when the dashboard URL itself is
 # changing (different view, different dashboard, subview navigation).
 # Roughly 10–15s vs. F5's ~3s, so reserve for URL transitions.
 if [[ -n "$url" ]]; then
-  step "kiosk-show --kiosk ${url} (Chromium restart)"
+  step "display-show --display ${url} (Chromium restart)"
   refresh_start=$EPOCHREALTIME
-  # kiosk-show writes /etc/default/dashboard-kiosk and restarts the systemd
+  # display-show writes /etc/default/dashboard-home and restarts the systemd
   # unit. No xdotool needed in this mode.
-  if ! ssh -J "$KIOSK_JUMP" "$KIOSK_HOST" \
-        "kiosk-show --kiosk '${url}'" 2>/dev/null; then
-    err "kiosk-show failed on pve2. Is /usr/local/bin/kiosk-show installed?"
-    err "  ssh -J ${KIOSK_JUMP} ${KIOSK_HOST} 'which kiosk-show'"
+  if ! ssh -J "$DISPLAY_JUMP" "$DISPLAY_HOST" \
+        "display-show --display '${url}'" 2>/dev/null; then
+    err "display-show failed on pve2. Is /usr/local/bin/display-show installed?"
+    err "  ssh -J ${DISPLAY_JUMP} ${DISPLAY_HOST} 'which display-show'"
     exit 1
   fi
   refresh_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $refresh_start) * 1000 }")
-  ok "kiosk-show issued (${refresh_ms}ms; Chromium boot still ahead)"
+  ok "display-show issued (${refresh_ms}ms; Chromium boot still ahead)"
 else
   step "reloading frontend resources + F5 Chromium"
   refresh_start=$EPOCHREALTIME
@@ -316,7 +316,7 @@ else
   # long-lived access token is configured, skip — F5 alone still refreshes
   # the YAML on yaml-mode dashboards. The token reload only matters when
   # you've also touched a JS module under `resources:`.
-  HA_TOKEN_FILE="${HOME}/.config/kiosk-preview/ha-token"
+  HA_TOKEN_FILE="${HOME}/.config/home-preview/ha-token"
   if [[ -r "$HA_TOKEN_FILE" ]]; then
     ha_token=$(<"$HA_TOKEN_FILE")
     curl -fsS --max-time 5 \
@@ -332,11 +332,11 @@ else
     printf '  (no HA token at %s; skipping resource reload — F5 alone refreshes YAML)\n' "$HA_TOKEN_FILE"
   fi
 
-  # F5 the kiosk Chromium so it re-fetches the dashboard config.
-  if ! ssh -J "$KIOSK_JUMP" "$KIOSK_HOST" \
+  # F5 the display Chromium so it re-fetches the dashboard config.
+  if ! ssh -J "$DISPLAY_JUMP" "$DISPLAY_HOST" \
         'DISPLAY=:0 XAUTHORITY=/root/.Xauthority xdotool key F5' 2>/dev/null; then
     err "xdotool F5 failed on pve2. Is xdotool installed there?"
-    err "  ssh -J ${KIOSK_JUMP} ${KIOSK_HOST} 'apt-get install -y xdotool'"
+    err "  ssh -J ${DISPLAY_JUMP} ${DISPLAY_HOST} 'apt-get install -y xdotool'"
     exit 1
   fi
   refresh_ms=$(awk "BEGIN { printf \"%.0f\", ($EPOCHREALTIME - $refresh_start) * 1000 }")
@@ -366,7 +366,7 @@ else
   max_stability=$MAX_STABILITY_SEC
 fi
 if (( snapshot == 1 )); then
-  outfile="kiosk-preview-${ts}.png"
+  outfile="home-preview-${ts}.png"
   step "capturing snapshot → ${outfile} (waiting for stable frame)"
   snap_start=$EPOCHREALTIME
   sleep "$initial_wait"
@@ -377,8 +377,8 @@ if (( snapshot == 1 )); then
   trap 'rm -f "$poll_tmp"' EXIT
   while :; do
     attempts=$((attempts + 1))
-    if ! curl -fsS --max-time 8 -o "$poll_tmp" "$KIOSK_SNAPSHOT_URL"; then
-      err "snapshot fetch from ${KIOSK_SNAPSHOT_URL} failed"
+    if ! curl -fsS --max-time 8 -o "$poll_tmp" "$DISPLAY_SNAPSHOT_URL"; then
+      err "snapshot fetch from ${DISPLAY_SNAPSHOT_URL} failed"
       exit 1
     fi
     cur_size=$(stat -c%s "$poll_tmp")

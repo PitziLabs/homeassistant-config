@@ -24,16 +24,16 @@ jobs:
       allowed_bots: "*"
       review_prompt: |
         This repository is a Home Assistant configuration: YAML automations,
-        scripts, scenes, and Lovelace dashboards, plus bash gitops/kiosk
-        deploy scripts (`scripts/gitops-sync.sh`, `kiosk-host/`) that pull to
-        production via systemd timers. Focus your review on:
+        scripts, scenes, and Lovelace dashboards, plus bash gitops and
+        home-dashboard deploy scripts (`scripts/gitops-sync.sh`, `home-host/`)
+        that pull to production via systemd timers. Focus your review on:
 
         1. **HA YAML validity** — automations, scripts, scenes, and templates:
            trigger / condition / action shape, Jinja2 template errors, and the
            right automation mode (e.g. not `single` for motion lights).
         2. **entity_id discipline** — prefer entity_id over device_id; flag
            entity renames that would break consumers (dashboards, automations).
-        3. **Bash correctness & safety** of the gitops/kiosk scripts —
+        3. **Bash correctness & safety** of the gitops/home-host scripts —
            quoting, unset vars, and the flock / main-branch-guard /
            log-rotation / reinstall-only-on-drift invariants.
         4. **Secrets** — nothing sensitive committed; `!secret` references

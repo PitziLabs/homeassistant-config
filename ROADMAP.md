@@ -28,4 +28,4 @@ work actually starts.
 - **Roblox activity detector** — Query Loki for Zeek DNS logs matching
   `roblox.com` / `rbxcdn.com`, surface as a conditional tile on the
   dashboard showing which child's device is playing.
-- **Kiosk polish** — Ongoing iteration on layout, colors, card sizing.
+- **Home dashboard polish** — Ongoing iteration on layout, colors, card sizing.

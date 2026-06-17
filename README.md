@@ -12,7 +12,7 @@ The repo represents an opinionated infrastructure project with a defined archite
 
 **A custom alarm system** built from bare hardware up. Two Konnected ESP8266 panels running fully inlined ESPHome firmware: one driving 4 door contacts, 2 motion sensors, and a siren output; the other repurposed as an interior annunciator with a piezo buzzer playing RTTTL tones. Eight YAML automations handle the full alarm lifecycle — arming sequences, entry/exit delays with audible countdowns, triggered siren activation, disarm confirmation, and a door chime for everyday use.
 
-**Two dashboard experiences** built from typed Lovelace cards. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Kiosk view drives a 65-inch wall display using `custom:grid-layout` as the view itself, populated with `mushroom-light-card`, `button-card`, `mini-media-player` (with album art), `clock-weather-card`, and circular `better-thermostat-ui-card` dials — all locked to 1080p with zero scrolling.
+**Two dashboard experiences** built from typed Lovelace cards. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Home dashboard drives the 2560x1440 wall display using HA native `sections` layout, populated with `mushroom-light-card`, `button-card`, `mini-media-player` (with album art), `clock-weather-card`, and `thermostat` dials — responsive with no fixed-pixel sizing.
 
 **A Homelab Status dashboard** providing an at-a-glance infrastructure overview: NAS health (Neptune UGREEN DXP2800 — pool status, disk temps, SMART hours, LAN throughput), Proxmox node and VM metrics, smart home coordinator firmware/signal status, battery health grid with amber/red color coding, CMYK toner levels, GitHub repo activity, and the custom-built ESP32 meeting indicator device.
 
@@ -32,8 +32,8 @@ Proxmox VE (hypervisor)
 │   │   ├── automations/ — git-managed automations (meeting indicator)
 │   │   ├── packages/ — HA version sync (startup dispatch to GitHub)
 │   │   ├── scripts/gitops-sync.sh — fetch → validate → smart reload or rollback
-│   │   ├── dashboards/ — Home (mobile) + Kiosk (wall display) + Homelab Status (3 files)
-│   │   └── themes/noctis_kiosk.yaml — global card-mod state styling
+│   │   ├── dashboards/ — Home (mobile/wall display) + Home Co-design + Homelab Status
+│   │   └── themes/noctis_home.yaml — global card-mod state styling
 │   └── .storage/ — HA-managed runtime state (excluded from git)
 ├── Firewalla Gold SE — network firewall
 └── Grafana/Loki stack (LXC) — observability
@@ -87,7 +87,7 @@ This project uses an AI-augmented development process that separates architectur
 
 **Code review catches a real category of bugs.** Entity IDs in Home Assistant are notoriously tricky — they're set at device adoption time and don't change when you rename things. A review step specifically looking for ID mismatches between config and actual entities has caught real issues in this project.
 
-**The deploy step includes validation.** `ha core check` catches YAML syntax errors and missing entity references before a restart. Visual verification on the target device (phone for mobile view, wall display for kiosk) confirms the actual rendered output matches intent.
+**The deploy step includes validation.** `ha core check` catches YAML syntax errors and missing entity references before a restart. Visual verification on the target device (phone for mobile view, wall display for the home dashboard) confirms the actual rendered output matches intent.
 
 ### What's Already Here vs. What Would Scale Further
 
@@ -192,7 +192,7 @@ A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.
 
 **Why a manual alarm platform instead of an integration?** The manual platform gives explicit control over every timing parameter and state transition. The alarm behavior is defined entirely in YAML — arming delays, entry delays, trigger duration, which sensors are active in which arm mode — making it auditable, version-controlled, and reproducible.
 
-**Why typed Lovelace cards on the kiosk instead of html-template-card?** An earlier kiosk iteration used `custom:html-template-card` so each cell was Jinja-templated HTML. That gave maximum layout control but offered no schema validation, fought shadow-DOM CSS for sizing, and made every minor change a string-concatenation problem. The current kiosk uses typed cards (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card` so per-card styling lives next to the entity binding. Adding a new light is one extra `mushroom-light-card` block; state-driven colors are declarative `state` lists, not Jinja conditionals.
+**Why typed Lovelace cards on the home dashboard instead of html-template-card?** An earlier home dashboard iteration used `custom:html-template-card` so each cell was Jinja-templated HTML. That gave maximum layout control but offered no schema validation, fought shadow-DOM CSS for sizing, and made every minor change a string-concatenation problem. The current home dashboard uses typed cards (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card` so per-card styling lives next to the entity binding. Adding a new light is one extra `mushroom-light-card` block; state-driven colors are declarative `state` lists, not Jinja conditionals.
 
 **Why conditional cards on the mobile view?** A house with 40+ controllable entities produces a dashboard that's mostly noise. The Home view shows only what's active — if all kitchen lights are off, you see "All off" instead of four disabled tiles. This is an opinionated UX choice: the dashboard reflects the current state of the house, not its full capability.
 
@@ -242,11 +242,11 @@ Seven sections:
 │   └── dashboards-storage.json  Storage-mode Lovelace dashboards
 ├── dashboards/
 │   ├── home.yaml             Mobile/tablet Home dashboard
-│   ├── kiosk.yaml            Kiosk wall-display dashboard (custom:grid-layout)
+│   ├── home.yaml            Home wall-display dashboard (custom:grid-layout)
 │   └── homelab-status.yaml   Homelab Status: NAS, Proxmox, coordinators, battery, printer
 ├── themes/
-│   ├── noctis_kiosk.yaml     Active theme with global card-mod state styling
-│   └── kiosk_dark.yaml       Deprecated — retained for reference
+│   ├── noctis_home.yaml     Active theme with global card-mod state styling (noctis_home.yaml)
+│   └── home_dark.yaml       Deprecated — retained for reference
 ├── esphome/
 │   ├── konnected-56ac70.yaml Main alarm panel firmware (4 doors, 2 motion, siren)
 │   ├── konnected-56a4fa.yaml Secondary panel firmware (piezo RTTTL annunciator)
@@ -268,18 +268,18 @@ Seven sections:
 | [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Light/entity/alarm cards and sensor chips |
 | [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Animated weather with clock and forecast |
 | [mini-media-player](https://github.com/kalkih/mini-media-player) | Compact Sonos display with album art |
-| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid layout engine — used as the kiosk view type itself |
+| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid layout engine — used as the home dashboard view type |
 | [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling + `custom:mod-card` cell wrapper |
-| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, TV row in kiosk view |
-| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in kiosk view |
-| [apexcharts-card](https://github.com/RomRider/apexcharts-card) | Advanced graphs and radial gauges (homelab/kiosk) |
+| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, TV row in home view |
+| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in home view |
+| [apexcharts-card](https://github.com/RomRider/apexcharts-card) | Advanced graphs and radial gauges (homelab/home) |
 | [mini-graph-card](https://github.com/kalkih/mini-graph-card) | Lightweight inline sparklines for at-a-glance trends |
 | [Bubble Card](https://github.com/Clooos/Bubble-Card) | Minimalist cards with slide-up pop-ups |
 | [auto-entities](https://github.com/thomasloven/lovelace-auto-entities) | Auto-populates card entity lists by filter/area |
 | [decluttering-card](https://github.com/custom-cards/decluttering-card) | Reusable card templates (DRY repeated tiles) |
 | [HTML Jinja2 Template card](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-Jinja2-Template-card) | Renders a Jinja2 template as HTML card content |
 | [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Hides sidebar/header for wall display |
-| [Noctis](https://github.com/aFFekopp/nern) | Base dark theme (extended by Noctis Kiosk) |
+| [Noctis](https://github.com/aFFekopp/nern) | Base dark theme (extended by Noctis Home) |
 
 These cards are auto-loaded by HACS — do **not** add them to
 `frontend.extra_module_url` (only `kiosk-mode.js` and `card-mod.js` are
@@ -293,7 +293,7 @@ or self-registering — none take a `configuration.yaml` block.
 
 | Integration | Purpose |
 |------|---------|
-| [Better Thermostat](https://github.com/KartoffelToby/better_thermostat) | Smart TRV control feeding the kiosk thermostat dials |
+| [Better Thermostat](https://github.com/KartoffelToby/better_thermostat) | Smart TRV control feeding the home dashboard thermostat dials |
 | [Hubspace](https://github.com/jdeath/Hubspace-Homeassistant) | Hubspace (Afero) device integration |
 | [UGreen NAS](https://github.com/Tom-Bom-badil/home-assistant_ugreen-nas) | UGREEN NAS telemetry on the Homelab Status dashboard |
 | [HA MCP Tools](https://github.com/homeassistant-ai/ha-mcp) | MCP server exposing HA to AI agents (the "Live" layer) |

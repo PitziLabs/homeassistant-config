@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# kiosk-snapshot — capture the live pve2 kiosk display and copy it locally.
+# home-snapshot — capture the live pve2 display and copy it locally.
 #
 # Usage:
-#   kiosk-snapshot [-o OUTFILE] [--open]
-#   kiosk-snapshot --help
+#   home-snapshot [-o OUTFILE] [--open]
+#   home-snapshot --help
 #
-# Defaults to ./kiosk-snapshot-<UTC-timestamp>.png in the current directory.
+# Defaults to ./home-snapshot-<UTC-timestamp>.png in the current directory.
 #
 # Runs on the workstation (not on pve2). SSHs to pve2 via the pve.local
 # jump host, grabs the X :0 framebuffer with `scrot`, copies the PNG back
 # over scp, then deletes the remote temp file. This captures the *real*
-# rendered kiosk frame — same pixels you'd see on the household monitor —
+# rendered display frame — same pixels you'd see on the household monitor —
 # rather than a fresh browser session that would need to re-authenticate
 # to Home Assistant.
 #
-# Use this when you need a kiosk screenshot. Specifically, prefer it over
+# Use this when you need a display screenshot. Specifically, prefer it over
 # spinning up Playwright/Chromium locally: Playwright captures a clean
 # headless render, but the workstation Chrome currently crashes on
 # launch (Gdk portal sandbox / SIGSEGV), and even when it works it has
@@ -31,7 +31,7 @@ usage() {
 }
 
 ts=$(date -u +%Y%m%dT%H%M%SZ)
-outfile="kiosk-snapshot-${ts}.png"
+outfile="home-snapshot-${ts}.png"
 open_after=0
 
 while [[ $# -gt 0 ]]; do
@@ -49,14 +49,14 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "kiosk-snapshot: unknown arg: $1" >&2
+      echo "home-snapshot: unknown arg: $1" >&2
       usage >&2
       exit 1
       ;;
   esac
 done
 
-remote_tmp="/tmp/kiosk-snapshot-${ts}-$$.png"
+remote_tmp="/tmp/home-snapshot-${ts}-$$.png"
 
 ssh -J "$JUMP" "$TARGET" \
   "DISPLAY=:0 XAUTHORITY=/root/.Xauthority scrot '$remote_tmp'"
@@ -72,6 +72,6 @@ if [[ $open_after -eq 1 ]]; then
     xdg-open "$outfile" >/dev/null 2>&1 &
     disown || true
   else
-    echo "kiosk-snapshot: --open requested but xdg-open not found" >&2
+    echo "home-snapshot: --open requested but xdg-open not found" >&2
   fi
 fi
