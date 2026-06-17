@@ -17,15 +17,6 @@ views:
     path: today
     icon: mdi:television-clock
     cards:
-      # --- 3-day app activity timeline ---
-      - type: history-graph
-        title: TV App Activity — Last 3 Days
-        hours_to_show: 72
-        refresh_interval: 60
-        entities:
-          - entity: sensor.play_room_tv_active_app
-            name: Play Room
-
       # --- Play Room today's totals ---
       - type: entities
         title: Play Room TV — Today
@@ -46,12 +37,3 @@ views:
             name: Disney Plus
             icon: mdi:movie-open-star
         state_color: false
-
-      # --- Current state at the bottom for live awareness ---
-      - type: glance
-        title: Right Now
-        entities:
-          - entity: media_player.play_room_tv
-            name: Play Room
-        state_color: true
-        show_state: true

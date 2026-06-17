@@ -28,26 +28,3 @@ sensor.play_room_youtube_today
 # Basement and Office TVs via some integration not yet active in HA.
 media_player.basement_tv
 media_player.office_tv
-
-# --- Pending integration: PitziLabs/* GitHub sensors (homelab-status.yaml) ---
-# Populated by the HACS `github_custom` integration
-# (boralyl/github-custom-component-tutorial) once configured via its UI flow.
-# ONE sensor per repo — state is the latest-commit short SHA; metrics
-# (open_issues, open_pull_requests, stargazers, forks, …) ride as
-# attributes. Prune as each repo's sensor lands in entities.json.
-sensor.pitzilabs_firewalla_axiom_pipeline
-sensor.pitzilabs_foundry_platform_demo
-sensor.pitzilabs_homeassistant_config
-sensor.pitzilabs_homelab_observability
-sensor.pitzilabs_ice_cream_book
-sensor.pitzilabs_reference_checker
-sensor.pitzilabs_shared_workflows
-sensor.pitzilabs_workstation_bootstrap
-
-# --- Pending snapshot: room light groups (configuration.yaml, #440/#442) ---
-# YAML `light: - platform: group` entities for the whole-room dimmer controls.
-# They carry unique_id, so they WILL land in context/entities.json after this
-# deploys and the next context dump runs — prune these three then.
-light.family_room
-light.kitchen
-light.office_lights
