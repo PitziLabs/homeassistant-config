@@ -146,8 +146,12 @@ build_dashboards_storage() {
       '. + {($key): ($lv[0].data.config // {})}' <<<"$configs")
   done
   shopt -u nullglob
-  jq -n --argjson dashboards "$dashboards_registry" --argjson configs "$configs" \
-    '{dashboards: $dashboards, configs: $configs}'
+  # Pass $configs via stdin to avoid ARG_MAX (E2BIG) when storage dashboards
+  # exceed ~128 KB. --slurpfile wraps stdin in an array, so deref [0].
+  printf '%s' "$configs" \
+    | jq -n --argjson dashboards "$dashboards_registry" \
+           --slurpfile configs /dev/stdin \
+           '{dashboards: $dashboards, configs: $configs[0]}'
 }
 
 # Fetch a live PNG snapshot of the pve2 display and write it to
