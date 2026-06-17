@@ -10,25 +10,36 @@
 # Width fill: max_columns is 5. HA caps each sections column at ~500px
 # and centers the grid, so on the 2560px wall display fewer columns
 # leave wide black bars on each side (3 cols ≈ 530px bars; 5 cols ≈
-# ~38px).
+# ~38px). The weather section sets column_span: 2 so it occupies two of
+# those ~500px column slots (≈1020px); the other three sections span one
+# each — 2 + 1 + 1 + 1 = the five column slots, all on one grid row.
 #
-# ONE SECTION PER COLUMN. There are exactly five sections, one per
-# column. This is deliberate: HA's sections view arranges sections in a
-# row-grid and aligns each column's Nth section to a shared row baseline
-# (row height = the tallest section in that row). With multiple sections
-# per column that alignment turns any tall section into an inter-row GAP
-# in every shorter column. With a single section per column there are no
-# shared rows to align, so a column simply stacks its cards top-down and
-# any leftover is a clean margin at the very bottom — no mid-column gaps,
-# whatever the relative heights. Columns are paired (a short non-tile
-# block + a tile block) so they come out within ~150px of each other:
-#   c1 Weather            + Openings (doors/garage/motion)
-#   c2 Security/Presence  + Media (compact now-playing strips)
-#   c3 Upstairs climate   + Outdoor lights
-#   c4 Downstairs climate + Office lights
-#   c5 Home Status        + Family/Kitchen/Hallway lights
-# YAML anchors (&climate_block, &mlight, &room_ctrl) are defined in
-# whichever section appears first in document order (c3) and reused by c4/c5.
+# SPANS SUM TO max_columns, ONE GRID ROW. There are exactly four
+# sections and their column_span values sum to 5 (= max_columns), so
+# every section sits on the first (and only) grid row. This is
+# deliberate: HA's sections view arranges sections in a row-grid and
+# aligns each column's Nth section to a shared row baseline (row height =
+# the tallest section in that row). The moment sections wrap to a second
+# row, a tall section in row 1 turns into an inter-row GAP in every
+# shorter column. By keeping the spans summing to exactly max_columns
+# there is no second row to align against, so each section simply stacks
+# its cards top-down and any leftover is a clean margin at the very
+# bottom — no mid-column gaps, whatever the relative heights. Sections
+# are balanced to come out within ~150px of each other:
+#   c1 (span 2) Weather              + Openings (doors/garage/motion)
+#   c2          Security/Presence    + Media (compact now-playing strips)
+#   c3          Climate (up + down)  + Outdoor lights
+#   c4          Office + Family Room + Kitchen lights
+# A card cannot span across separate sections in `type: sections`, so the
+# two-column-wide weather card is achieved by widening its whole section
+# (column_span: 2), not the card. The two thermostat dials are stacked in
+# c3 (upstairs over downstairs) and width-capped via card-mod so they
+# read smaller than the old side-by-side split across two columns.
+# YAML anchors (&climate_block, &mlight, &room_ctrl) are defined in the
+# climate section (c3 — first in document order to use them) and reused
+# by the lights column (c4). The Home Status section and its &status_tile
+# anchor were removed (its leak/UPS signals are surfaced by the
+# basement_water_leak and ups_power_events notification automations).
 #
 # Design language (one tile family across the board): button-card for
 # sensors/status tiles, mushroom-light-card for light tiles; dark tile
@@ -70,8 +81,12 @@ views:
     max_columns: 5
     sections:
 
-      # ================= COLUMN 1: WEATHER + OPENINGS ============
+      # ========= COLUMN 1 (span 2): WEATHER + OPENINGS ==========
+      # column_span: 2 widens this section to ≈1020px so the weather card
+      # renders two columns wide; the openings tiles stay a 2-col grid and
+      # so read larger (legible from across the room on the wall display).
       - type: grid
+        column_span: 2
         cards:
           - type: heading
             heading: Weather
@@ -635,13 +650,19 @@ views:
                 entity: media_player.roam_2
                 name: Roam 2
 
-      # ========= COLUMN 3: UPSTAIRS CLIMATE + OUTDOOR ==========
-      # Defines &climate_block (reused by c4) and &mlight / &room_ctrl (reused c4/c5).
+      # ===== COLUMN 3 (span 1): CLIMATE (up + down) + OUTDOOR =====
+      # Defines &climate_block (reused for downstairs) and &mlight /
+      # &room_ctrl (reused by the lights column). The thermostat dials are
+      # width-capped via card-mod so the two stack vertically and read
+      # smaller than the old side-by-side split across columns 3 and 4.
       - type: grid
         cards:
           - type: heading
-            heading: Upstairs
+            heading: Climate
             heading_style: title
+          - type: heading
+            heading: Upstairs
+            heading_style: subtitle
           - &climate_block
             type: vertical-stack
             cards:
@@ -654,6 +675,13 @@ views:
                   type: thermostat
                   entity: climate.upstairs
                   name: Upstairs
+                  card_mod:
+                    style: |
+                      ha-card {
+                        max-width: 260px;
+                        margin-left: auto;
+                        margin-right: auto;
+                      }
               - type: conditional
                 conditions:
                   - condition: state
@@ -699,48 +727,8 @@ views:
                       {{ a | title if a else "Off" }}
 
           - type: heading
-            heading: Outdoor
-            heading_style: title
-          - &room_ctrl
-            type: custom:mushroom-light-card
-            entity: light.outdoor
-            show_brightness_control: true
-            tap_action:
-              action: toggle
-            hold_action:
-              action: more-info
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - &mlight
-                type: custom:mushroom-light-card
-                entity: light.front_door
-                name: Front
-                show_brightness_control: true
-                tap_action:
-                  action: toggle
-                hold_action:
-                  action: more-info
-              - <<: *mlight
-                entity: light.front_lantern
-                name: Lantern
-              - <<: *mlight
-                entity: light.garage_front
-                name: Garage Fr
-              - <<: *mlight
-                entity: light.garage_side
-                name: Garage Sd
-              - <<: *mlight
-                entity: light.shed
-                name: Shed
-
-      # ========= COLUMN 4: DOWNSTAIRS CLIMATE + OFFICE ==========
-      - type: grid
-        cards:
-          - type: heading
             heading: Downstairs
-            heading_style: title
+            heading_style: subtitle
           - <<: *climate_block
             cards:
               - type: conditional
@@ -752,6 +740,13 @@ views:
                   type: thermostat
                   entity: climate.downstairs
                   name: Downstairs
+                  card_mod:
+                    style: |
+                      ha-card {
+                        max-width: 260px;
+                        margin-left: auto;
+                        margin-right: auto;
+                      }
               - type: conditional
                 conditions:
                   - condition: state
@@ -797,6 +792,50 @@ views:
                       {{ a | title if a else "Off" }}
 
           - type: heading
+            heading: Outdoor
+            heading_style: title
+          - &room_ctrl
+            type: custom:mushroom-light-card
+            entity: light.outdoor
+            show_brightness_control: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - &mlight
+                type: custom:mushroom-light-card
+                entity: light.front_door
+                name: Front
+                show_brightness_control: true
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+              - <<: *mlight
+                entity: light.front_lantern
+                name: Lantern
+              - <<: *mlight
+                entity: light.garage_front
+                name: Garage Fr
+              - <<: *mlight
+                entity: light.garage_side
+                name: Garage Sd
+              - <<: *mlight
+                entity: light.shed
+                name: Shed
+
+      # === COLUMN 4 (span 1): OFFICE + FAMILY ROOM + KITCHEN ===
+      # Office (relocated here when the two climate dials merged into c3),
+      # then Family Room, then Kitchen. The Home Status section that used
+      # to head this column was removed (#448) — its leak/UPS signals are
+      # covered by the basement_water_leak and ups_power_events automations.
+      - type: grid
+        cards:
+          - type: heading
             heading: Office
             heading_style: title
           - <<: *room_ctrl
@@ -824,151 +863,9 @@ views:
                 entity: light.desk_lamp_2_2
                 name: Desk 2
 
-      # ========= COLUMN 5: HOME STATUS + FAMILY/KITCHEN =========
-      # Defines &status_tile.
-      - type: grid
-        cards:
-          - type: heading
-            heading: Home Status
-            heading_style: title
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - &status_tile
-                type: custom:button-card
-                entity: binary_sensor.hvac_pump_leak
-                name: HVAC Pump
-                show_name: true
-                show_state: true
-                show_icon: true
-                size: 46%
-                tap_action: { action: more-info }
-                state_display: |
-                  [[[ return entity.state === 'on' ? 'WET'
-                       : entity.state === 'unavailable' ? 'N/A' : 'DRY'; ]]]
-                state:
-                  - value: 'on'
-                    icon: mdi:water-alert
-                    color: 'var(--home-accent-triggered)'
-                    styles:
-                      card: [{ background-color: 'rgba(248, 81, 73, 0.18)' }, { border: '2px solid var(--home-accent-triggered)' }]
-                  - value: 'off'
-                    icon: mdi:water-check
-                    color: 'var(--home-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'rgba(86, 211, 100, 0.10)' }]
-                  - operator: default
-                    icon: mdi:water-off
-                    color: 'var(--home-text-tertiary)'
-                    styles:
-                      card: [{ background-color: 'rgba(227, 179, 65, 0.10)' }]
-                styles:
-                  card:
-                    - background: 'var(--home-bg-tile)'
-                    - border-radius: '8px'
-                    - border: 'none'
-                    - padding: '14px 12px'
-                    - min-height: '150px'
-                  name:
-                    - font-size: '15px'
-                    - font-weight: '500'
-                    - color: 'var(--home-text-secondary)'
-                    - padding-top: '6px'
-                  state:
-                    - font-size: '18px'
-                    - font-weight: '600'
-                    - text-transform: 'uppercase'
-                    - letter-spacing: '0.5px'
-                    - padding-top: '2px'
-              - <<: *status_tile
-                entity: binary_sensor.water_heater_leak
-                name: Water Htr
-              - <<: *status_tile
-                entity: sensor.cyberpower_battery_charge
-                name: UPS
-                icon: mdi:battery-charging
-                state_display: |
-                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '%'; ]]]
-                state:
-                  - operator: template
-                    value: '[[[ return parseFloat(entity.state) <= 20; ]]]'
-                    icon: mdi:battery-alert
-                    color: 'var(--home-accent-triggered)'
-                    styles:
-                      card: [{ background-color: 'rgba(248, 81, 73, 0.15)' }]
-                  - operator: default
-                    icon: mdi:battery-charging
-                    color: 'var(--home-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'var(--home-bg-tile)' }]
-              - <<: *status_tile
-                entity: sensor.upstairs_temperature
-                name: Up Temp
-                icon: mdi:thermometer
-                state_display: |
-                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '°'; ]]]
-                state:
-                  - operator: template
-                    value: '[[[ return parseFloat(entity.state) >= 76; ]]]'
-                    icon: mdi:thermometer-high
-                    color: 'var(--home-accent-climate)'
-                    styles:
-                      card: [{ background-color: 'rgba(240, 136, 62, 0.14)' }]
-                  - operator: template
-                    value: '[[[ return parseFloat(entity.state) <= 68; ]]]'
-                    icon: mdi:thermometer-low
-                    color: 'var(--home-accent-media)'
-                    styles:
-                      card: [{ background-color: 'rgba(88, 166, 255, 0.14)' }]
-                  - operator: default
-                    icon: mdi:thermometer
-                    color: 'var(--home-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'var(--home-bg-tile)' }]
-              - <<: *status_tile
-                entity: sensor.downstairs_temperature
-                name: Down Temp
-                icon: mdi:thermometer
-                state_display: |
-                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '°'; ]]]
-                state:
-                  - operator: template
-                    value: '[[[ return parseFloat(entity.state) >= 76; ]]]'
-                    icon: mdi:thermometer-high
-                    color: 'var(--home-accent-climate)'
-                    styles:
-                      card: [{ background-color: 'rgba(240, 136, 62, 0.14)' }]
-                  - operator: template
-                    value: '[[[ return parseFloat(entity.state) <= 68; ]]]'
-                    icon: mdi:thermometer-low
-                    color: 'var(--home-accent-media)'
-                    styles:
-                      card: [{ background-color: 'rgba(88, 166, 255, 0.14)' }]
-                  - operator: default
-                    icon: mdi:thermometer
-                    color: 'var(--home-accent-sensors)'
-                    styles:
-                      card: [{ background-color: 'var(--home-bg-tile)' }]
-              - <<: *status_tile
-                entity: sensor.upstairs_humidity
-                name: Up Humid
-                icon: mdi:water-percent
-                state_display: |
-                  [[[ const v = parseFloat(entity.state); return isNaN(v) ? '—' : Math.round(v) + '%'; ]]]
-                state:
-                  - operator: default
-                    icon: mdi:water-percent
-                    color: 'var(--home-accent-media)'
-                    styles:
-                      card: [{ background-color: 'rgba(88, 166, 255, 0.10)' }]
-
-          - type: heading
-            heading: Lights
-            heading_style: title
           - type: heading
             heading: Family Room
-            heading_style: subtitle
+            heading_style: title
           - <<: *room_ctrl
             entity: light.family_room
           - type: grid
@@ -989,7 +886,7 @@ views:
                 name: Floor
           - type: heading
             heading: Kitchen
-            heading_style: subtitle
+            heading_style: title
           - <<: *room_ctrl
             entity: light.kitchen
           - type: grid
