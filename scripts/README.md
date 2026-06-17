@@ -34,20 +34,53 @@ GitOps auto-deploy script. Called every 5 minutes by the `gitops_sync_poll` auto
 
 Polling from inside HA (rather than pushing from a GitHub Actions webhook) avoids exposing the HA instance to inbound internet traffic and sidesteps NAT traversal entirely. The tradeoff is a maximum 5-minute latency on deploys — acceptable for a home automation context. The Supervisor API validation step (`/core/check`) runs the same config validator as a normal HA startup, so a bad merge is caught before the service is disrupted.
 
-## `import-home-to-storage.sh`
+## `import-dashboard-to-storage.sh`
 
-One-shot helper that copies the git-managed `dashboards/home.yaml` into a
-storage-mode (UI-managed) Lovelace dashboard at `url_path: home-ui`. After it
-runs, the next `ha-context-dump.sh` snapshot picks the dashboard up in
+Ad-hoc helper that copies a git-managed YAML dashboard into a storage-mode
+(UI-managed) Lovelace dashboard, so you can hand-tweak it in the HA UI while
+still starting from the repo's "official" dashboard paradigm. After it runs,
+the next `ha-context-dump.sh` snapshot picks the dashboard up in
 `context/dashboards-storage.json`, which makes it visible to assistants
 working against `context/`.
+
+The import is a structurally lossless round-trip — `yaml.safe_load` →
+`lovelace/config/save` persists the exact parsed config — so the UI copy
+matches the source view-for-view. (Only holds for self-contained dashboards;
+HA custom tags like `!include`/`!secret` would break `safe_load`.)
 
 Must run inside the HA Core container (Python 3, `aiohttp`, and `PyYAML` are
 part of Core's runtime; the SSH add-on's Alpine shell has none of them):
 
 ```bash
-docker exec homeassistant /config/scripts/import-home-to-storage.sh
+# default: seed dashboards/home.yaml -> "Home (UI Edit)" at /home-ui-edit
+docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh
+
+# any dashboard, by name (resolved to /config/dashboards/<name>.yaml)
+docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh kiosk
+
+# full control over the storage dashboard's url_path / title / icon
+docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh \
+    home home-ui-edit "Home (UI Edit)" mdi:home-edit
 ```
+
+From the workstation in one shot (the HAOS host has `docker`, the SSH add-on
+does not — note port 22 + `docker exec`, not `ha`):
+
+```bash
+ssh -p 22 root@homeassistant.local \
+  "docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh <name>"
+```
+
+### Positional arguments
+
+Each falls back to its env var, then to a value derived from the source name:
+
+| # | Arg | Env | Default |
+|---|-----|-----|---------|
+| 1 | `<source>` | `SOURCE_YAML` | `home` — a bare **name** resolves to `/config/dashboards/<name>.yaml`; an explicit path passes through |
+| 2 | `<url_path>` | `URL_PATH` | `<name>-ui-edit` |
+| 3 | `<title>` | `TITLE` | `"<Name> (UI Edit)"` |
+| 4 | `<icon>` | `ICON` | `mdi:view-dashboard-edit` |
 
 ### Authentication
 
@@ -71,18 +104,24 @@ in `secrets.yaml` → `SUPERVISOR_TOKEN` (last-resort fallback that will
 almost certainly fail). For a one-shot run without modifying `secrets.yaml`:
 
 ```bash
-docker exec -e HA_TOKEN='<paste-token-here>' homeassistant /config/scripts/import-home-to-storage.sh
+docker exec -e HA_TOKEN='<paste-token-here>' homeassistant /config/scripts/import-dashboard-to-storage.sh
 ```
 
 ### Overrides and behavior
 
-Env vars: `SOURCE_YAML`, `URL_PATH`, `TITLE`, `ICON`, `HA_WS_URL`,
-`SECRETS_YAML`, `HA_TOKEN`. Idempotent — re-running overwrites the saved
-config but does not duplicate the registry entry. The git-managed
-`dashboards/home.yaml` and its `lovelace.dashboards` registration in
-`configuration.yaml` are left in place; both dashboards coexist
-(`/dashboard-home/home` from YAML, `/home-ui` from storage) until cutover
-is decided.
+Beyond the positional args above, `HA_WS_URL` and `SECRETS_YAML` are
+env-overridable. **Idempotent** — re-running overwrites the saved config but
+does not duplicate the registry entry; this is a **reseed-from-source**
+operation, so any hand-edits made in the UI copy are clobbered on the next
+import. That's the intended flow: edit the official YAML, reseed, hand-tweak;
+or hand-tweak, then port the changes back into the YAML as the durable
+source-of-truth.
+
+The git-managed source dashboard and its `lovelace.dashboards` registration
+in `configuration.yaml` are left in place — the YAML and storage copies
+coexist (e.g. `/dashboard-home/home` from YAML, `/home-ui-edit` from
+storage). The storage copy is gitignored `.storage/` runtime state and will
+**drift** from the YAML once you edit it; git remains the source of truth.
 
 ## `validate-ha-version.sh` / `validate-context-branch.sh`
 

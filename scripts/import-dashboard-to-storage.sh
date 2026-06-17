@@ -1,12 +1,30 @@
 #!/usr/bin/env bash
-# One-shot: import dashboards/home.yaml as a UI-managed (storage-mode)
-# Lovelace dashboard at url_path /home-ui, so that ha-context-dump.sh
-# captures it under context/dashboards-storage.json.
+# Ad-hoc: import a git-managed YAML dashboard into a UI-managed (storage-mode)
+# Lovelace dashboard, so it can be hand-tweaked in the HA UI while still
+# starting from the repo's "official" dashboard paradigm. After it runs the
+# next ha-context-dump.sh snapshot captures the result in
+# context/dashboards-storage.json.
 #
-# Run inside the HA Core container (Python 3, aiohttp, and PyYAML are
-# part of Core's runtime):
+# Run inside the HA Core container (Python 3, aiohttp, and PyYAML are part of
+# Core's runtime; the SSH add-on's Alpine shell has none of them):
 #
-#   docker exec homeassistant /config/scripts/import-home-to-storage.sh
+#   # default: seed dashboards/home.yaml -> "Home (UI Edit)" at /home-ui-edit
+#   docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh
+#
+#   # any dashboard, by name (resolved to /config/dashboards/<name>.yaml):
+#   docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh kiosk
+#
+#   # full control over the storage dashboard's url_path / title / icon:
+#   docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh \
+#       home home-ui-edit "Home (UI Edit)" mdi:home-edit
+#
+# Positional args (each falls back to its env var, then to a derived default):
+#   1  <source>    dashboard NAME (-> /config/dashboards/<name>.yaml) or an
+#                  explicit path. Env: SOURCE_YAML. Default: home
+#   2  <url_path>  storage dashboard url_path. Env: URL_PATH.
+#                  Default: <name>-ui-edit
+#   3  <title>     sidebar title. Env: TITLE. Default: "<Name> (UI Edit)"
+#   4  <icon>      mdi icon. Env: ICON. Default: mdi:view-dashboard-edit
 #
 # Token resolution order (first non-empty wins):
 #   1. HA_TOKEN env var (one-shot override)
@@ -19,20 +37,34 @@
 # A leading "Bearer " prefix is stripped automatically so the value can
 # be stored in the same form rest_command consumers expect.
 #
-# Idempotent: re-running overwrites the saved config but does not
-# duplicate the dashboard registry entry.
+# Idempotent: re-running overwrites the saved config but does not duplicate
+# the dashboard registry entry. NOTE: re-importing OVERWRITES any hand-edits
+# made in the UI copy — it is a reseed-from-source operation, by design.
 
 set -euo pipefail
 
-readonly SOURCE_YAML="${SOURCE_YAML:-/config/dashboards/home.yaml}"
-readonly URL_PATH="${URL_PATH:-home-ui}"
-readonly TITLE="${TITLE:-Home (UI)}"
-readonly ICON="${ICON:-mdi:home-variant}"
+# --- resolve source (arg 1 > $SOURCE_YAML > "home"); bare names expand to
+#     /config/dashboards/<name>.yaml, explicit paths pass through unchanged ---
+src_in="${1:-${SOURCE_YAML:-home}}"
+if [[ "$src_in" == */* || "$src_in" == *.yaml ]]; then
+    SOURCE_YAML="$src_in"
+else
+    SOURCE_YAML="/config/dashboards/${src_in}.yaml"
+fi
+
+# url_path / title / icon: arg > env > (empty, derived in Python from the
+# source basename so the title-casing isn't at the mercy of busybox sed)
+URL_PATH="${2:-${URL_PATH:-}}"
+TITLE="${3:-${TITLE:-}}"
+ICON="${4:-${ICON:-}}"
+
 readonly HA_WS_URL="${HA_WS_URL:-ws://127.0.0.1:8123/api/websocket}"
 readonly SECRETS_YAML="${SECRETS_YAML:-/config/secrets.yaml}"
 
 if [[ ! -f "$SOURCE_YAML" ]]; then
     echo "error: source dashboard not found: $SOURCE_YAML" >&2
+    echo "       available dashboards:" >&2
+    ls -1 /config/dashboards/*.yaml 2>/dev/null | sed 's#.*/#         #; s#\.yaml$##' >&2 || true
     exit 1
 fi
 
@@ -96,6 +128,15 @@ WS_URL = os.environ["_IMPORT_WS_URL"]
 TOKEN = os.environ["_IMPORT_TOKEN"]
 TOKEN_SOURCE = os.environ["_IMPORT_TOKEN_SOURCE"]
 SECRETS_YAML = os.environ["_IMPORT_SECRETS_YAML"]
+
+# Derive any defaults left empty by the caller from the source basename, e.g.
+# /config/dashboards/home.yaml -> name "home" -> url_path "home-ui-edit",
+# title "Home (UI Edit)".
+name = os.path.splitext(os.path.basename(SOURCE_YAML))[0]
+pretty = name.replace("-", " ").replace("_", " ").title()
+URL_PATH = URL_PATH or f"{name}-ui-edit"
+TITLE = TITLE or f"{pretty} (UI Edit)"
+ICON = ICON or "mdi:view-dashboard-edit"
 
 
 with open(SOURCE_YAML) as fh:
