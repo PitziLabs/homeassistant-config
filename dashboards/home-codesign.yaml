@@ -39,22 +39,25 @@
 # block + a tile block) so they come out within ~150px of each other:
 #   c1 Weather            + Openings (doors/garage/motion)
 #   c2 Security/Presence  + Media (compact now-playing strips)
-#   c3 Upstairs climate   + Hallway/Outdoor lights
+#   c3 Upstairs climate   + Outdoor lights
 #   c4 Downstairs climate + Office lights
-#   c5 Home Status        + Family/Kitchen lights
-# YAML anchors (&climate_block, &mlight) are defined in whichever
-# section appears first in document order (c3) and reused by c4/c5.
+#   c5 Home Status        + Family/Kitchen/Hallway lights
+# YAML anchors (&climate_block, &mlight, &room_ctrl) are defined in
+# whichever section appears first in document order (c3) and reused by c4/c5.
 #
-# Design language (one tile family across the board): button-card,
-# dark tile base, big icon over name over value. State drives icon
-# color + background tint (intensity can scale with magnitude, e.g.
-# light brightness); a LEFT 4px accent = "active/identity" (alarm,
-# presence, a light that's on); a FULL 2px border = "alert" (door/
-# garage open, motion, leak wet, alarm triggered). Color semantics via
-# theme tokens: green = safe/home/closed, red = open/alert, amber =
-# lights/in-transit, blue = media/cool. Climate uses the native
-# thermostat dial; weather the clock-weather-card; Sonos the
+# Design language (one tile family across the board): button-card for
+# sensors/status tiles, mushroom-light-card for light tiles; dark tile
+# base, big icon over name over value. State drives icon color +
+# background tint (intensity scales with brightness); a LEFT 4px accent
+# = "active/identity" (alarm, presence, a light that's on); a FULL 2px
+# border = "alert" (door/garage open, motion, leak wet, alarm triggered).
+# Color semantics via theme tokens: green = safe/home/closed, red =
+# open/alert, amber = lights/in-transit, blue = media/cool. Climate uses
+# the native thermostat dial; weather the clock-weather-card; Sonos the
 # mini-media-player (compact: artwork + name, tap for full controls).
+# Light tiles use mushroom-light-card with show_brightness_control: true
+# (inline slider, tap = toggle, hold = more-info); styling via
+# card-mod-card in themes/home_polish.yaml.
 #
 # The Nest doorbell camera was removed 2026-06-13 — its cloud
 # integration does not serve a still snapshot, so camera_view:snapshot
@@ -679,8 +682,8 @@ views:
               state: [{ font-size: '16px' }, { font-weight: '600' }, { text-transform: 'uppercase' }, { justify-self: 'start' }]
               grid: [{ grid-template-areas: '"i n" "i s"' }, { grid-template-columns: 'min-content 1fr' }, { column-gap: '14px' }]
 
-      # ========= COLUMN 3: UPSTAIRS CLIMATE + HALL/OUTDOOR ======
-      # Defines &climate_block (reused by c4) and &mlight (reused c4/c5).
+      # ========= COLUMN 3: UPSTAIRS CLIMATE + OUTDOOR ==========
+      # Defines &climate_block (reused by c4) and &mlight / &room_ctrl (reused c4/c5).
       - type: grid
         cards:
           - type: heading
@@ -743,81 +746,29 @@ views:
                       {{ a | title if a else "Off" }}
 
           - type: heading
-            heading: Hallways & Outdoor
+            heading: Outdoor
             heading_style: title
-          - type: heading
-            heading: Hallways
-            heading_style: subtitle
+          - &room_ctrl
+            type: custom:mushroom-light-card
+            entity: light.outdoor
+            show_brightness_control: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
           - type: grid
             columns: 2
             square: false
             cards:
               - &mlight
-                type: custom:button-card
-                entity: light.downstairs_hallway
-                name: Down Hall
-                show_name: true
-                show_state: true
-                show_icon: true
-                size: 44%
-                tap_action: { action: toggle }
-                hold_action: { action: more-info }
-                state_display: |
-                  [[[
-                    if (entity.state === 'unavailable') return 'N/A';
-                    if (entity.state !== 'on') return 'OFF';
-                    const b = entity.attributes.brightness;
-                    return b ? Math.round(b / 2.55) + '%' : 'ON';
-                  ]]]
-                state:
-                  - value: 'on'
-                    icon: mdi:lightbulb
-                    color: 'var(--home-accent-lights)'
-                  - value: 'unavailable'
-                    icon: mdi:lightbulb-alert-outline
-                    color: 'var(--home-text-tertiary)'
-                  - operator: default
-                    icon: mdi:lightbulb-outline
-                    color: 'var(--home-text-tertiary)'
-                styles:
-                  card:
-                    - border-radius: '8px'
-                    - border: 'none'
-                    - padding: '14px 12px'
-                    - min-height: '150px'
-                    - background-color: |
-                        [[[
-                          if (entity.state !== 'on') return 'var(--home-bg-tile)';
-                          const b = entity.attributes.brightness || 255;
-                          return `rgba(227, 179, 65, ${(0.10 + 0.24 * (b / 255)).toFixed(2)})`;
-                        ]]]
-                    - border-left: |
-                        [[[ return entity.state === 'on'
-                             ? '4px solid var(--home-accent-lights)'
-                             : '4px solid transparent'; ]]]
-                  name:
-                    - font-size: '15px'
-                    - font-weight: '500'
-                    - color: 'var(--home-text-secondary)'
-                    - padding-top: '6px'
-                  state:
-                    - font-size: '17px'
-                    - font-weight: '600'
-                    - letter-spacing: '0.5px'
-                    - padding-top: '2px'
-              - <<: *mlight
-                entity: light.upstairs_hallway_light
-                name: Up Hall
-          - type: heading
-            heading: Outdoor
-            heading_style: subtitle
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - <<: *mlight
+                type: custom:mushroom-light-card
                 entity: light.front_door
                 name: Front
+                show_brightness_control: true
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
               - <<: *mlight
                 entity: light.front_lantern
                 name: Lantern
@@ -895,6 +846,8 @@ views:
           - type: heading
             heading: Office
             heading_style: title
+          - <<: *room_ctrl
+            entity: light.office_lights
           - type: grid
             columns: 2
             square: false
@@ -1063,10 +1016,18 @@ views:
           - type: heading
             heading: Family Room
             heading_style: subtitle
+          - <<: *room_ctrl
+            entity: light.family_room
           - type: grid
             columns: 2
             square: false
             cards:
+              - <<: *mlight
+                entity: light.downstairs_hallway
+                name: Down Hall
+              - <<: *mlight
+                entity: light.upstairs_hallway_light
+                name: Up Hall
               - <<: *mlight
                 entity: light.family_room_2
                 name: Family
@@ -1076,6 +1037,8 @@ views:
           - type: heading
             heading: Kitchen
             heading_style: subtitle
+          - <<: *room_ctrl
+            entity: light.kitchen
           - type: grid
             columns: 3
             square: false

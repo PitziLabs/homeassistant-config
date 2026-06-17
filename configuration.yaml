@@ -110,6 +110,36 @@ light:
       - light.family_room_2
       - light.floor_lamp_composite
 
+  # Per-room groups for whole-room on/off + dimmer controls on the home dashboard.
+  # Hallway lights are part of the Family Room grouping (#442).
+  - platform: group
+    name: Family Room
+    unique_id: family_room
+    entities:
+      - light.family_room_2
+      - light.floor_lamp_composite
+      - light.downstairs_hallway
+      - light.upstairs_hallway_light
+
+  - platform: group
+    name: Kitchen
+    unique_id: kitchen
+    entities:
+      - light.kitchen_main
+      - light.kitchen_island
+      - light.kitchen_table
+
+  - platform: group
+    name: Office Lights
+    unique_id: office_lights
+    entities:
+      - light.bookcase_lamp
+      - light.corner_lamp
+      - light.door_lamp
+      - light.table_lamp
+      - light.desk_lamp_2
+      - light.desk_lamp_2_2
+
 # Template sensors for Sonos group-aware dashboard
 template:
   - binary_sensor:
@@ -179,7 +209,9 @@ template:
         unique_id: family_room_lights_on
         state: >
           {{ is_state('light.family_room_2', 'on')
-             or is_state('light.floor_lamp_composite', 'on') }}
+             or is_state('light.floor_lamp_composite', 'on')
+             or is_state('light.downstairs_hallway', 'on')
+             or is_state('light.upstairs_hallway_light', 'on') }}
 
       - name: "Entry Lights On"
         unique_id: entry_lights_on
@@ -260,7 +292,8 @@ template:
       - name: "Lights On Family Room Count"
         unique_id: lights_on_family_room_count
         state: >
-          {{ ['light.family_room_2','light.floor_lamp_composite']
+          {{ ['light.family_room_2','light.floor_lamp_composite',
+              'light.downstairs_hallway','light.upstairs_hallway_light']
              | select('is_state','on') | list | count }}
         icon: mdi:lightbulb-group
 

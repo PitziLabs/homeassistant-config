@@ -57,6 +57,24 @@ Home Codesign:
   state-off-color: "#6b7682"
 
   card-mod-theme: Home Codesign
+  # Same dark-tile mushroom-light-card rule as Home Polish so the codesign
+  # sandbox reflects the same visual language as production.
+  card-mod-card: |
+    ha-card {
+      {% if config.type == "custom:mushroom-light-card" %}
+        background: var(--home-bg-tile) !important;
+        border-radius: 8px !important;
+        border: none !important;
+        {% if is_state(config.entity, 'on') %}
+          {% set b = (state_attr(config.entity, 'brightness') | int(128)) %}
+          background-color: rgba(227, 179, 65, {{ (0.10 + 0.24 * (b / 255)) | round(2) }}) !important;
+          border-left: 4px solid var(--home-accent-lights) !important;
+        {% else %}
+          border-left: 4px solid transparent !important;
+        {% endif %}
+        transition: background-color 0.4s ease, border-left 0.2s ease;
+      {% endif %}
+    }
   card-mod-root: |
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
     /* Force home grid background through layout-card (as Home Polish does) */
