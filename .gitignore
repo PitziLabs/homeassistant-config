@@ -58,8 +58,10 @@ __pycache__/
 *.pyc
 
 # Display frame grabs — throwaway snapshots from pve2's display
-# (home-snapshot, home-preview, home-serve, scrot dumps, comparisons)
+# (home-snapshot, home-preview, home-serve, scrot dumps, comparisons;
+# kiosk-* is the pre-#435 legacy prefix for the same artifacts)
 /home-preview-*.png
 /home-snapshot-*.png
+/kiosk-*.png
 /ha-login-*.png
 /screen-time-render.png
