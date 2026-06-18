@@ -552,6 +552,14 @@
     "hidden": false
   },
   {
+    "entity_id": "binary_sensor.claude_runner_3_status",
+    "friendly_name": "Status",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.claude_runner_status",
     "friendly_name": "Status",
     "area_id": null,
@@ -2148,6 +2156,38 @@
     "friendly_name": "Stop",
     "area_id": null,
     "device_id": "b7fd6c1a8ca9b2935092607d7b79125f",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.claude_runner_3_create_snapshot",
+    "friendly_name": "Create snapshot",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.claude_runner_3_restart",
+    "friendly_name": "Restart",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.claude_runner_3_start",
+    "friendly_name": "Start",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.claude_runner_3_stop",
+    "friendly_name": "Stop",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
     "platform": "proxmoxve",
     "hidden": false
   },
@@ -5060,6 +5100,94 @@
     "friendly_name": "Uptime",
     "area_id": null,
     "device_id": "b7fd6c1a8ca9b2935092607d7b79125f",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_cpu_usage",
+    "friendly_name": "CPU usage",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_disk_usage",
+    "friendly_name": "Disk usage",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_max_cpu",
+    "friendly_name": "Max CPU",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_max_disk_usage",
+    "friendly_name": "Max disk usage",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_max_memory_usage",
+    "friendly_name": "Max memory usage",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_memory_usage",
+    "friendly_name": "Memory usage",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_memory_usage_percentage",
+    "friendly_name": "Memory usage percentage",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_network_input",
+    "friendly_name": "Network input",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_network_output",
+    "friendly_name": "Network output",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_status",
+    "friendly_name": "Status",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.claude_runner_3_uptime",
+    "friendly_name": "Uptime",
+    "area_id": null,
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
     "platform": "proxmoxve",
     "hidden": false
   },

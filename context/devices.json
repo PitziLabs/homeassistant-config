@@ -1410,6 +1410,16 @@
     ]
   },
   {
+    "device_id": "f44e2299f291337ad3bc005458b30e12",
+    "name": "claude-runner-3",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
     "device_id": "c853c4e98d5f7aa5ab06776a212be60c",
     "name": "downstairs hallway",
     "manufacturer": "TP-Link",
