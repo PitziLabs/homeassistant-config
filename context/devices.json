@@ -1600,6 +1600,16 @@
     ]
   },
   {
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "name": "n8n",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
     "device_id": "0ce09a9250569223715a200bee90df6f",
     "name": "pve",
     "manufacturer": null,
