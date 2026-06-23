@@ -984,6 +984,14 @@
     "hidden": false
   },
   {
+    "entity_id": "binary_sensor.n8n_status",
+    "friendly_name": "Status",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
     "entity_id": "binary_sensor.office_lights_on",
     "friendly_name": "Office Lights On",
     "area_id": null,
@@ -2653,6 +2661,38 @@
     "area_id": null,
     "device_id": "03ebc1371a65dd35fbc10846dd9811ce",
     "platform": "zha",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.n8n_create_snapshot",
+    "friendly_name": "Create snapshot",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.n8n_restart",
+    "friendly_name": "Restart",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.n8n_start",
+    "friendly_name": "Start",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "button.n8n_stop",
+    "friendly_name": "Stop",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
     "hidden": false
   },
   {
@@ -6405,6 +6445,94 @@
     "area_id": null,
     "device_id": "7e3a44d9602c6f285bb4d45a1903b76f",
     "platform": "esphome",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_cpu_usage",
+    "friendly_name": "CPU usage",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_disk_usage",
+    "friendly_name": "Disk usage",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_max_cpu",
+    "friendly_name": "Max CPU",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_max_disk_usage",
+    "friendly_name": "Max disk usage",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_max_memory_usage",
+    "friendly_name": "Max memory usage",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_memory_usage",
+    "friendly_name": "Memory usage",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_memory_usage_percentage",
+    "friendly_name": "Memory usage percentage",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_network_input",
+    "friendly_name": "Network input",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_network_output",
+    "friendly_name": "Network output",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_status",
+    "friendly_name": "Status",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
+    "hidden": false
+  },
+  {
+    "entity_id": "sensor.n8n_uptime",
+    "friendly_name": "Uptime",
+    "area_id": null,
+    "device_id": "4b155327efb08a33d19073ae9d014e5a",
+    "platform": "proxmoxve",
     "hidden": false
   },
   {
