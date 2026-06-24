@@ -1610,6 +1610,16 @@
     ]
   },
   {
+    "device_id": "8caa174ca3ce6523e006a6a00457d8a0",
+    "name": "pub",
+    "manufacturer": null,
+    "model": "Container",
+    "area_id": null,
+    "integrations": [
+      "proxmoxve"
+    ]
+  },
+  {
     "device_id": "0ce09a9250569223715a200bee90df6f",
     "name": "pve",
     "manufacturer": null,
