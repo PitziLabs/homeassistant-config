@@ -110,16 +110,6 @@
     ]
   },
   {
-    "device_id": "5dae9e89715f5e6d302f293c915e535f",
-    "name": "Chris-Phone",
-    "manufacturer": "Firewalla",
-    "model": "Tracked client",
-    "area_id": null,
-    "integrations": [
-      "firewalla_local"
-    ]
-  },
-  {
     "device_id": "9f4ebbb742445b128f4f08060d64ae98",
     "name": "Claude AI Task",
     "manufacturer": "Anthropic",
@@ -137,6 +127,16 @@
     "area_id": "office",
     "integrations": [
       "anthropic"
+    ]
+  },
+  {
+    "device_id": "5dae9e89715f5e6d302f293c915e535f",
+    "name": "Client d6:a8:20:92:02:31",
+    "manufacturer": "Firewalla",
+    "model": "Tracked client",
+    "area_id": null,
+    "integrations": [
+      "firewalla_local"
     ]
   },
   {
