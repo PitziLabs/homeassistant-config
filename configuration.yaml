@@ -65,10 +65,7 @@ lovelace:
       icon: mdi:server-network
       show_in_sidebar: true
     # Co-design sandbox copy — same content as dashboard-home, used as
-    # an iteration target so changes don't disturb the household monitor
-    # (which still points at /dashboard-home/home). Preview via
-    # home-host/home-preview dashboards/home-codesign.yaml \
-    #   --url http://homeassistant.local:8123/dashboard-home-codesign/home
+    # an iteration target so changes don't disturb the live dashboard.
     dashboard-home-codesign:
       mode: yaml
       title: Home (Co-design)

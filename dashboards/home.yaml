@@ -1,7 +1,6 @@
 # =================================================================
 # HOME DASHBOARD — native `sections` layout
-# Primary home-state display on the pve2
-# 2560x1440 wall monitor, served at /dashboard-home/home.
+# Served at /dashboard-home/home.
 #
 # Layout philosophy: NO hard pixel-fit. Uses HA's native `sections`
 # view — cards size to their content. This replaced the custom:grid-

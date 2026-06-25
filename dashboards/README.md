@@ -12,10 +12,6 @@ Mobile-first control interface. Design principle: show only what's active.
 - **Alarm panel** — always visible at top, with a 3×2 sensor grid showing all door/motion contacts
 - **Weather forecast** — daily summary from Met.no
 
-## `home.yaml` — Home view (`/dashboard-home/home`)
-
-Primary display on the pve2 2560x1440 wall monitor ("the presence monitor"), driven by mouse + keyboard.
-
 - **Native `sections` view — no hard layout** — the view is `type: sections` (`max_columns: 3`). Cards size to their content, sections reflow responsively, and the page scrolls if content exceeds the screen. There is **no** `custom:grid-layout`, no `custom:mod-card` height-cascade wrapper, and no fixed-pixel "fit 2560x1440 without a scrollbar" math. The previous pixel-fit grid-layout design was retired 2026-06-11 — the size-fit requirement was deliberately abandoned.
 - **Typed cards per section** — every tile is a typed Lovelace card (`button-card`, `mushroom-light-card`, `mushroom-chips-card`, `mini-media-player`, `clock-weather-card`, `thermostat` dial). Multi-tile rows use nested `type: grid` cards.
 - **State-driven styling** — colors live in per-card `state` blocks (`button-card`) + theme tokens, not Jinja-templated HTML. The alarm hero pulses on triggered.
@@ -36,7 +32,7 @@ Primary display on the pve2 2560x1440 wall monitor ("the presence monitor"), dri
 
 ### kiosk-mode (third-party HACS card)
 
-The `kiosk_mode` block at the top of `home.yaml` hides header and sidebar **only for the `Kiosk` non-admin user** (used historically on the wall display). The desktop session logs in as the normal admin user, so the sidebar/header remain available for navigation between dashboards.
+The `kiosk_mode` block at the top of `home.yaml` hides header and sidebar **only for the `Kiosk` non-admin user**. The pve2 wall display that used the Kiosk account was retired 2026-06-23; the block remains in place so it takes effect if a kiosk user is ever re-added. Normal admin sessions see the sidebar and header as usual.
 
 ## `homelab-status.yaml` — Homelab Status (mental-map fleet view)
 
@@ -74,7 +70,7 @@ Add a drill-down by dropping a new file under `details/` with a unique `path:`, 
 
 ### Iteration workflow
 
-The whole structure is designed for live iteration via `home-host/home-preview` — see `home-host/README.md § "Design session protocol for non-home dashboards"` for the pause-gitops / redirect-pve2 / restore-at-end protocol. Key flag: pass `--dashboard-root dashboards/homelab-status.yaml` when iterating any `homelab-views/**` file so HA's yaml-mode cache (keyed off the manifest's mtime, not the !include child's) gets busted on each push.
+Edit any `homelab-views/**` file and push. The GitOps loop deploys within 5 minutes. Key flag to know: HA's yaml-mode cache is keyed off the manifest's mtime (not the `!include` child's), so changing only a child view won't bust the cache. Touch `homelab-status.yaml` (or use `scripts/force-sync.sh`) to force a reload.
 
 ## HACS Dependencies
 
@@ -86,5 +82,5 @@ The whole structure is designed for live iteration via `home-host/home-preview` 
 | [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS (`card-mod-root`) + per-card `card_mod` (e.g. the home media-tile group-dimming) |
 | [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, heater, TVs row in home view |
 | [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | No longer used by the home dashboard (native `thermostat` dial since #354); retained as a HACS dep |
-| [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Sidebar/header hiding for wall display |
+| [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Sidebar/header hiding for the Kiosk non-admin user |
 | [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Combined clock + 4-day forecast on home dashboard top strip |

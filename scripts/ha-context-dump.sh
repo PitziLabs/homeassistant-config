@@ -10,14 +10,6 @@ readonly LOG_FILE="/config/ha-context-dump.log"
 readonly LOG_MAX_BYTES=1048576
 readonly STORAGE="/config/.storage"
 
-# Display live-frame snapshot — fetched from snapshot-server on pve2. Hostname
-# first, IP as fallback so the dump survives a transient mDNS hiccup. If both
-# fail, the previous context/home-latest.png (if any) is retained — the
-# rest of the dump continues normally.
-readonly DISPLAY_SNAPSHOT_URL_HOST="http://pve2.local:9999/"
-readonly DISPLAY_SNAPSHOT_URL_IP="http://192.168.139.7:9999/"
-readonly DISPLAY_SNAPSHOT_TIMEOUT=8
-
 log() {
   local level="$1"
   shift
@@ -154,48 +146,6 @@ build_dashboards_storage() {
            '{dashboards: $dashboards, configs: $configs[0]}'
 }
 
-# Fetch a live PNG snapshot of the pve2 display and write it to
-# context/home-latest.png. Best-effort: tries hostname then IP with a
-# short timeout, retains the previous file on failure, never aborts the
-# dump. Writes to a tempfile and atomically moves on success so a partial
-# download can't replace a good prior snapshot.
-fetch_home_snapshot() {
-  local out="${CONTEXT_DIR}/home-latest.png"
-  local tmp="${out}.tmp.$$"
-  local url
-  for url in "$DISPLAY_SNAPSHOT_URL_HOST" "$DISPLAY_SNAPSHOT_URL_IP"; do
-    if curl --fail --silent --show-error \
-            --max-time "$DISPLAY_SNAPSHOT_TIMEOUT" \
-            --output "$tmp" \
-            "$url" 2>>"$LOG_FILE"; then
-      # PNG magic check: first 4 bytes must be 89 50 4E 47. Use head+od
-      # (POSIX/busybox-safe) instead of xxd — on HAOS Core, xxd is a busybox
-      # symlink that does not support the -p flag and exits with rc 126.
-      local valid=false
-      local header
-      header=$(head -c 4 "$tmp" 2>/dev/null | od -An -tx1 | tr -d ' \n') \
-        || header=""
-      if [[ "$header" == "89504e47" ]]; then
-        valid=true
-      fi
-      if [[ "$valid" == true ]]; then
-        mv "$tmp" "$out"
-        log INFO "Display snapshot updated from $url"
-        return 0
-      fi
-      log WARN "Display snapshot from $url did not look like PNG; discarding"
-      rm -f "$tmp"
-    fi
-  done
-  rm -f "$tmp"
-  if [[ -f "$out" ]]; then
-    log WARN "Display snapshot fetch failed; retaining previous home-latest.png"
-  else
-    log WARN "Display snapshot fetch failed; no previous file to retain"
-  fi
-  return 0
-}
-
 main() {
   rotate_log
   log INFO "Starting HA context dump"
@@ -269,8 +219,6 @@ main() {
   # in .storage/ — they remain in dashboards/*.yaml and are absent here.
   log INFO "Building dashboards-storage.json"
   build_dashboards_storage "$STORAGE" > "${CONTEXT_DIR}/dashboards-storage.json"
-
-  fetch_home_snapshot || true
 
   # Check for diff — most common case is no change
   if [[ -z "$(git -C "$WORKTREE" status --porcelain context/)" ]]; then

@@ -10,8 +10,7 @@ cards:
         primary: pve2
         secondary: >
           {% if is_state('binary_sensor.pve2_status_2', 'on') %}
-            NUC · i3-6100U · 8 GiB · 112 GB SATA SSD ·
-            quorum + household home dashboard display (Chromium @ 2560x1440, HDMI-2)
+            NUC · i3-6100U · 8 GiB · 112 GB SATA SSD · quorum node (headless)
           {% else %}DOWN{% endif %}
         icon: mdi:server
         icon_color: >
@@ -32,7 +31,7 @@ cards:
             severity: { green: 0, yellow: 50, red: 80 }
           - type: gauge
             entity: sensor.pve2_memory_usage_percentage_2
-            name: Memory (home dashboard leak watch)
+            name: Memory
             min: 0
             max: 100
             needle: true
@@ -45,45 +44,25 @@ cards:
             needle: true
             severity: { green: 0, yellow: 60, red: 80 }
 
-      # Display-specific note + uptime
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: markdown
-            content: >
-              **Display OOM watch:** Chromium renderer leaks slowly,
-              hits a V8 OOM after ~7h (issue #308). Pre-OOM peak
-              observed at ~65% host memory. Yellow at 50%, red at 70%.
-          - type: custom:mushroom-template-card
-            primary: Uptime
-            secondary: >
-              {% set s = states('sensor.pve2_uptime_2') | int(-1) %}
-              {% if s < 0 %}—
-              {% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h
-              {% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m
-              {% else %}{{ (s // 60) }}m{% endif %}
-            icon: mdi:clock-outline
-            entity: sensor.pve2_uptime_2
-            tap_action: { action: more-info }
+      - type: custom:mushroom-template-card
+        primary: Uptime
+        secondary: >
+          {% set s = states('sensor.pve2_uptime_2') | int(-1) %}
+          {% if s < 0 %}—
+          {% elif s >= 86400 %}{{ (s // 86400) }}d {{ ((s % 86400) // 3600) }}h
+          {% elif s >= 3600 %}{{ (s // 3600) }}h {{ ((s % 3600) // 60) }}m
+          {% else %}{{ (s // 60) }}m{% endif %}
+        icon: mdi:clock-outline
+        entity: sensor.pve2_uptime_2
+        tap_action: { action: more-info }
 
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: entities
-            title: Backup (guests-weekly job)
-            show_header_toggle: false
-            entities:
-              - entity: binary_sensor.pve2_backup_status_2
-                name: Last backup status
-              - entity: sensor.pve2_last_backup_2
-                name: Last backup
-              - entity: sensor.pve2_backup_duration_2
-                name: Duration
-          - type: markdown
-            content: >
-              **Display artifacts:** `dashboard-display.{sh,service}` from
-              the homelab-observability repo, deployed by the gitops
-              loop at `/usr/local/bin/` and `/etc/systemd/system/`.
-              See `home-host/README.md`.
+      - type: entities
+        title: Backup (guests-weekly job)
+        show_header_toggle: false
+        entities:
+          - entity: binary_sensor.pve2_backup_status_2
+            name: Last backup status
+          - entity: sensor.pve2_last_backup_2
+            name: Last backup
+          - entity: sensor.pve2_backup_duration_2
+            name: Duration
