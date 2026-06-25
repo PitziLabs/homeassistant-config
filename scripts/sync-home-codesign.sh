@@ -50,10 +50,9 @@ generate() {
 # this file drifts from production.
 #
 # Purpose: preview home changes at /dashboard-home-codesign/home
-# without touching the household monitor (/dashboard-home/home).
-# Preview with:
-#   home-host/home-preview dashboards/home-codesign.yaml \
-#     --url http://homeassistant.local:8123/dashboard-home-codesign/home
+# without touching the live dashboard (/dashboard-home/home).
+# Open http://homeassistant.local:8123/dashboard-home-codesign/home
+# in the HA web UI or companion app to preview.
 #
 # Only the first view's tab title/icon and theme differ from production;
 # all cards, templates, and entity references are identical.

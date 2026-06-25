@@ -29,7 +29,6 @@ to them when implementing:
 | `dashboards/README.md` | All three Lovelace dashboards (Home, Home Co-design, Homelab Status) |
 | `themes/README.md` | Noctis Home theme, home_polish tokens |
 | `scripts/README.md` | gitops-sync.sh, ha-context-dump.sh, Script auth conventions |
-| `home-host/README.md` | `home-preview` / `home-snapshot` — workstation tools for iterating the HA home dashboard (**live preview loop + design session protocol**). Display-host plumbing moved to `office-presence/host/`. |
 | `context/README.md` | What each `context/*.json` file is |
 | `docs/` | Long-form design notes, migration write-ups |
 
@@ -190,10 +189,9 @@ There is no physical screen to render to anymore.
   still deployed to HAOS by the **HA-side** gitops loop
   (`scripts/gitops-sync.sh`) and still viewable in the HA web UI / companion
   app. It just no longer feeds a wall monitor.
-- **`home-host/` (`home-preview`, `home-snapshot`) is dead code.** Every path
-  in it SSHes to pve2's X `:0` session (`xdotool` F5, `scrot` on `DISPLAY=:0`,
-  fetch from `pve2.local:9999`) — all gone. Don't run it. Removing the
-  directory and its README is a pending follow-up.
+- **`home-host/` (`home-preview`, `home-snapshot`) has been removed** (every
+  path in it SSHed to pve2's X `:0` session — `xdotool` F5, `scrot` on
+  `DISPLAY=:0`, fetch from `pve2.local:9999` — all gone).
 - **To iterate the home dashboard now**, render the dashboard URL headlessly
   (Playwright/Chromium against `http://homeassistant.local:8123/…`) or just
   open it in the HA web UI — the old "capture the live frame the wall monitor
