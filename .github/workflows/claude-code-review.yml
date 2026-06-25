@@ -38,5 +38,6 @@ jobs:
            log-rotation / reinstall-only-on-drift invariants.
         4. **Secrets** — nothing sensitive committed; `!secret` references
            intact, no tokens in YAML or logs.
-        5. **Prompt-Origin convention** — PRs carry the `Prompt-Origin`
-           trailer and the `## Origin` section per this repo's CLAUDE.md.
+        5. **PR summary voice** — the PR body carries a neutral, objective
+           summary of the who/what/why (no `## Origin` section, no
+           `Prompt-Origin` trailer) per this repo's CLAUDE.md.
