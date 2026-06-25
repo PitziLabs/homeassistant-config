@@ -244,19 +244,18 @@ Use bug/dashboard/automation/etc. labels as appropriate. A future
 session will pick up the issue, do the actual diagnosis, and open the
 PR that closes it. Origin: home dashboard OOM observation 2026-05-31, issue #308.
 
-### `## Origin` section + `Prompt-Origin:` trailer — now fleet-wide
+### PR summary voice — fleet-wide
 
-This convention originated in this repo and is **now a fleet-wide rule**:
-every PR opens with an `## Origin` section and every commit carries a matching
-`Prompt-Origin:` trailer (a third-person past-tense narrative of what was
-asked for, requester named, no verbatim prompt dump). The canonical format
-and full guidance live in `shared-workflows/CLAUDE.md` → "Fleet PR-workflow
-(canonical source)" — follow it; this file no longer restates the details.
+The fleet convention is a **neutral, objective, action-oriented PR summary**
+that carries the who/what/why woven in — not a separate `## Origin` section,
+and no `Prompt-Origin:` commit trailer. The canonical format and full guidance
+live in `shared-workflows/CLAUDE.md` → "Fleet PR-workflow (canonical source)" —
+follow it; this file no longer restates the details.
 
 The one HA-specific emphasis worth keeping: because this repo dispatches
-changes **without issues** (see above), the `## Origin` section is the *only*
-durable record of intent here — so it carries more weight than in repos where
-a linked issue also captures the ask. Don't skip it.
+changes **without issues** (see above), the PR summary is the *only* durable
+record of intent here — so the who/what/why carries more weight than in repos
+where a linked issue also captures the ask. Don't skip it.
 
 ---
 
