@@ -14,9 +14,9 @@ excluded from git).
 When Claude initializes in this directory, open the first response with a
 brief self-introduction as **HA Config Claude** — curator of the HAOS YAML
 source-of-truth (automations, packages, dashboards, dashboard YAML, ESPHome,
-scripts) and the GitOps pipeline that deploys it. The pve2 host that runs
-the household display and the HAOS VM itself are Home Claude's turf — see
-`~/CLAUDE.md`. One sentence is plenty; don't make a meal of it.
+scripts) and the GitOps pipeline that deploys it. The HAOS VM itself is
+Home Claude's turf — see `~/CLAUDE.md`. One sentence is plenty; don't make a
+meal of it.
 
 Subdirectory READMEs are the canonical reference for their domain — defer
 to them when implementing:
@@ -174,71 +174,36 @@ The complementary `ha-context-dump.sh` (driven by
 `context/` snapshot → drift PR — see `scripts/README.md` and
 *HA Runtime State Context* below.
 
-### Display host on pve2 — gitops moved to `office-presence`
+## Home dashboard display & live-preview loop — RETIRED 2026-06-23
 
-The Chromium home-dashboard display host (the NUC driving the household 2560x1440
-monitor) used to be deployed by a second gitops loop sourced from this repo's
-`home-host/`. **That plumbing moved to
-[`office-presence/host/`](https://github.com/PitziLabs/office-presence)** —
-`dashboard-home.{sh,service}`, `display-show`, `snapshot-server`, and the
-`dashboard-home-gitops` loop now live there, and pve2's loop pulls
-`office-presence` (private → read-only deploy key). The workstation CLI that
-drives the screen is `surface`, in that repo.
+pve2's Chromium wall-display and everything that drove it were **torn down on
+2026-06-23** when Chris abandoned the household wall monitor (see `~/CLAUDE.md`
+→ *pve2 display host — RETIRED*). pve2 is now a headless quorum node — no
+X/Chromium, no `snapshot-server` (`pve2.local:9999`), no `dashboard-home-gitops`
+loop — and the `office-presence` repo that held the display plumbing
+(`display-show`, `dashboard-home.{sh,service}`, the `surface` CLI) is archived.
+There is no physical screen to render to anymore.
 
-What stays in this repo:
+**What this means here:**
 
-- **`dashboards/home.yaml`** — the HA Lovelace home dashboard the display
-  renders by default — is still deployed by the **HA-side** loop above
-  (`scripts/gitops-sync.sh`), not the pve2 display-host loop.
-- **`home-host/home-preview` / `home-snapshot`** — workstation tools for
-  iterating that dashboard. See `home-host/README.md`.
+- **`dashboards/home.yaml` is unaffected.** The HA Lovelace home dashboard is
+  still deployed to HAOS by the **HA-side** gitops loop
+  (`scripts/gitops-sync.sh`) and still viewable in the HA web UI / companion
+  app. It just no longer feeds a wall monitor.
+- **`home-host/` (`home-preview`, `home-snapshot`) is dead code.** Every path
+  in it SSHes to pve2's X `:0` session (`xdotool` F5, `scrot` on `DISPLAY=:0`,
+  fetch from `pve2.local:9999`) — all gone. Don't run it. Removing the
+  directory and its README is a pending follow-up.
+- **To iterate the home dashboard now**, render the dashboard URL headlessly
+  (Playwright/Chromium against `http://homeassistant.local:8123/…`) or just
+  open it in the HA web UI — the old "capture the live frame the wall monitor
+  is showing" rationale is moot without a monitor. *Interim guidance: confirm
+  the preferred preview path with Chris before relying on it.*
 
----
-
-## Live Design Loop (home dashboard)
-
-For non-trivial home dashboard work, prefer the **live preview loop**
-over edit→commit→wait-for-gitops:
-
-1. Edit `dashboards/home.yaml`.
-2. Run `home-host/home-preview --open`. ~4–8s end-to-end: pushes to
-   HA, F5s Chromium, captures `./home-preview-<UTC>.png`.
-3. Check the PNG against the **snapshot rubric** in
-   `home-host/README.md § Design session protocol` (target rendered,
-   adjacent cells unchanged, layout intact, state encoding correct).
-4. Iterate or commit per the **stop conditions** in the same section.
-5. Commit at logical checkpoints (PR + auto-merge, one coherent
-   change per PR).
-
-**Sticky constraints:**
-
-- The push goes via `ssh -p 22 root@homeassistant.local 'cat > …'`
-  (HAOS-host SSH, NOT scp — HAOS port 22 has no sftp-server).
-- The HA-side gitops-sync resets `/homeassistant/dashboards/` to
-  `origin/main` every 5 min, so each preview survives only the
-  current poll window. Commit before it closes if you want the
-  change to persist.
-
-**Live-state caveat.** The captured PNG reflects current entity values
-(alarm color, current Sonos art, `Unavailable` labels on cards whose
-entities are genuinely down right now). If a frame surprises you, look
-at the entity, not the dashboard.
-
-**When to skip the loop:**
-
-- Trivial copy edits — just commit.
-- Cards that reference entities you haven't confirmed exist — verify
-  via `mcp__Local-HA__ha_search_entities` (live, current-to-the-second)
-  first. **Don't refresh `context/entities.json` for this** — the
-  snapshot is for grep, not for validation, and refreshing it takes
-  a full PR cycle.
-- Theme or `extra_module_url` JS resource changes — those need
-  `lovelace.reload_resources`, which requires the optional HA token.
-
-Full protocol (decision table, rubric, stop conditions,
-troubleshooting, non-home-dashboard variant) + setup (HAOS SSH key,
-xdotool on pve2, optional HA token) in `home-host/README.md`
-§ "Live preview iteration" and § "Design session protocol".
+The entity-validation habit the old loop enforced still stands: before adding a
+card that references an entity, confirm it exists via
+`mcp__Local-HA__ha_search_entities` (live) rather than trusting
+`context/entities.json` (a grep snapshot, not a validator).
 
 ---
 
