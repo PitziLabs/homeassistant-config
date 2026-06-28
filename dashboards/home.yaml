@@ -558,7 +558,7 @@ views:
                     styles:
                       card: [{ background-color: 'var(--home-bg-tile)' }]
                       label: [{ color: 'var(--home-text-tertiary)' }]
-                  - value: 'unavailable'
+                  - operator: default
                     icon: mdi:account-alert-outline
                     color: 'var(--home-accent-armed)'
                     label: Unknown
@@ -609,7 +609,7 @@ views:
                     styles:
                       card: [{ background-color: 'var(--home-bg-tile)' }]
                       label: [{ color: 'var(--home-text-tertiary)' }]
-                  - value: 'unavailable'
+                  - operator: default
                     icon: mdi:account-alert-outline
                     color: 'var(--home-accent-armed)'
                     label: Unknown
