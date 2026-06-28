@@ -457,12 +457,12 @@ views:
               action: more-info
               entity: switch.meeting_button_in_meeting
             triggers_update:
-              - device_tracker.rachel_s_s23_presence
+              - person.rachel_morse
               - switch.meeting_button_in_meeting
             custom_fields:
               duration: >-
                 [[[
-                  if (states['device_tracker.rachel_s_s23_presence']?.state === 'not_home') return '';
+                  if (states['person.rachel_morse']?.state === 'not_home') return '';
                   const s = states['switch.meeting_button_in_meeting']?.state;
                   if (s !== 'on' && s !== 'off') return '';
                   const lc = new Date(states['switch.meeting_button_in_meeting']?.last_changed);
@@ -475,7 +475,7 @@ views:
             state:
               - operator: template
                 value: |
-                  [[[ return states['device_tracker.rachel_s_s23_presence'].state === 'not_home'; ]]]
+                  [[[ return states['person.rachel_morse'].state === 'not_home'; ]]]
                 icon: mdi:account-off-outline
                 color: 'var(--home-text-tertiary)'
                 label: Not Home
@@ -547,7 +547,7 @@ views:
             cards:
               - &presence_card
                 type: custom:button-card
-                entity: device_tracker.chris_phone_presence
+                entity: person.christopher_pitzi
                 name: Chris
                 show_name: true
                 show_state: false
@@ -572,6 +572,15 @@ views:
                     styles:
                       card: [{ background-color: 'var(--home-bg-tile)' }]
                       label: [{ color: 'var(--home-text-tertiary)' }]
+                  - value: 'unavailable'
+                    icon: mdi:account-alert-outline
+                    color: 'var(--home-accent-armed)'
+                    label: Unknown
+                    styles:
+                      card:
+                        - background-color: 'rgba(227, 179, 65, 0.10)'
+                        - border-left: '4px solid var(--home-accent-armed)'
+                      label: [{ color: 'var(--home-accent-armed)' }]
                 styles:
                   card:
                     - border-radius: '10px'
@@ -595,7 +604,7 @@ views:
                     - column-gap: '16px'
                     - align-items: 'center'
               - <<: *presence_card
-                entity: device_tracker.rachel_s_s23_presence
+                entity: person.rachel_morse
                 name: Rachel
                 state:
                   - value: 'home'
@@ -614,6 +623,15 @@ views:
                     styles:
                       card: [{ background-color: 'var(--home-bg-tile)' }]
                       label: [{ color: 'var(--home-text-tertiary)' }]
+                  - value: 'unavailable'
+                    icon: mdi:account-alert-outline
+                    color: 'var(--home-accent-armed)'
+                    label: Unknown
+                    styles:
+                      card:
+                        - background-color: 'rgba(227, 179, 65, 0.10)'
+                        - border-left: '4px solid var(--home-accent-armed)'
+                      label: [{ color: 'var(--home-accent-armed)' }]
 
           - type: heading
             heading: Media
