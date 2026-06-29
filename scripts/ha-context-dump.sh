@@ -3,7 +3,7 @@ set -euo pipefail
 
 readonly WORKTREE="/config/.context-mirror"
 readonly CONTEXT_DIR="${WORKTREE}/context"
-readonly REPO_OWNER="PitziLabs"
+readonly REPO_OWNER="lentago"
 readonly REPO_NAME="homeassistant-config"
 readonly SECRETS_FILE="/config/secrets.yaml"
 readonly LOG_FILE="/config/ha-context-dump.log"

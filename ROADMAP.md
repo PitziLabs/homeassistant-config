@@ -9,7 +9,7 @@ work actually starts.
 - **Firewalla HA integration** — Toggle kids' internet rules, show active
   rulesets, time remaining on scheduled blocks.
 - **`firewalla-network-guardian`** — Anomaly detection module (planned
-  PitziLabs repo).
+  Lentago Labs repo).
 - **Roku integration** — Two Rokus unreachable; possible Firewalla Smart
   Protect interference. Diagnose, then decide whether to whitelist or drop.
 
