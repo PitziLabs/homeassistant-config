@@ -1,4 +1,4 @@
-# CLAUDE.md — Home Assistant Configuration (PitziLabs/homeassistant-config)
+# CLAUDE.md — Home Assistant Configuration (lentago/homeassistant-config)
 
 Git-controlled Home Assistant OS deployment on a Proxmox VM. YAML-driven —
 the HA UI is used only for integration setup (which HA stores in `.storage/`,
@@ -6,7 +6,7 @@ excluded from git).
 
 - **Config dir:** `/homeassistant/` on the VM, accessible as `/config/` from
   the SSH add-on.
-- **Owner:** Chris Pitzi (GitHub: cpitzi, org: PitziLabs).
+- **Owner:** Chris Pitzi (GitHub: cpitzi, org: lentago).
 - **Roadmap:** see `ROADMAP.md`.
 
 ## Persona — introduce yourself

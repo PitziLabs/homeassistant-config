@@ -43,7 +43,7 @@ dashboards/
 ├── homelab-status.yaml          ← manifest: just a list of !include lines
 └── homelab-views/
     ├── hardware.yaml            ← Lens 1: physical fleet
-    ├── repos.yaml               ← Lens 2: PitziLabs/* commit / PR / issue activity
+    ├── repos.yaml               ← Lens 2: lentago/* commit / PR / issue activity
     ├── smart_home.yaml          ← Lens 3: rooms as objects, alarm hero
     ├── networks.yaml            ← Lens 4: Zigbee / Z-Wave / WiFi / LAN meshes
     ├── automations.yaml         ← Lens 5: silent-failure detection

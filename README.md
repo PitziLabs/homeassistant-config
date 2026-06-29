@@ -1,4 +1,4 @@
-# Home Assistant Configuration — PitziLabs
+# Home Assistant Configuration — Lentago Labs
 
 **Authorship:** The YAML configuration, ESPHome firmware, automations, dashboards, scripts, and documentation in this repo are co-written with [Claude](https://claude.ai) (Anthropic). I direct the work and review the output; Claude writes the code. I'm an infrastructure operator, not a software engineer — please don't read this repo as a portfolio of coding ability.
 
@@ -121,7 +121,7 @@ HAOS pushes the running version to GitHub on every full startup. The loop is eve
 
 ```
 homeassistant_started event
-  → rest_command POSTs to /repos/PitziLabs/homeassistant-config/dispatches
+  → rest_command POSTs to /repos/lentago/homeassistant-config/dispatches
   → ha-version-sync workflow validates payload, compares to .ha-version
   → if drift: branch, bump, PR (opened with HA_SYNC_PAT so downstream workflows fire)
   → PR triggers Card 1 ha-config-check against the new version
@@ -300,14 +300,14 @@ or self-registering — none take a `configuration.yaml` block.
 | [Spook](https://github.com/frenck/spook) | Power-user toolbox — extra services, repairs, entity tools |
 | [Watchman](https://github.com/dummylabs/thewatchman) | Reports missing/unavailable entities & actions referenced in config |
 
-## Part of the PitziLabs Portfolio
+## Part of the Lentago Labs Portfolio
 
-This repository is one piece of a broader infrastructure portfolio at [github.com/PitziLabs](https://github.com/PitziLabs):
+This repository is one piece of a broader infrastructure portfolio at [github.com/lentago](https://github.com/lentago):
 
-- **[foundry-platform-demo](https://github.com/PitziLabs/foundry-platform-demo)** — Terraform-managed three-tier AWS environment (VPC, ECS Fargate, RDS, ElastiCache, CI/CD)
-- **[firewalla-axiom-pipeline](https://github.com/PitziLabs/firewalla-axiom-pipeline)** — Fluent Bit log pipeline shipping Firewalla network telemetry to Axiom
-- **[homelab-observability](https://github.com/PitziLabs/homelab-observability)** — Grafana Cloud + Alloy observability for the Firewalla home network
-- **[workstation-bootstrap](https://github.com/PitziLabs/workstation-bootstrap)** — Idempotent workstation provisioning for ChromeOS, Xubuntu, and Fedora
+- **[foundry-platform-demo](https://github.com/lentago/foundry-platform-demo)** — Terraform-managed three-tier AWS environment (VPC, ECS Fargate, RDS, ElastiCache, CI/CD)
+- **[firewalla-axiom-pipeline](https://github.com/lentago/firewalla-axiom-pipeline)** — Fluent Bit log pipeline shipping Firewalla network telemetry to Axiom
+- **[homelab-observability](https://github.com/lentago/homelab-observability)** — Grafana Cloud + Alloy observability for the Firewalla home network
+- **[workstation-bootstrap](https://github.com/lentago/workstation-bootstrap)** — Idempotent workstation provisioning for ChromeOS, Xubuntu, and Fedora
 
 ## License
 

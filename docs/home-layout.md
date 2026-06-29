@@ -127,4 +127,4 @@ HA Core version + GitHub repo commit count today. Sensors for uptime and last Gi
 
 - **Phase 1 (this PR):** Commit this spec to `docs/home-layout.md`.
 - **Phase 2 (follow-up):** Rewrite Home view against this spec.
-- **Phase 3+ (future):** Real pipeline viz, sensor-bar chips, GitHub sensors for `PitziLabs/homeassistant-config`, Firewalla integration extensions.
+- **Phase 3+ (future):** Real pipeline viz, sensor-bar chips, GitHub sensors for `lentago/homeassistant-config`, Firewalla integration extensions.
