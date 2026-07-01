@@ -34,6 +34,35 @@ GitOps auto-deploy script. Called every 5 minutes by the `gitops_sync_poll` auto
 
 Polling from inside HA (rather than pushing from a GitHub Actions webhook) avoids exposing the HA instance to inbound internet traffic and sidesteps NAT traversal entirely. The tradeoff is a maximum 5-minute latency on deploys — acceptable for a home automation context. The Supervisor API validation step (`/core/check`) runs the same config validator as a normal HA startup, so a bad merge is caught before the service is disrupted.
 
+## `sync-home-codesign.sh`
+
+Regenerates `dashboards/home-codesign.yaml` as a one-way mirror of
+`dashboards/home.yaml`. The co-design dashboard
+(`/dashboard-home-codesign/home`) is a preview twin of the production home
+dashboard used for live design iteration; making production the single source
+of truth stops it drifting behind (fixes used to land in `home.yaml` and never
+get back-ported). The dashboard-family scheme it serves is documented in
+[`dashboards/README.md`](../dashboards/README.md#the-home-dashboard-family--one-master-two-clones).
+
+The script copies `home.yaml` verbatim and prepends a `DO NOT EDIT BY HAND`
+banner, swapping only three cosmetic lines on the first view: tab title
+`Home`→`Co-design`, icon `mdi:monitor-dashboard`→`mdi:monitor-edit`, and theme
+`Home Polish`→`Home Codesign` (so the sandbox renders the
+`themes/home_codesign.yaml` instrument-panel study without forking any cards).
+Every card, template, and entity reference stays identical to production.
+
+```bash
+scripts/sync-home-codesign.sh           # regenerate in place (default)
+scripts/sync-home-codesign.sh --check   # exit non-zero if drifted; no writes (CI)
+scripts/sync-home-codesign.sh --help
+```
+
+Pure shell (`sed` + `diff`) — runs anywhere the repo is checked out, no HA
+access needed. `--check` is wired into CI as `Tests › Codesign Sync`, so a
+`home.yaml` change that skips the regen fails the build. `HOME_SRC` / `HOME_DST`
+override the paths for testing. **Workflow:** edit `home.yaml`, run the script,
+commit both files in the same PR.
+
 ## `import-dashboard-to-storage.sh`
 
 Ad-hoc helper that copies a git-managed YAML dashboard into a storage-mode
