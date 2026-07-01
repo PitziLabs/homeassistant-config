@@ -231,7 +231,6 @@ template:
           {{ is_state('binary_sensor.main_panel_front_door', 'on')
              or is_state('binary_sensor.main_panel_sliding_door', 'on')
              or is_state('binary_sensor.main_panel_garage_door', 'on')
-             or is_state('binary_sensor.basement_kitchen_door', 'on')
              or is_state('cover.garage_door_1_door', 'open')
              or is_state('cover.garage_door_2_door', 'open') }}
         attributes:
@@ -245,9 +244,6 @@ template:
             {% endif %}
             {% if is_state('binary_sensor.main_panel_garage_door', 'on') %}
               {% set names.open = names.open + ['Garage Entry'] %}
-            {% endif %}
-            {% if is_state('binary_sensor.basement_kitchen_door', 'on') %}
-              {% set names.open = names.open + ['Basement'] %}
             {% endif %}
             {% if is_state('cover.garage_door_1_door', 'open') %}
               {% set names.open = names.open + ['Garage 1'] %}
