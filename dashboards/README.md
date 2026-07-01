@@ -1,6 +1,109 @@
 # dashboards/
 
-YAML-managed Lovelace dashboards. All three are registered in `configuration.yaml` under `lovelace.dashboards` and are fully git-tracked — no UI editor involvement. Changes deploy automatically via the GitOps pipeline.
+YAML-managed Lovelace dashboards. The git-tracked dashboards — `home.yaml`, `home-codesign.yaml`, and `homelab-status.yaml` — are registered in `configuration.yaml` under `lovelace.dashboards` in `mode: yaml` and deploy automatically via the GitOps pipeline. Git is their source of truth; no UI editor involvement.
+
+## The Home dashboard family — one master, two clones
+
+The Home dashboard follows a deliberate **single-master / two-clone** scheme so
+design iteration and ad-hoc UI tweaks never put the live household display at
+risk. Intent flows in one direction — **out from the master** — and each clone
+has a single job:
+
+```
+┌──────────────────────┐   sync-home-codesign.sh   ┌──────────────────────────┐
+│ MASTER (git)         │ ─────────────────────────▶│ CO-DESIGN CLONE (git)    │
+│ dashboards/home.yaml │      one-way mirror        │ dashboards/              │
+│ mode: yaml           │   (CI-enforced, no drift)  │   home-codesign.yaml     │
+│ /dashboard-home/home │                            │ mode: yaml               │
+│ SOURCE OF TRUTH      │                            │ /dashboard-home-codesign │
+└──────────┬───────────┘                            │ live-preview iteration   │
+           │                                        └──────────────────────────┘
+           │ import-dashboard-to-storage.sh
+           │  one-way export (reseed)
+           ▼
+┌──────────────────────────┐
+│ UI-EDITABLE CLONE        │
+│ .storage/ (gitignored)   │
+│ mode: storage            │
+│ /home-ui-edit            │
+│ ad-hoc drag/drop tweaks  │
+│ DRIFTS BY DESIGN         │
+└──────────────────────────┘
+```
+
+| Dashboard | File / location | Mode | Role |
+|---|---|---|---|
+| **Home (master)** | `dashboards/home.yaml` (git) | `yaml` | **The source of truth.** Everything flows from here. All real changes land here via PR and deploy through GitOps. |
+| **Home (Co-design)** | `dashboards/home-codesign.yaml` (git) | `yaml` | Safe live-preview iteration target. A generated mirror of the master with only the first view's tab title/icon and theme swapped. |
+| **Home (UI-editable)** | `.storage/` (gitignored runtime state) | `storage` | Ad-hoc UI tweaks via drag/drop. A one-way snapshot exported from the master — **not** a source of truth, never in git, drifts by design. |
+
+### Drift & source-of-truth policy
+
+- **Master is canonical.** If any clone disagrees with `home.yaml`, the master
+  wins. Reconcile by editing `home.yaml` and re-syncing/re-exporting the clone —
+  never the reverse as an implicit "the clone is newer" merge.
+- **The co-design clone must not drift.** It is regenerated from the master, and
+  CI (`Tests › Codesign Sync`) fails the build if it lags. See sync procedure
+  below.
+- **The UI-editable clone drifts by design.** It lives in gitignored `.storage/`
+  runtime state (per the CLAUDE.md three-layer state model), so it will never
+  appear in git and will diverge from the master the moment anyone hand-edits it
+  in the UI. That divergence is expected — it is a disposable scratch copy, not
+  the git source of truth.
+
+### Keeping the co-design clone in sync (master → co-design)
+
+The co-design twin is **generated, never hand-edited**. It is produced by
+[`scripts/sync-home-codesign.sh`](../scripts/README.md#sync-home-codesignsh),
+which copies `home.yaml` verbatim and swaps only three cosmetic lines on the
+first view (tab title `Home`→`Co-design`, icon `mdi:monitor-dashboard`→
+`mdi:monitor-edit`, theme `Home Polish`→`Home Codesign`). Every card, template,
+and entity reference is identical to production.
+
+Workflow:
+
+1. Make the real change in **`home.yaml`** (master).
+2. Run `scripts/sync-home-codesign.sh` to regenerate `home-codesign.yaml`.
+3. Commit both files in the same PR.
+
+`scripts/sync-home-codesign.sh --check` runs in CI (`Tests › Codesign Sync`) and
+fails if the mirror has drifted, so a master change that skips the regen is
+caught before merge. The `AUTO-GENERATED — DO NOT EDIT BY HAND` banner at the
+top of `home-codesign.yaml` is the in-file reminder.
+
+**Iterating in co-design:** to preview a design study, open
+`http://homeassistant.local:8123/dashboard-home-codesign/home` (retired pve2
+wall display no longer figures in this — it renders in the HA web UI / companion
+app). Because the clone is generated, iterate by editing `home.yaml` and
+re-running the sync; the co-design view then reflects your changes without ever
+touching the live `/dashboard-home/home` tab. When happy, that same `home.yaml`
+edit *is* the master change — nothing to "fold back."
+
+### Refreshing the UI-editable clone (master → `.storage`)
+
+The storage-mode UI-editable clone is exported from the master by
+[`scripts/import-dashboard-to-storage.sh`](../scripts/README.md#import-dashboard-to-storagesh),
+which must run **inside the HA Core container** (it needs Core's Python +
+`aiohttp` + PyYAML and a long-lived token):
+
+```bash
+# from the HAOS host (has docker; the SSH add-on does not):
+docker exec homeassistant /config/scripts/import-dashboard-to-storage.sh
+# → seeds dashboards/home.yaml into a storage dashboard "Home (UI Edit)" at /home-ui-edit
+```
+
+This registers (or, on re-run, overwrites the config of) a `mode: storage`
+Lovelace dashboard at `/home-ui-edit`. It is a **reseed-from-source** operation:
+re-running clobbers any hand-edits in the UI copy and restamps it from the
+current `home.yaml`. The next `ha-context-dump.sh` snapshot captures it in
+`context/dashboards-storage.json`.
+
+**Folding UI edits back into the master:** there is no automated path — by
+design. The UI-editable clone is `.storage/` runtime state and will not appear
+in git. If a UI tweak is worth keeping, transcribe the change into `home.yaml`
+by hand and PR it; that PR is the durable record. Then re-export to reseed the
+UI copy from the now-updated master. Anything left only in the UI copy is
+disposable and will be lost on the next reseed (or a rebuild).
 
 ## `home.yaml` — Home view (`/dashboard-home/home`)
 
