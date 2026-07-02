@@ -637,7 +637,9 @@ views:
                 card_mod:
                   style: |
                     ha-card {
-                      aspect-ratio: 1/1;
+                      height: 180px !important;
+                      overflow: hidden;
+                      position: relative;
                       border-radius: 6px;
                       {% set members = state_attr(config.entity, 'group_members') or [] %}
                       {% if members | length > 1 and members[0] != config.entity %}
