@@ -79,7 +79,7 @@ cards:
       - type: markdown
         content: >
           **Role:** Grafana Alloy + receiver collectors, ship logs +
-          metrics to Grafana Cloud (`pitzilabs.grafana.net`). Legacy
+          metrics to Grafana Cloud (`lentago.grafana.net`). Legacy
           local Loki/Prom/Grafana retired 2026-05-27 in the
           homelab-observability migration.
 
