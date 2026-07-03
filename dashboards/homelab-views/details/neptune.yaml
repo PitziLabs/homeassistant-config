@@ -12,7 +12,7 @@ cards:
         primary: neptune
         secondary: >
           UGREEN DXP · Intel N100 · UGOS (Debian 12) ·
-          SMB share `PitziLabs` · 192.168.139.6
+          SMB share `lentago` · 192.168.139.6
         icon: mdi:nas
         icon_color: >
           {% set s = states('sensor.ugreen_nas_server_status') %}
