@@ -817,6 +817,7 @@ views:
             type: custom:mushroom-light-card
             entity: light.outdoor
             show_brightness_control: true
+            use_light_color: true
             tap_action:
               action: toggle
             hold_action:
@@ -830,6 +831,7 @@ views:
                 entity: light.front_door
                 name: Front
                 show_brightness_control: true
+                use_light_color: true
                 tap_action:
                   action: toggle
                 hold_action:
