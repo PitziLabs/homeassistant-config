@@ -306,10 +306,10 @@ or self-registering — none take a `configuration.yaml` block.
 
 This repository is one piece of a broader infrastructure portfolio at [github.com/lentago](https://github.com/lentago):
 
-- **[solidago](https://github.com/lentago/solidago)** (formerly foundry-platform-demo) — Terraform-managed three-tier AWS environment (VPC, ECS Fargate, RDS, ElastiCache, CI/CD)
-- **[firewalla-axiom-pipeline](https://github.com/lentago/firewalla-axiom-pipeline)** — Fluent Bit log pipeline shipping Firewalla network telemetry to Axiom
-- **[homelab-observability](https://github.com/lentago/homelab-observability)** — Grafana Cloud + Alloy observability for the Firewalla home network
-- **[workstation-bootstrap](https://github.com/lentago/workstation-bootstrap)** — Idempotent workstation provisioning for ChromeOS, Xubuntu, and Fedora
+- **[solidago](https://github.com/lentago/solidago)** — Terraform-managed three-tier AWS environment (VPC, ECS Fargate, RDS, ElastiCache, CI/CD)
+- **[betula](https://github.com/lentago/betula)** — Fluent Bit log pipeline shipping Firewalla network telemetry to Axiom
+- **[drosera](https://github.com/lentago/drosera)** — Grafana Cloud + Alloy observability for the Firewalla home network
+- **[kalmia](https://github.com/lentago/kalmia)** — Idempotent workstation provisioning for ChromeOS, Xubuntu, and Fedora
 
 ## License
 
