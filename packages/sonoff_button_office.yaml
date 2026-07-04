@@ -22,30 +22,45 @@
 #
 # Static scenes (1-3) apply uniform values to all six lamps simultaneously.
 # Flicker scenes (4-9) all share one parallel driver loop in
-# `script.office_sonoff_candle_loop`. The loop dispatches per-lamp ticks
-# every 180-400 ms to `script.office_lamp_tick`, which renders the current
-# scene's frame for that lamp. Brightness always flickers in a tight 75-92%
-# band with a 0.2 s transition; what differs per scene is how the color is
-# computed:
+# `script.office_sonoff_candle_loop`. The loop's per-lamp branches call
+# `script.office_lamp_tick` back-to-back; the tick renders one frame for
+# one lamp AND owns its own inter-frame delay, so pacing couples to what
+# the frame is doing.
 #
-#   - Candle scenes (4-6): fixed hue per scene, looked up from a palette dict.
-#   - Blue + Red Desk (7): per-lamp color — the two desk lamps flicker red,
-#     every other lamp flickers blue. Same brightness band as the candles.
-#   - Rainbow Sync (8): hue derived from wall-clock time, same on all lamps.
-#   - Rainbow Cascade (9): hue derived from wall-clock time + a per-lamp
-#     60° cascade offset, so the rainbow ripples across the room.
+# Fire scenes (4-7) model flame physics rather than uniform noise:
+#
+#   - Random WALK, not random jump: each tick reads the lamp's current
+#     brightness and drifts ±9% from there, clamped to a 60-92% band —
+#     flame wavers around where it was, it doesn't teleport.
+#   - Occasional events break the calm: ~8% of ticks GUTTER (fast dip to
+#     30-50%), ~12% FLARE (snap to 88-100%). Event ticks are quick
+#     (90-220 ms); calm drift is slow (280-700 ms).
+#   - Transition ≈ 90% of the tick delay, so the lamp slews continuously
+#     into each frame instead of stepping and holding.
+#   - Color tracks brightness: each scene interpolates between a deep/red
+#     "dim" RGB and a paler/yellower "bright" RGB on the frame's target
+#     brightness — dimmer flame reads redder, exactly like real fire.
+#
+#   - Candle scenes (4-6): dim/bright color pair per scene.
+#   - Blue + Red Desk (7): desk lamps use the Red-candle pair, every other
+#     lamp the Blue-candle pair. Same walk/gutter/flare behavior.
+#   - Rainbow Sync (8): hue derived from wall-clock time, same on all
+#     lamps; uniform 75-92% brightness band, fixed 180-400 ms pace.
+#   - Rainbow Cascade (9): same, plus a per-lamp 60° cascade offset so the
+#     rainbow ripples across the room.
 #
 # Each per-lamp branch also waits a random 0-300 ms startup phase so the
-# lamps don't all brighten or dim on the same beat.
+# lamps don't all brighten or dim on the same beat; the independent
+# per-tick delay draws keep them desynchronized thereafter.
 #
 # Scene catalog:
 #   1  Bright            — all 6, 100% / 2700K  (warm general illumination)
 #   2  Relax             — all 6, 40%  / 2200K  (warm, low)
 #   3  Focus             — all 6, 100% / 5000K  (bright, cool)
-#   4  Amber Candle      — flicker rgb(255, 100, 15)
-#   5  Red Candle        — flicker rgb(255,  20,  5)
-#   6  Blue Candle       — flicker rgb(30,   80, 255)
-#   7  Blue + Red Desk   — flicker; desk lamps rgb(255, 20, 5), rest rgb(30, 80, 255)
+#   4  Amber Candle      — fire flicker, rgb(255,65,0) dim → rgb(255,150,40) bright
+#   5  Red Candle        — fire flicker, rgb(180,10,0) dim → rgb(255,50,10) bright
+#   6  Blue Candle       — fire flicker, rgb(15,40,180) dim → rgb(70,130,255) bright
+#   7  Blue + Red Desk   — fire flicker; desk lamps use the Red pair, rest the Blue pair
 #   8  Rainbow Sync      — flicker; hue cycles every 30 s, all lamps in unison
 #   9  Rainbow Cascade   — flicker; hue cycles every 30 s, each lamp offset 60°
 #
@@ -62,16 +77,19 @@
 # apply script fires-and-forgets — it never waits on the infinite loop.
 #
 # The driver is also self-extending: HA's `repeat: while:` is capped at 10000
-# iterations per block; at our 180-400 ms tick delays each branch hits that
-# cap after ~30-66 min and exits. Before this was fixed the lamps then froze
-# on the last rendered frame until a paddle tap (or HA restart) re-fired the
-# loop. Now, when the slowest parallel branch exits, the driver re-invokes
-# itself iff counter > 3 — mode:restart cancels the dying instance cleanly,
-# so a flicker scene keeps ticking indefinitely without user intervention.
+# iterations per block; at the tick's delay draws (fire scenes average
+# ~420 ms calm-dominated, rainbows ~290 ms) each branch hits that cap after
+# ~45-70 min and exits. Before this was fixed the lamps then froze on the
+# last rendered frame until a paddle tap (or HA restart) re-fired the loop.
+# Now, when the slowest parallel branch exits, the driver re-invokes itself
+# iff counter > 3 — mode:restart cancels the dying instance cleanly, so a
+# flicker scene keeps ticking indefinitely without user intervention.
 #
 # Live brightness: input_number.office_brightness (10-100, step 5) is the
 # brightness applied by every scene. Static scenes read it directly;
-# flicker tick scales its 75-92% random band by `helper / 100`. apply_scene
+# flicker tick scales its walk band by `helper / 100` (and un-scales the
+# lamp's reported brightness by the same factor, so the walk position is
+# invariant under hold-to-dim). apply_scene
 # resets the helper to the new scene's default brightness on every tap/cycle
 # (1=100, 2=40, 3=100, 4-9=100) — pass `reset_brightness: false` to render
 # without touching the helper (used by ZEN77 hold-to-dim/brighten). Step 5
@@ -188,13 +206,19 @@ script:
                   entity_id: script.office_sonoff_candle_loop
 
   # Per-lamp tick: renders one frame of whatever flicker scene is active to one
-  # lamp. Pulled out as a sub-script so the candle loop's six parallel branches
-  # stay short and so adding a new flicker scene needs only a new branch in the
-  # choose: block below, not a new template in each branch.
+  # lamp, then sleeps its own inter-frame delay (so pacing couples to the frame:
+  # gutters and flares are quick, calm drift is slow). Pulled out as a sub-script
+  # so the candle loop's six parallel branches stay short and so adding a new
+  # flicker scene needs only a new branch in the choose: block below.
   office_lamp_tick:
     alias: 'Office Sonoff: render one tick for one lamp'
     mode: parallel
-    max: 12
+    # A tick now lives for its own delay (up to ~700 ms), so across a loop
+    # kill/restart (scene cycle, self-extend) the outgoing run's six
+    # sleeping ticks overlap the new run's six. 24 gives two full
+    # generations of headroom; at the old cap of 12 a quick double
+    # scene-cycle could hit the limit and silently drop frames.
+    max: 24
     fields:
       target_entity:
         description: 'Light entity to update (e.g. light.bookcase_lamp)'
@@ -203,13 +227,17 @@ script:
         default: 0
     variables:
       scene: "{{ states('counter.office_sonoff_scene') | int(0) }}"
-      # 75-92% random flicker band scaled by input_number.office_brightness.
-      # At helper=100 (default) the band is unchanged; at helper=50 it's 37-46%.
-      brightness: "{{ ((range(75, 93) | random) * (states('input_number.office_brightness') | int(100)) / 100) | int }}"
+      # Live-brightness scale factor (0.1-1.0) from the helper. Fire scenes
+      # multiply their walk band by it and divide the lamp's reported
+      # brightness by it, so the walk position is invariant under
+      # hold-to-dim. Floor of 0.1 matches the helper's min of 10.
+      scale: "{{ [(states('input_number.office_brightness') | int(100)) / 100, 0.1] | max }}"
     sequence:
       - choose:
           # Scene 8 — Rainbow Sync: all lamps share the same hue, driven by
-          # wall-clock time. 12 deg/sec → full cycle every 30 s.
+          # wall-clock time. 12 deg/sec → full cycle every 30 s. Rainbows are
+          # a party effect, not fire — they keep the uniform 75-92% band and
+          # steady 180-400 ms pace.
           - conditions: "{{ scene == 8 }}"
             sequence:
               - action: light.turn_on
@@ -219,8 +247,10 @@ script:
                   hs_color:
                     - "{{ (now().timestamp() * 12) % 360 }}"
                     - 100
-                  brightness_pct: "{{ brightness }}"
+                  brightness_pct: "{{ ((range(75, 93) | random) * (scale | float(1))) | int }}"
                   transition: 0.2
+              - delay:
+                  milliseconds: "{{ range(180, 400) | random }}"
           # Scene 9 — Rainbow Cascade: each lamp offset by `cascade_offset` so
           # the rainbow ripples across the room rather than moving in unison.
           - conditions: "{{ scene == 9 }}"
@@ -232,44 +262,76 @@ script:
                   hs_color:
                     - "{{ ((now().timestamp() * 12) + cascade_offset) % 360 }}"
                     - 100
-                  brightness_pct: "{{ brightness }}"
+                  brightness_pct: "{{ ((range(75, 93) | random) * (scale | float(1))) | int }}"
                   transition: 0.2
-          # Scene 7 — Blue + Red Desk: a per-lamp variant of the Blue candle.
-          # The two desk lamps flicker the Red-candle hue rgb(255, 20, 5);
-          # every other lamp flickers the Blue-candle hue rgb(30, 80, 255).
-          # Same 75-92% brightness band as the candles, so it reads as one
-          # cohesive flicker scene that happens to have a red desk.
-          - conditions: "{{ scene == 7 }}"
-            sequence:
-              - action: light.turn_on
-                target:
-                  entity_id: "{{ target_entity }}"
-                data:
-                  rgb_color: >-
-                    {{ [255, 20, 5]
-                       if target_entity in ['light.desk_lamp_2', 'light.desk_lamp_2_2']
-                       else [30, 80, 255] }}
-                  brightness_pct: "{{ brightness }}"
-                  transition: 0.2
+              - delay:
+                  milliseconds: "{{ range(180, 400) | random }}"
         default:
-          # Scenes 4-6 — fixed-hue candles, color from palette dict.
+          # Scenes 4-7 — fire tick. Three-part model:
+          #
+          #  1. Behavior draw: ~8% gutter (fast dip to 30-50%), ~12% flare
+          #     (snap to 88-100%), else calm random walk ±9% around the
+          #     lamp's CURRENT brightness, clamped to a 60-92% band.
+          #  2. Delay matches behavior: events 90-220 ms, calm 280-700 ms;
+          #     transition ≈ 90% of the delay so the lamp slews continuously
+          #     into each frame instead of stepping and holding.
+          #  3. Color tracks brightness: interpolate the scene's dim→bright
+          #     RGB pair on the frame's target brightness — a dimming flame
+          #     reads redder/deeper, a flaring one paler/yellower.
+          #
+          # All percentages are in UNSCALED band space; `scale` is applied
+          # only at the final brightness_pct (and un-applied when reading
+          # the lamp), so hold-to-dim rescales the whole effect cleanly.
+          - variables:
+              draw: "{{ range(1, 101) | random }}"
+              cur: >-
+                {% set b = state_attr(target_entity, 'brightness') %}
+                {{ [[((b | float(204)) / 2.55 / (scale | float(1))), 100] | min, 0] | max | round | int }}
+          - variables:
+              fire_target: >-
+                {% if draw <= 8 %}
+                  {{ range(30, 51) | random }}
+                {% elif draw <= 20 %}
+                  {{ range(88, 101) | random }}
+                {% else %}
+                  {{ [[(cur | int(80)) + (range(-9, 10) | random), 92] | min, 60] | max }}
+                {% endif %}
+              tick_ms: >-
+                {% if draw <= 8 %}
+                  {{ range(90, 161) | random }}
+                {% elif draw <= 20 %}
+                  {{ range(110, 221) | random }}
+                {% else %}
+                  {{ range(280, 701) | random }}
+                {% endif %}
+          - variables:
+              fire_rgb: >-
+                {% set pairs = {
+                  '4': [[255, 65, 0],  [255, 150, 40]],
+                  '5': [[180, 10, 0],  [255, 50, 10]],
+                  '6': [[15, 40, 180], [70, 130, 255]]
+                } %}
+                {% set key = ('5' if target_entity in ['light.desk_lamp_2', 'light.desk_lamp_2_2'] else '6')
+                             if scene == 7 else (scene | string) %}
+                {% set p = pairs.get(key, pairs['4']) %}
+                {% set n = [[((fire_target | int(80)) - 30) / 70, 1] | min, 0] | max %}
+                {{ [(p[0][0] + (p[1][0] - p[0][0]) * n) | round | int,
+                    (p[0][1] + (p[1][1] - p[0][1]) * n) | round | int,
+                    (p[0][2] + (p[1][2] - p[0][2]) * n) | round | int] }}
           - action: light.turn_on
             target:
               entity_id: "{{ target_entity }}"
             data:
-              rgb_color: >-
-                {% set palette = {
-                  '4': [255, 100, 15],
-                  '5': [255, 20,  5],
-                  '6': [30,   80, 255]
-                } %}
-                {{ palette[states('counter.office_sonoff_scene')] | default([255, 100, 15]) }}
-              brightness_pct: "{{ brightness }}"
-              transition: 0.2
+              rgb_color: "{{ fire_rgb }}"
+              brightness_pct: "{{ [((fire_target | int(80)) * (scale | float(1))) | round | int, 1] | max }}"
+              transition: "{{ ((tick_ms | int(400)) * 0.9 / 1000) | round(2) }}"
+          - delay:
+              milliseconds: "{{ tick_ms | int(400) }}"
 
   # Six parallel per-lamp loops. Each branch is just startup-phase delay,
-  # then a tight while-loop of (call tick, sleep random delay). All scene
-  # rendering logic lives in office_lamp_tick.
+  # then a tight while-loop of back-to-back tick calls — the tick renders
+  # a frame AND sleeps its own behavior-matched delay before returning.
+  # All scene rendering logic lives in office_lamp_tick.
   office_sonoff_candle_loop:
     alias: 'Office Sonoff: Flicker loop driver'
     mode: restart
@@ -288,8 +350,6 @@ script:
                       data:
                         target_entity: light.bookcase_lamp
                         cascade_offset: 0
-                    - delay:
-                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -309,8 +369,6 @@ script:
                       data:
                         target_entity: light.corner_lamp
                         cascade_offset: 60
-                    - delay:
-                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -324,8 +382,6 @@ script:
                       data:
                         target_entity: light.door_lamp
                         cascade_offset: 120
-                    - delay:
-                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -339,8 +395,6 @@ script:
                       data:
                         target_entity: light.desk_lamp_2
                         cascade_offset: 180
-                    - delay:
-                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -354,8 +408,6 @@ script:
                       data:
                         target_entity: light.desk_lamp_2_2
                         cascade_offset: 240
-                    - delay:
-                        milliseconds: "{{ range(180, 400) | random }}"
           - sequence:
               - delay:
                   milliseconds: "{{ range(0, 300) | random }}"
@@ -369,8 +421,6 @@ script:
                       data:
                         target_entity: light.table_lamp
                         cascade_offset: 300
-                    - delay:
-                        milliseconds: "{{ range(180, 400) | random }}"
       # Self-extend past HA's 10000-iteration cap on `repeat:`. With our
       # 180-400 ms per-tick delays each branch's while-loop hits the cap
       # in ~30-66 min and exits silently; before this self-restart the
