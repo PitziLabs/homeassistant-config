@@ -1,0 +1,26 @@
+# Lentago Lab Status dashboard — mental-map fleet view.
+#
+# Each view = one "lens" (hardware, repos, smart home, networks,
+# automations, backups, issues). One file per lens under
+# lentago-lab-views/; the dashboard is just the include list.
+# Add / retire a lens by editing this file + dropping a YAML in
+# lentago-lab-views/ — no configuration.yaml change required.
+views:
+  # Lenses (tab strip)
+  - !include lentago-lab-views/hardware.yaml
+  - !include lentago-lab-views/repos.yaml
+  - !include lentago-lab-views/smart_home.yaml
+  - !include lentago-lab-views/networks.yaml
+  - !include lentago-lab-views/automations.yaml
+  - !include lentago-lab-views/backups.yaml
+  - !include lentago-lab-views/issues.yaml
+  # Drill-down subviews (hidden from tab strip via subview: true)
+  - !include lentago-lab-views/details/neptune.yaml
+  - !include lentago-lab-views/details/pve.yaml
+  - !include lentago-lab-views/details/pve2.yaml
+  - !include lentago-lab-views/details/pve3.yaml
+  - !include lentago-lab-views/details/pve4.yaml
+  - !include lentago-lab-views/details/pve5.yaml
+  - !include lentago-lab-views/details/haos.yaml
+  - !include lentago-lab-views/details/grafana-stack.yaml
+  - !include lentago-lab-views/details/ups.yaml

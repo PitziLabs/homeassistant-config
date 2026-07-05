@@ -215,7 +215,7 @@ main() {
   # Storage-mode Lovelace dashboards. The dashboard registry lives at
   # .storage/lovelace_dashboards; the default dashboard config is .storage/lovelace
   # and additional storage-mode dashboards are .storage/lovelace.<url_path>.
-  # YAML-mode dashboards (this repo's home/homelab-status) are not stored
+  # YAML-mode dashboards (this repo's home/lentago-lab-status) are not stored
   # in .storage/ — they remain in dashboards/*.yaml and are absent here.
   log INFO "Building dashboards-storage.json"
   build_dashboards_storage "$STORAGE" > "${CONTEXT_DIR}/dashboards-storage.json"

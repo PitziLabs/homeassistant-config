@@ -64,7 +64,7 @@ jobs:
         run: python3 -m pip install --quiet pyyaml
 
       - name: Check dashboard entity references
-        # Recurses into dashboards/homelab-views/ — without `find`, the
+        # Recurses into dashboards/lentago-lab-views/ — without `find`, the
         # shell glob `dashboards/*.yaml` only matches top-level files and
         # silently skips every fleet entity inside the lens/detail
         # subview includes (#343). Excludes entity-allowlist.txt by name

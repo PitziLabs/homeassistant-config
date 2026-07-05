@@ -114,7 +114,7 @@ HA Core version + GitHub repo commit count today. Sensors for uptime and last Gi
 - Updates chip, Sun chip, Body Battery chip, Solar badge (deferred to sensor-bar follow-ups post-layout)
 - Real pipeline visualization (Phase 3)
 - Mobile Home view changes
-- Homelab Status dashboard changes
+- Lentago Lab Status dashboard changes
 
 ## Risks
 
