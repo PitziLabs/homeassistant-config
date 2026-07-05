@@ -26,7 +26,7 @@ to them when implementing:
 | `esphome/README.md` | Konnected alarm panels, ESPHome firmware, RTTTL annunciator |
 | `automations/README.md` | UI-vs-git authorship split for automations |
 | `packages/README.md` | HA Version Sync, Meeting Indicator, scene controllers |
-| `dashboards/README.md` | All three Lovelace dashboards (Home, Home Co-design, Homelab Status) |
+| `dashboards/README.md` | All three Lovelace dashboards (Home, Home Co-design, Lentago Lab Status) |
 | `themes/README.md` | Noctis Home theme, home_polish tokens |
 | `scripts/README.md` | gitops-sync.sh, ha-context-dump.sh, Script auth conventions |
 | `context/README.md` | What each `context/*.json` file is |

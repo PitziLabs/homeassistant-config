@@ -1,6 +1,6 @@
 # dashboards/
 
-YAML-managed Lovelace dashboards. The git-tracked dashboards — `home.yaml`, `home-codesign.yaml`, and `homelab-status.yaml` — are registered in `configuration.yaml` under `lovelace.dashboards` in `mode: yaml` and deploy automatically via the GitOps pipeline. Git is their source of truth; no UI editor involvement.
+YAML-managed Lovelace dashboards. The git-tracked dashboards — `home.yaml`, `home-codesign.yaml`, and `lentago-lab-status.yaml` — are registered in `configuration.yaml` under `lovelace.dashboards` in `mode: yaml` and deploy automatically via the GitOps pipeline. Git is their source of truth; no UI editor involvement.
 
 ## The Home dashboard family — one master, two clones
 
@@ -137,14 +137,14 @@ Mobile-first control interface. Design principle: show only what's active.
 
 The `kiosk_mode` block at the top of `home.yaml` hides header and sidebar **only for the `Kiosk` non-admin user**. The pve2 wall display that used the Kiosk account was retired 2026-06-23; the block remains in place so it takes effect if a kiosk user is ever re-added. Normal admin sessions see the sidebar and header as usual.
 
-## `homelab-status.yaml` — Homelab Status (mental-map fleet view)
+## `lentago-lab-status.yaml` — Lentago Lab Status (mental-map fleet view)
 
-Multi-tab dashboard at `/dashboard-homelab-status/`. Built as a **manifest of `!include`d view files** so each "lens" lives in its own file and can be evolved, added, or retired independently.
+Multi-tab dashboard at `/dashboard-lentago-lab-status/`. Built as a **manifest of `!include`d view files** so each "lens" lives in its own file and can be evolved, added, or retired independently.
 
 ```
 dashboards/
-├── homelab-status.yaml          ← manifest: just a list of !include lines
-└── homelab-views/
+├── lentago-lab-status.yaml      ← manifest: just a list of !include lines
+└── lentago-lab-views/
     ├── hardware.yaml            ← Lens 1: physical fleet
     ├── repos.yaml               ← Lens 2: lentago/* commit / PR / issue activity
     ├── smart_home.yaml          ← Lens 3: rooms as objects, alarm hero
@@ -167,13 +167,13 @@ Each lens answers a single "what am I looking at?" question. The user can have m
 
 ### Drill-down pattern (subviews)
 
-Files under `homelab-views/details/` set `subview: true`, which hides them from the top tab strip and adds an automatic back-arrow. Tiles in a lens use `tap_action: navigate, navigation_path: /dashboard-homelab-status/<view-path>` to drill in. `hold_action: more-info` keeps HA's built-in entity dialog one long-press away.
+Files under `lentago-lab-views/details/` set `subview: true`, which hides them from the top tab strip and adds an automatic back-arrow. Tiles in a lens use `tap_action: navigate, navigation_path: /dashboard-lentago-lab-status/<view-path>` to drill in. `hold_action: more-info` keeps HA's built-in entity dialog one long-press away.
 
-Add a drill-down by dropping a new file under `details/` with a unique `path:`, then add it to the include list in `homelab-status.yaml`.
+Add a drill-down by dropping a new file under `details/` with a unique `path:`, then add it to the include list in `lentago-lab-status.yaml`.
 
 ### Iteration workflow
 
-Edit any `homelab-views/**` file and push. The GitOps loop deploys within 5 minutes. Key flag to know: HA's yaml-mode cache is keyed off the manifest's mtime (not the `!include` child's), so changing only a child view won't bust the cache. Touch `homelab-status.yaml` (or use `scripts/force-sync.sh`) to force a reload.
+Edit any `lentago-lab-views/**` file and push. The GitOps loop deploys within 5 minutes. Key flag to know: HA's yaml-mode cache is keyed off the manifest's mtime (not the `!include` child's), so changing only a child view won't bust the cache. Touch `lentago-lab-status.yaml` (or use `scripts/force-sync.sh`) to force a reload.
 
 ## HACS Dependencies
 

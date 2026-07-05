@@ -58,10 +58,10 @@ lovelace:
       title: Home
       icon: mdi:home
       show_in_sidebar: true
-    dashboard-homelab-status:
+    dashboard-lentago-lab-status:
       mode: yaml
-      filename: dashboards/homelab-status.yaml
-      title: Homelab Status
+      filename: dashboards/lentago-lab-status.yaml
+      title: Lentago Lab Status
       icon: mdi:server-network
       show_in_sidebar: true
     # Co-design sandbox copy — same content as dashboard-home, used as

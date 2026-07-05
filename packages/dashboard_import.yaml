@@ -26,7 +26,7 @@ input_select:
     options:
       - home
       - home-codesign
-      - homelab-status
+      - lentago-lab-status
 
 input_button:
   seed_ui_dashboard:

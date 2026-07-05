@@ -16,7 +16,7 @@ The repo represents an opinionated infrastructure project with a defined archite
 
 **Two dashboard experiences** built from typed Lovelace cards. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Home dashboard drives the 2560x1440 wall display using HA native `sections` layout, populated with `mushroom-light-card`, `button-card`, `mini-media-player` (with album art), `clock-weather-card`, and `thermostat` dials — responsive with no fixed-pixel sizing.
 
-**A Homelab Status dashboard** providing an at-a-glance infrastructure overview: NAS health (Neptune UGREEN DXP2800 — pool status, disk temps, SMART hours, LAN throughput), Proxmox node and VM metrics, smart home coordinator firmware/signal status, battery health grid with amber/red color coding, CMYK toner levels, GitHub repo activity, and the custom-built ESP32 meeting indicator device.
+**A Lentago Lab Status dashboard** providing an at-a-glance infrastructure overview: NAS health (Neptune UGREEN DXP2800 — pool status, disk temps, SMART hours, LAN throughput), Proxmox node and VM metrics, smart home coordinator firmware/signal status, battery health grid with amber/red color coding, CMYK toner levels, GitHub repo activity, and the custom-built ESP32 meeting indicator device.
 
 **Template sensors** that solve real UX problems. Sonos group coordinator detection prevents duplicate media cards when speakers are grouped. Per-room light activity sensors drive the mobile view's "all off" indicators. Both patterns are documented in `configuration.yaml` with clear rationale.
 
@@ -34,7 +34,7 @@ Proxmox VE (hypervisor)
 │   │   ├── automations/ — git-managed automations (meeting indicator)
 │   │   ├── packages/ — HA version sync (startup dispatch to GitHub)
 │   │   ├── scripts/gitops-sync.sh — fetch → validate → smart reload or rollback
-│   │   ├── dashboards/ — Home (mobile/wall display) + Home Co-design + Homelab Status
+│   │   ├── dashboards/ — Home (mobile/wall display) + Home Co-design + Lentago Lab Status
 │   │   └── themes/noctis_home.yaml — global card-mod state styling
 │   └── .storage/ — HA-managed runtime state (excluded from git)
 ├── Firewalla Gold SE — network firewall
@@ -200,11 +200,11 @@ A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.
 
 **Why Sonos group coordinator detection?** When Sonos speakers are grouped, every speaker in the group reports as "playing." Without filtering, you'd see duplicate media cards. The template sensors check whether each speaker is the first member of its own group — only the coordinator gets a card. This is a small detail, but it's the kind of thing that separates a polished dashboard from a functional one.
 
-## Homelab Status Dashboard
+## Lentago Lab Status Dashboard
 
 Portfolio-grade infrastructure status page surfacing NAS health, Proxmox VM metrics, smart home coordinator status, and device telemetry in a single scrollable view.
 
-![](./docs/homelab-status.png)
+![](./docs/lentago-lab-status.png)
 
 Seven sections:
 1. **Neptune (UGREEN DXP2800)** — server status, RAID pool health, disk temps and power-on hours, CPU/RAM/fan/LAN throughput
@@ -245,7 +245,7 @@ Seven sections:
 ├── dashboards/
 │   ├── home.yaml             Mobile/tablet Home dashboard
 │   ├── home.yaml            Home wall-display dashboard (custom:grid-layout)
-│   └── homelab-status.yaml   Homelab Status: NAS, Proxmox, coordinators, battery, printer
+│   └── lentago-lab-status.yaml   Lentago Lab Status: NAS, Proxmox, coordinators, battery, printer
 ├── themes/
 │   ├── noctis_home.yaml     Active theme with global card-mod state styling (noctis_home.yaml)
 │   └── home_dark.yaml       Deprecated — retained for reference
@@ -274,7 +274,7 @@ Seven sections:
 | [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling + `custom:mod-card` cell wrapper |
 | [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, TV row in home view |
 | [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in home view |
-| [apexcharts-card](https://github.com/RomRider/apexcharts-card) | Advanced graphs and radial gauges (homelab/home) |
+| [apexcharts-card](https://github.com/RomRider/apexcharts-card) | Advanced graphs and radial gauges (lab/home) |
 | [mini-graph-card](https://github.com/kalkih/mini-graph-card) | Lightweight inline sparklines for at-a-glance trends |
 | [Bubble Card](https://github.com/Clooos/Bubble-Card) | Minimalist cards with slide-up pop-ups |
 | [auto-entities](https://github.com/thomasloven/lovelace-auto-entities) | Auto-populates card entity lists by filter/area |
@@ -297,7 +297,7 @@ or self-registering — none take a `configuration.yaml` block.
 |------|---------|
 | [Better Thermostat](https://github.com/KartoffelToby/better_thermostat) | Smart TRV control feeding the home dashboard thermostat dials |
 | [Hubspace](https://github.com/jdeath/Hubspace-Homeassistant) | Hubspace (Afero) device integration |
-| [UGreen NAS](https://github.com/Tom-Bom-badil/home-assistant_ugreen-nas) | UGREEN NAS telemetry on the Homelab Status dashboard |
+| [UGreen NAS](https://github.com/Tom-Bom-badil/home-assistant_ugreen-nas) | UGREEN NAS telemetry on the Lentago Lab Status dashboard |
 | [HA MCP Tools](https://github.com/homeassistant-ai/ha-mcp) | MCP server exposing HA to AI agents (the "Live" layer) |
 | [Spook](https://github.com/frenck/spook) | Power-user toolbox — extra services, repairs, entity tools |
 | [Watchman](https://github.com/dummylabs/thewatchman) | Reports missing/unavailable entities & actions referenced in config |

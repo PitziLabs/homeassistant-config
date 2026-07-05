@@ -30,7 +30,7 @@ cards:
             {% if cpu > 80 %}red{% elif cpu > 50 %}amber{% else %}green{% endif %}
           {% endif %}
         entity: sensor.ugreen_nas_server_status
-        tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/neptune-detail }
+        tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/neptune-detail }
         hold_action: { action: more-info }
 
       # Row 3 — PVE cluster
@@ -52,7 +52,7 @@ cards:
                 {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
               {% endif %}
             entity: binary_sensor.pve_status
-            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve-detail }
+            tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/pve-detail }
             hold_action: { action: more-info }
 
           - type: custom:mushroom-template-card
@@ -69,7 +69,7 @@ cards:
                 {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
               {% endif %}
             entity: binary_sensor.pve2_status_2
-            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve2-detail }
+            tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/pve2-detail }
             hold_action: { action: more-info }
 
           - type: custom:mushroom-template-card
@@ -86,7 +86,7 @@ cards:
                 {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
               {% endif %}
             entity: binary_sensor.pve3_status
-            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve3-detail }
+            tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/pve3-detail }
             hold_action: { action: more-info }
 
           - type: custom:mushroom-template-card
@@ -103,7 +103,7 @@ cards:
                 {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
               {% endif %}
             entity: binary_sensor.pve4_status
-            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve4-detail }
+            tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/pve4-detail }
             hold_action: { action: more-info }
 
           - type: custom:mushroom-template-card
@@ -120,7 +120,7 @@ cards:
                 {% if m > 85 %}red{% elif m > 70 %}amber{% else %}green{% endif %}
               {% endif %}
             entity: binary_sensor.pve5_status
-            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/pve5-detail }
+            tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/pve5-detail }
             hold_action: { action: more-info }
 
       # Row 4 — Workloads (VMs / LXCs pinned to specific PVE nodes)
@@ -141,7 +141,7 @@ cards:
               {% if not is_state('binary_sensor.haos_17_1_status', 'on') %}red
               {% else %}green{% endif %}
             entity: binary_sensor.haos_17_1_status
-            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/haos-detail }
+            tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/haos-detail }
             hold_action: { action: more-info }
 
           - type: custom:mushroom-template-card
@@ -155,7 +155,7 @@ cards:
               {% if states('sensor.grafana_stack_status_2') == 'running' %}green
               {% else %}red{% endif %}
             entity: sensor.grafana_stack_status_2
-            tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/grafana-stack-detail }
+            tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/grafana-stack-detail }
             hold_action: { action: more-info }
 
           - type: custom:mushroom-template-card
@@ -202,5 +202,5 @@ cards:
           {% elif bat < 50 %}amber
           {% else %}green{% endif %}
         entity: sensor.cyberpower_status_data
-        tap_action: { action: navigate, navigation_path: /dashboard-homelab-status/ups-detail }
+        tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/ups-detail }
         hold_action: { action: more-info }
