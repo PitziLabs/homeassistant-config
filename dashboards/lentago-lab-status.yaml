@@ -15,7 +15,6 @@ views:
   - !include lentago-lab-views/backups.yaml
   - !include lentago-lab-views/issues.yaml
   # Drill-down subviews (hidden from tab strip via subview: true)
-  - !include lentago-lab-views/details/neptune.yaml
   - !include lentago-lab-views/details/pve.yaml
   - !include lentago-lab-views/details/pve2.yaml
   - !include lentago-lab-views/details/pve3.yaml

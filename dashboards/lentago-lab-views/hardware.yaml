@@ -14,26 +14,7 @@ cards:
         icon_color: blue
         tap_action: { action: none }
 
-      # Row 2 — Storage
-      - type: custom:mushroom-template-card
-        primary: neptune
-        secondary: >
-          UGREEN DXP · 2× 4TB RAID1 btrfs ·
-          CPU {{ states('sensor.ugreen_nas_cpu_usage') | int(0) }}% ·
-          RAM {{ states('sensor.ugreen_nas_ram_usage') | int(0) }}%
-        icon: mdi:nas
-        icon_color: >
-          {% set s = states('sensor.ugreen_nas_server_status') %}
-          {% if s != 'Normal' %}red
-          {% else %}
-            {% set cpu = states('sensor.ugreen_nas_cpu_usage') | int(0) %}
-            {% if cpu > 80 %}red{% elif cpu > 50 %}amber{% else %}green{% endif %}
-          {% endif %}
-        entity: sensor.ugreen_nas_server_status
-        tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/neptune-detail }
-        hold_action: { action: more-info }
-
-      # Row 3 — PVE cluster
+      # Row 2 — PVE cluster
       - type: grid
         columns: 5
         square: false
@@ -123,7 +104,7 @@ cards:
             tap_action: { action: navigate, navigation_path: /dashboard-lentago-lab-status/pve5-detail }
             hold_action: { action: more-info }
 
-      # Row 4 — Workloads (VMs / LXCs pinned to specific PVE nodes)
+      # Row 3 — Workloads (VMs / LXCs pinned to specific PVE nodes)
       - type: grid
         columns: 4
         square: false
@@ -184,7 +165,7 @@ cards:
             entity: binary_sensor.xubuntu_ws_status
             tap_action: { action: more-info }
 
-      # Row 5 — Power
+      # Row 4 — Power
       - type: custom:mushroom-template-card
         primary: CyberPower CP1500PFCLCDa
         secondary: >
