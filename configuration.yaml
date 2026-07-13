@@ -76,6 +76,17 @@ lovelace:
 # Prometheus
 prometheus:
 
+# Recorder — keep the UGREEN NAS out of HA's history/statistics.
+# The `ugreen` integration ships 137 metric sensors (sensor.ugreen_nas_*)
+# that dominate the recorder/activity load while adding little in HA: the
+# NAS has its own UGOS UI and is already a Grafana/drosera source. Excluding
+# the sensors stops the database churn; the control entities we keep
+# (button./select./text.ugreen_nas_*) are unaffected and still work.
+recorder:
+  exclude:
+    entity_globs:
+      - sensor.ugreen_nas_*
+
 # Light groups — referenced by Sonoff button automations and dashboards.
 # `switch.back_porch` is outdoor lighting too but lives in a separate action
 # in `automations/sonoff_button_outdoor.yaml` because light groups can't hold

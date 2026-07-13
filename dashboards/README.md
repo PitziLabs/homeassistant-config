@@ -153,7 +153,6 @@ dashboards/
     ├── backups.yaml             ← Lens 6: PVE jobs, NAS scrub, HAOS backup
     ├── issues.yaml              ← Lens 7: queue (alarms + GitHub + depletion)
     └── details/
-        ├── neptune.yaml         ← drill-down subview from Hardware
         ├── pve.yaml             ← (one per fleet member that has detail)
         ├── pve2.yaml … pve5.yaml
         ├── haos.yaml
