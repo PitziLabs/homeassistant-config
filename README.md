@@ -202,11 +202,7 @@ A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.
 
 ## Lentago Lab Status Dashboard
 
-Portfolio-grade infrastructure status page surfacing NAS health, Proxmox VM metrics, smart home coordinator status, and device telemetry in a single scrollable view.
-
-![](./docs/lentago-lab-status.png)
-
-Seven sections:
+Portfolio-grade infrastructure status page surfacing NAS health, Proxmox VM metrics, smart home coordinator status, and device telemetry in a single scrollable view. Seven sections:
 1. **Neptune (UGREEN DXP2800)** — server status, RAID pool health, disk temps and power-on hours, CPU/RAM/fan/LAN throughput
 2. **Proxmox (pve)** — node CPU/memory/disk, HAOS and grafana-stack VM health, backup schedule
 3. **Coordinators** — ZWA-2, ZBT-2, and both Konnected ESPHome alarm panels with WiFi RSSI
