@@ -43,6 +43,12 @@
 #   writes colour, never brightness, so the dial still dims the room while it
 #   runs. Same pattern as `script.office_sonoff_candle_loop`.
 #
+#   Off from outside this package (Alexa, dashboard, companion app, Assist)
+#   does not go through Button 4, so it never stops the loop — a plain
+#   light.turn_off is overwritten on the next pass and the bulbs stay lit.
+#   The `playroom_color_loop_external_off_guard` automation at the bottom of
+#   this file closes that gap.
+#
 # ZHA event signatures (PhilipsRDM002 quirk, zha-device-handlers):
 #   Buttons fire on cluster 0xFC00 (64512) with commands of the form
 #   `button_N_short_release` / `button_N_long_release` where N is 1-4.
@@ -532,3 +538,54 @@ automation:
           delta: "{{ -25 if trigger.event.data.args[0] == 1 else 25 }}"
     mode: queued
     max: 10
+
+  - id: playroom_color_loop_external_off_guard
+    alias: 'Playroom: external off stops the color loop'
+    description: >-
+      Makes "turn off the playroom lights" work from outside the tap dial.
+      Button 4 short calls script.turn_off on the color loop before turning the
+      bulbs off; Alexa, the dashboard, the companion app and Assist all call
+      plain light.turn_off, which the loop overwrites on its next pass (2.5 s
+      later) because it writes light.turn_on with hs_color — enough to re-light
+      a bulb that was just turned off. This guard watches for a bulb going off
+      while the loop is running, kills the loop, and re-issues the off.
+
+      Only the software loop (Button 1 long) needs this. The Hue native
+      colorloop effect (Button 4 long) runs on the bulbs themselves, so HA
+      sends nothing and an external off already works there.
+    triggers:
+      - trigger: state
+        entity_id:
+          - light.playroom_1
+          - light.playroom_2
+          - light.playroom_3
+          - light.playroom_4
+        from: 'on'
+        to: 'off'
+    conditions:
+      # The loop only ever writes colour, never brightness and never off, so an
+      # on→off transition while it runs came from outside the loop.
+      - condition: state
+        entity_id: script.playroom_color_loop
+        state: 'on'
+    # restart: an off command lands on all four bulbs at once, so several
+    # triggers fire within a few hundred ms. Only the last run needs to finish.
+    mode: restart
+    actions:
+      - action: script.turn_off
+        target:
+          entity_id: script.playroom_color_loop
+      # Let the loop's in-flight parallel light.turn_on calls land before the
+      # sweep, otherwise a late write re-lights a bulb behind us. The loop's
+      # writes carry transition: 2.5, so give them room to complete.
+      - delay:
+          seconds: 3
+      - action: light.turn_off
+        target:
+          entity_id:
+            - light.playroom_1
+            - light.playroom_2
+            - light.playroom_3
+            - light.playroom_4
+        data:
+          transition: 1

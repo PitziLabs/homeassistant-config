@@ -76,6 +76,13 @@
 # applying. Transitioning into any flicker scene calls script.turn_on so the
 # apply script fires-and-forgets — it never waits on the infinite loop.
 #
+# Off from outside this package (Alexa, dashboard, companion app, Assist) does
+# NOT go through the handlers above, so it never stops the driver — a plain
+# light.turn_off is overwritten by the next tick and the lamps carry on
+# flickering. The `office_flicker_external_off_guard` automation at the bottom
+# of this file closes that: any lamp going off while the loop runs kills the
+# loop and re-sweeps the room off.
+#
 # The driver is also self-extending: HA's `repeat: while:` is capped at 10000
 # iterations per block; at the tick's delay draws (fire scenes average
 # ~420 ms calm-dominated, rainbows ~290 ms) each branch hits that cap after
@@ -522,3 +529,60 @@ automation:
           value: 1
       - action: script.office_sonoff_apply_scene
     mode: single
+
+  - id: office_flicker_external_off_guard
+    alias: 'Office: external off stops the flicker loop'
+    description: >-
+      Makes "turn off the office lights" work from outside the ZEN77 paddle and
+      the Sonoff button. Both of those handlers call script.turn_off on the
+      candle loop before turning the lamps off; Alexa, the dashboard, the
+      companion app and Assist all call plain light.turn_off, which the loop
+      overwrites on its next tick (90-700 ms later). The lamps then appear to
+      ignore the off command and keep flickering. This guard watches for a
+      lamp going off while the loop is running, kills the loop, and re-issues
+      the off so any tick already in flight is cleaned up.
+    triggers:
+      # corner_lamp is deliberately absent: while a meeting is active the
+      # meeting indicator owns it (packages/meeting_indicator.yaml) and turns
+      # it off on its own schedule, which is not an office-off request.
+      - trigger: state
+        entity_id:
+          - light.bookcase_lamp
+          - light.door_lamp
+          - light.desk_lamp_2
+          - light.desk_lamp_2_2
+          - light.table_lamp
+        from: 'on'
+        to: 'off'
+    conditions:
+      # The loop only ever writes light.turn_on — its deepest gutter frame is
+      # 30% brightness, never off — so an on→off transition while it runs can
+      # only have come from something outside the loop.
+      - condition: state
+        entity_id: script.office_sonoff_candle_loop
+        state: 'on'
+    variables:
+      # Same lamp set the ZEN77 / Sonoff off handlers use: corner_lamp stays
+      # out while a meeting owns it.
+      office_lamps: >-
+        {% set lamps = ['light.bookcase_lamp', 'light.door_lamp',
+          'light.desk_lamp_2', 'light.desk_lamp_2_2', 'light.table_lamp'] %}
+        {{ lamps if is_state('light.meeting_light', 'on')
+           else lamps + ['light.corner_lamp'] }}
+    # restart: an off command lands on all six lamps at once, so several
+    # triggers fire within a few hundred ms. Only the last run needs to finish.
+    mode: restart
+    actions:
+      - action: script.turn_off
+        target:
+          entity_id: script.office_sonoff_candle_loop
+      # Let the six parallel branches' in-flight light.turn_on calls land
+      # before the sweep, otherwise a late tick re-lights a lamp behind us.
+      - delay:
+          seconds: 1
+      - action: light.turn_off
+        target:
+          entity_id: '{{ office_lamps }}'
+      # The counter is deliberately left where it is, matching the paddle/button
+      # off handlers. With the lamps off, the next up-tap sees
+      # binary_sensor.office_lights_on == off and resets it to scene 1 anyway.
