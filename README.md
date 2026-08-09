@@ -16,7 +16,7 @@ The repo represents an opinionated infrastructure project with a defined archite
 
 ## What's Here
 
-**A complete smart home platform** managing 40+ entities across lighting (Hue, Kasa), security (Konnected alarm panels with custom ESPHome firmware), media (Sonos whole-home audio), and environmental monitoring (weather, door/motion sensors) — all surfaced through two purpose-built dashboards.
+**A complete smart home platform** managing 146 controllable entities (lights, switches, covers, climate, media players, locks, and the alarm panel) within a 1,415-entry HA entity registry — across lighting (Hue, Kasa), security (Konnected alarm panels with custom ESPHome firmware), media (Sonos whole-home audio), and environmental monitoring (weather, door/motion sensors) — all surfaced through two purpose-built dashboards.
 
 **A custom alarm system** built from bare hardware up. Two Konnected ESP8266 panels running fully inlined ESPHome firmware: one driving 4 door contacts, 2 motion sensors, and a siren output; the other repurposed as an interior annunciator with a piezo buzzer playing RTTTL tones. Eight YAML automations handle the full alarm lifecycle — arming sequences, entry/exit delays with audible countdowns, triggered siren activation, disarm confirmation, and a door chime for everyday use.
 
@@ -202,7 +202,7 @@ A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.
 
 **Why typed Lovelace cards on the home dashboard instead of html-template-card?** An earlier home dashboard iteration used `custom:html-template-card` so each cell was Jinja-templated HTML. That gave maximum layout control but offered no schema validation, fought shadow-DOM CSS for sizing, and made every minor change a string-concatenation problem. The current home dashboard uses typed cards (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card` so per-card styling lives next to the entity binding. Adding a new light is one extra `mushroom-light-card` block; state-driven colors are declarative `state` lists, not Jinja conditionals.
 
-**Why conditional cards on the mobile view?** A house with 40+ controllable entities produces a dashboard that's mostly noise. The Home view shows only what's active — if all kitchen lights are off, you see "All off" instead of four disabled tiles. This is an opinionated UX choice: the dashboard reflects the current state of the house, not its full capability.
+**Why conditional cards on the mobile view?** A house with 146 controllable entities produces a dashboard that's mostly noise. The Home view shows only what's active — if all kitchen lights are off, you see "All off" instead of four disabled tiles. This is an opinionated UX choice: the dashboard reflects the current state of the house, not its full capability.
 
 **Why Sonos group coordinator detection?** When Sonos speakers are grouped, every speaker in the group reports as "playing." Without filtering, you'd see duplicate media cards. The template sensors check whether each speaker is the first member of its own group — only the coordinator gets a card. This is a small detail, but it's the kind of thing that separates a polished dashboard from a functional one.
 
@@ -245,8 +245,8 @@ Portfolio-grade infrastructure status page surfacing NAS health, Proxmox VM metr
 │   ├── helpers.json          Helpers by domain (input_*, timer, counter, schedule)
 │   └── dashboards-storage.json  Storage-mode Lovelace dashboards
 ├── dashboards/
-│   ├── home.yaml             Mobile/tablet Home dashboard
-│   ├── home.yaml            Home wall-display dashboard (custom:grid-layout)
+│   ├── home.yaml             Home dashboard (mobile + wall display, master; HA-native `sections`)
+│   ├── home-codesign.yaml    Home Co-design — generated live-preview clone of home.yaml
 │   └── lentago-lab-status.yaml   Lentago Lab Status: NAS, Proxmox, coordinators, battery, printer
 ├── themes/
 │   ├── noctis_home.yaml     Active theme with global card-mod state styling (noctis_home.yaml)
