@@ -10,9 +10,56 @@
 
 **Authorship:** The YAML configuration, ESPHome firmware, automations, dashboards, scripts, and documentation in this repo are co-written with [Claude](https://claude.ai) (Anthropic). I direct the work and review the output; Claude writes the code. I'm an infrastructure operator, not a software engineer — please don't read this repo as a portfolio of coding ability.
 
-Git-controlled Home Assistant deployment running on Proxmox. Every configuration file is YAML-driven, version-controlled, and deployed through a structured AI-augmented development workflow.
+Git-controlled Home Assistant deployment running on Proxmox. 146 controllable entities managed as declarative YAML — no admin console edits, no issue queue for change dispatch. The merged PR is the change record; a GitOps poller applies it to the running HAOS VM within 5 minutes.
 
-The repo represents an opinionated infrastructure project with a defined architecture and reproducible deployment patterns. The development process is built around code review and iterative refinement, but the implementation is Claude's.
+## 📚 Ask this codebase (DeepWiki)
+
+<a href="https://deepwiki.com/lentago/homeassistant-config"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" height="32"></a>
+
+[DeepWiki](https://deepwiki.com/lentago/homeassistant-config) maintains an AI-generated wiki over this
+repository — architecture pages, diagrams, and a Q&A box grounded in the actual code. Every
+public Lentago Labs repo is indexed ([deepwiki.com/lentago](https://deepwiki.com/lentago));
+it is the fastest way to orient before reading source. It is AI-generated: trust it to orient
+you, verify against the code before you act on it.
+
+**Good first questions:**
+- How does a merged PR actually reach the running Home Assistant instance — what is the deploy mechanism and how long does it take?
+- What is the difference between `automations.yaml` and the `automations/` directory, and why does that split exist?
+- Why does the ha-version-sync workflow use a PAT (`HA_SYNC_PAT`) instead of the default `GITHUB_TOKEN`?
+
+## 🧭 What this repo demonstrates
+
+A production smart home run as declarative YAML — real CI gates, event-driven apply-on-merge to a physical VM, and a self-reporting device that files its own version-bump PRs.
+
+| Pattern | How it shows up here |
+|---|---|
+| Real HA validator in CI, not just a linter | [`.github/workflows/ha-config-check.yml`](.github/workflows/ha-config-check.yml) spins up the exact pinned HA Docker image on every PR and runs `check_config` — schema errors and bad `!include` paths caught before merge, not at runtime |
+| Apply-on-merge to a physical device | [`scripts/gitops-sync.sh`](scripts/gitops-sync.sh) polls `origin/main` every 5 minutes, validates via the Supervisor API, and smart-reloads; auto-rolls back to the pre-sync SHA with a mobile alert on failure |
+| Merge blocked mechanically, not socially | Required status checks (`check-config`, `docs-check`) are enforced by a branch Ruleset — squash-only; the PR cannot land until validation passes |
+| Self-reporting device closes its own drift loop | HAOS fires `homeassistant_started` → `rest_command` POSTs to GitHub → [`ha-version-sync.yml`](.github/workflows/ha-version-sync.yml) compares, branches, and opens+auto-merges a version-bump PR — the running system is its own maintenance agent |
+| PAT-over-GITHUB_TOKEN — documented, not just used | The [HA_SYNC_PAT rationale](#why-ha_sync_pat-instead-of-github_token) explains why the default token can't trigger downstream workflows or push past branch protection — a gotcha every GitOps practitioner hits |
+| Governance partition prevents bidirectional sync conflicts | The [Config Governance table](#config-governance) partitions `automations.yaml` (UI-authored) from `automations/` (git-authored, PR-only) — without this split, a `git reset --hard` would silently clobber UI edits |
+| Fake-secrets for full CI without real credentials | [`secrets.fake.yaml`](secrets.fake.yaml) is copied to `secrets.yaml` in CI so `!secret` references resolve without exposing real values — full config validation on every PR |
+| PR dispatch with no issue-tracker step | Changes are dispatched by talking to Claude Code directly; the PR is the canonical record of intent — a deliberate deviation from the fleet norm that reduces round-trips |
+
+## 🛠️ Make a change yourself
+
+This is a lab — the systems are real, the stakes are not. Pick a vector:
+
+**Add or modify a git-managed automation**
+
+Write or edit a YAML file under [`automations/`](automations/) — that directory is the git-authored, PR-only side of the [governance partition](#config-governance). (`automations.yaml` at the repo root is UI-authored and must never be git-edited — the GitOps `git reset --hard` would clobber any UI changes to it on next sync.) Open a PR directly; no issue step is required in this repo — the PR is the record. Required status checks gate merge: `check-config` (runs Home Assistant's actual config validator against the pinned `.ha-version`) and `docs-check` (runs on all PRs, not path-filtered). Squash-merge is the only allowed method. After merge, the GitOps poller fetches `origin/main` within 5 minutes, validates via the Supervisor API, and smart-reloads. If validation fails, it auto-rolls back to the pre-sync SHA and sends a mobile notification — HA is never left in a broken state.
+
+**Proof this works:**
+- [#384 — Add basement water leak detection automation](https://github.com/lentago/homeassistant-config/pull/384) — new file under `automations/`
+- [#391 — Expand outdoor light schedule to all outdoor lights, off at 9:30 PM](https://github.com/lentago/homeassistant-config/pull/391) — edits an existing `automations/` file
+- [#495 — fix(alarm): drop the dead basement-kitchen door from House Openings](https://github.com/lentago/homeassistant-config/pull/495) — config-level fix, same deploy path
+
+**Observe the self-reporting version loop**
+
+HAOS fires `homeassistant_started` on every startup; a `rest_command` in [`packages/ha_version_sync.yaml`](packages/ha_version_sync.yaml) dispatches `ha-version-report` to GitHub. The [`ha-version-sync.yml`](.github/workflows/ha-version-sync.yml) workflow validates the payload, compares the running version to the pin in `.ha-version`, and — on drift — creates a branch, bumps the pin, and opens a PR via `HA_SYNC_PAT`. Once `check-config` passes, the PR auto-merges. The device filed its own maintenance PR with no human prompt.
+
+Org membership is not required to read or fork this repo. PRs from a fork follow the standard GitHub flow; required checks still gate merge.
 
 ## What's Here
 
@@ -20,7 +67,7 @@ The repo represents an opinionated infrastructure project with a defined archite
 
 **A custom alarm system** built from bare hardware up. Two Konnected ESP8266 panels running fully inlined ESPHome firmware: one driving 4 door contacts, 2 motion sensors, and a siren output; the other repurposed as an interior annunciator with a piezo buzzer playing RTTTL tones. Eight YAML automations handle the full alarm lifecycle — arming sequences, entry/exit delays with audible countdowns, triggered siren activation, disarm confirmation, and a door chime for everyday use.
 
-**Two dashboard experiences** built from typed Lovelace cards. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Home dashboard drives the 2560x1440 wall display using HA native `sections` layout, populated with `mushroom-light-card`, `button-card`, `mini-media-player` (with album art), `clock-weather-card`, and `thermostat` dials — responsive with no fixed-pixel sizing.
+**Two dashboard experiences** built from typed Lovelace cards. A mobile-first Home view uses conditional cards that surface only what's active — lights appear when on, Sonos players show only when playing (with group-awareness so grouped speakers don't duplicate). A Home dashboard uses HA native `sections` layout, populated with `mushroom-light-card`, `button-card`, `mini-media-player` (with album art), `clock-weather-card`, and `thermostat` dials — responsive with no fixed-pixel sizing.
 
 **A Lentago Lab Status dashboard** providing an at-a-glance infrastructure overview: NAS health (Neptune UGREEN DXP2800 — pool status, disk temps, SMART hours, LAN throughput), Proxmox node and VM metrics, smart home coordinator firmware/signal status, battery health grid with amber/red color coding, CMYK toner levels, GitHub repo activity, and the custom-built ESP32 meeting indicator device.
 
@@ -40,7 +87,7 @@ Proxmox VE (hypervisor)
 │   │   ├── automations/ — git-managed automations (meeting indicator)
 │   │   ├── packages/ — HA version sync (startup dispatch to GitHub)
 │   │   ├── scripts/gitops-sync.sh — fetch → validate → smart reload or rollback
-│   │   ├── dashboards/ — Home (mobile/wall display) + Home Co-design + Lentago Lab Status
+│   │   ├── dashboards/ — Home (mobile) + Home Co-design + Lentago Lab Status
 │   │   └── themes/noctis_home.yaml — global card-mod state styling
 │   └── .storage/ — HA-managed runtime state (excluded from git)
 ├── Firewalla Gold SE — network firewall
@@ -49,9 +96,7 @@ Proxmox VE (hypervisor)
 
 ## Development Workflow
 
-This project uses an AI-augmented development process that separates architectural thinking from mechanical execution. The workflow is designed around the same principles I'd apply to any infrastructure team: clear separation of concerns, mandatory code review, and reproducible deployments.
-
-### The Cycle
+This project uses an AI-augmented development process that separates architectural thinking from mechanical execution:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -65,14 +110,14 @@ This project uses an AI-augmented development process that separates architectur
 │     Create/modify files, run validation commands.       │
 │     Open a pull request with descriptive commits.       │
 ├─────────────────────────────────────────────────────────┤
-│  3. REVIEW — Human + Claude.ai                         │
+│  3. REVIEW — Human (owner)                              │
 │     Review the PR diff for correctness, style, and      │
 │     alignment with the implementation guide.            │
 │     Catch entity ID mismatches, YAML structure issues,  │
 │     and unintended side effects.                        │
 ├─────────────────────────────────────────────────────────┤
-│  4. MERGE — GitHub (automerge enabled)                  │
-│     PR merges to main after approval.                   │
+│  4. MERGE — GitHub (squash only, Ruleset-enforced)      │
+│     Required checks pass → merge to main.               │
 ├─────────────────────────────────────────────────────────┤
 │  5. DEPLOY — GitOps auto-deploy (no SSH required)       │
 │     scripts/gitops-sync.sh polls every 5 minutes.       │
@@ -82,28 +127,15 @@ This project uses an AI-augmented development process that separates architectur
 ├─────────────────────────────────────────────────────────┤
 │  6. ITERATE — back to step 1                            │
 │     Observe behavior on real hardware.                  │
-│     File issues for anything unexpected.                │
 │     Next cycle addresses what was learned.              │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Why This Works
-
 **Architectural decisions are documented before code is written.** Every implementation guide captures the reasoning — not just *what* to change, but *why* this approach over alternatives. This creates a decision log that survives beyond any single session.
 
-**Mechanical execution is separated from design thinking.** Claude Code operates from a spec, not from a conversation. This eliminates the drift that happens when you design and build simultaneously, and it produces cleaner commits because the scope was defined before the first file was touched.
+**Code review catches a real category of bugs.** Entity IDs in Home Assistant are set at device adoption time and don't change when you rename things. A review step specifically looking for ID mismatches has caught real issues in this project.
 
-**Code review catches a real category of bugs.** Entity IDs in Home Assistant are notoriously tricky — they're set at device adoption time and don't change when you rename things. A review step specifically looking for ID mismatches between config and actual entities has caught real issues in this project.
-
-**The deploy step includes validation.** `ha core check` catches YAML syntax errors and missing entity references before a restart. Visual verification on the target device (phone for mobile view, wall display for the home dashboard) confirms the actual rendered output matches intent.
-
-### What's Already Here vs. What Would Scale Further
-
-The CI pipeline and auto-deploy described in the sections below are implemented. What would additionally scale for a team:
-
-- **Entity inventory validation** — a custom CI step checking entity IDs in dashboard YAML against a known-good registry snapshot, catching references to renamed or deleted entities before deployment.
-- **Environment promotion** — a staging HA instance for testing dashboard changes before they propagate to the production wall display.
-- **PR-scoped pre-deployment previews** — spinning up a temporary HA Docker container per PR to render config check output inline on the review.
+**The deploy step includes validation.** `ha core check` catches YAML syntax errors and missing entity references before a restart. Failure rolls back automatically — HA Core is never restarted on a failed check.
 
 ## Validation Pipeline
 
@@ -153,7 +185,7 @@ homeassistant_started event
 
 `HA_SYNC_PAT` is used for **both** `actions/checkout` (via `with: token:`) and `gh pr create` — two reasons, one token:
 
-1. **Downstream workflows won't fire on `GITHUB_TOKEN` events.** GitHub's default `GITHUB_TOKEN` cannot trigger other GitHub Actions workflows on events it creates (intentional anti-loop guard). The PR needs to fire `ha-config-check` and the Claude review — both run on `pull_request`. A PAT-opened PR bypasses this.
+1. **Downstream workflows won't fire on `GITHUB_TOKEN` events.** GitHub's default `GITHUB_TOKEN` cannot trigger other GitHub Actions workflows on events it creates (intentional anti-loop guard). The PR needs to fire `ha-config-check` on `pull_request`. A PAT-opened PR bypasses this.
 2. **`github-actions[bot]` lacks push permission.** `actions/checkout` configures git credentials from its `token:` input (defaults to `GITHUB_TOKEN`). All `git push` calls in the job inherit those credentials. `github-actions[bot]` is denied write access to this repo by the branch protection ruleset, so the push to `ha-version-bump/<version>` fails with 403 unless the PAT is passed to checkout.
 
 The same PAT lives in HAOS `secrets.yaml` as `github_pat` (for the dispatch POST) and in repo Actions secrets as `HA_SYNC_PAT` (for checkout + PR creation).
@@ -174,7 +206,7 @@ Automation files are partitioned by governance model to prevent bidirectional sy
 **Reconciling UI drift:** When `automations.yaml` accumulates UI edits worth keeping:
 1. SSH to the HA VM: `cat /config/automations.yaml`
 2. Copy the file content into a local checkout
-3. Open a PR — automated review catches any issues
+3. Open a PR — required checks catch any issues
 
 **Adding new git-managed automations:** Create a new `.yaml` file under `automations/` (e.g., `automations/lighting.yaml`). HA merges all files in the directory at startup via `!include_dir_merge_list`.
 
@@ -182,7 +214,7 @@ Automation files are partitioned by governance model to prevent bidirectional sy
 
 Config changes merge to `main` and deploy automatically — no SSH required.
 
-A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.gitops_sync` every 5 minutes. The script fetches `origin/main`, compares it to `HEAD`, and if diverged: resets to the latest commits, validates via the Supervisor API (`POST /core/check`), and restarts HA Core on success. On validation failure, it rolls back to the pre-sync SHA without restarting.
+A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.gitops_sync` every 5 minutes. The script fetches `origin/main`, compares it to `HEAD`, and if diverged: resets to the latest commits, validates via the Supervisor API (`POST /core/check`), and smart-routes to the lightest reload (lovelace → automation → script → scene → full restart based on changed paths). On validation failure, it rolls back to the pre-sync SHA without restarting.
 
 **Upper-bound deployment time:** 5 minutes from merge to running config.
 
@@ -200,11 +232,11 @@ A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.
 
 **Why a manual alarm platform instead of an integration?** The manual platform gives explicit control over every timing parameter and state transition. The alarm behavior is defined entirely in YAML — arming delays, entry delays, trigger duration, which sensors are active in which arm mode — making it auditable, version-controlled, and reproducible.
 
-**Why typed Lovelace cards on the home dashboard instead of html-template-card?** An earlier home dashboard iteration used `custom:html-template-card` so each cell was Jinja-templated HTML. That gave maximum layout control but offered no schema validation, fought shadow-DOM CSS for sizing, and made every minor change a string-concatenation problem. The current home dashboard uses typed cards (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) wrapped in `custom:mod-card` so per-card styling lives next to the entity binding. Adding a new light is one extra `mushroom-light-card` block; state-driven colors are declarative `state` lists, not Jinja conditionals.
+**Why typed Lovelace cards on the home dashboard instead of html-template-card?** An earlier iteration used `custom:html-template-card` so each cell was Jinja-templated HTML — maximum layout control but no schema validation, shadow-DOM CSS fights, and string-concatenation on every change. The current home dashboard uses typed cards (`mushroom-light-card`, `button-card`, `mini-media-player`, `clock-weather-card`, `better-thermostat-ui-card`) with declarative `state` blocks for color logic. Adding a new light is one extra card block.
 
-**Why conditional cards on the mobile view?** A house with 146 controllable entities produces a dashboard that's mostly noise. The Home view shows only what's active — if all kitchen lights are off, you see "All off" instead of four disabled tiles. This is an opinionated UX choice: the dashboard reflects the current state of the house, not its full capability.
+**Why conditional cards on the mobile view?** The Home view shows only what's active — if all kitchen lights are off, you see "All off" instead of four disabled tiles. The dashboard reflects the current state of the house, not its full capability.
 
-**Why Sonos group coordinator detection?** When Sonos speakers are grouped, every speaker in the group reports as "playing." Without filtering, you'd see duplicate media cards. The template sensors check whether each speaker is the first member of its own group — only the coordinator gets a card. This is a small detail, but it's the kind of thing that separates a polished dashboard from a functional one.
+**Why Sonos group coordinator detection?** When Sonos speakers are grouped, every speaker reports as "playing." Template sensors check whether each speaker is the first member of its own group — only the coordinator gets a card, preventing duplicate media rows.
 
 ## Lentago Lab Status Dashboard
 
@@ -240,60 +272,53 @@ Portfolio-grade infrastructure status page surfacing NAS health, Proxmox VM metr
 │   ├── areas.json            Area registry
 │   ├── devices.json          Device registry joined with config_entries
 │   ├── automations-ui.yaml   UI-authored automations snapshot
-│   ├── scripts.json          Storage-mode scripts (populated by ha-mcp prototyping)
+│   ├── scripts.json          Storage-mode scripts
 │   ├── scenes.json           Storage-mode scenes
 │   ├── helpers.json          Helpers by domain (input_*, timer, counter, schedule)
 │   └── dashboards-storage.json  Storage-mode Lovelace dashboards
 ├── dashboards/
-│   ├── home.yaml             Home dashboard (mobile + wall display, master; HA-native `sections`)
-│   ├── home-codesign.yaml    Home Co-design — generated live-preview clone of home.yaml
+│   ├── home.yaml             Home dashboard (master; HA-native `sections`)
+│   ├── home-codesign.yaml    Home Co-design — generated clone of home.yaml
 │   └── lentago-lab-status.yaml   Lentago Lab Status: NAS, Proxmox, coordinators, battery, printer
 ├── themes/
-│   ├── noctis_home.yaml     Active theme with global card-mod state styling (noctis_home.yaml)
-│   └── home_dark.yaml       Deprecated — retained for reference
+│   ├── noctis_home.yaml      Active theme with global card-mod state styling
+│   └── home_dark.yaml        Deprecated — retained for reference
 ├── esphome/
 │   ├── konnected-56ac70.yaml Main alarm panel firmware (4 doors, 2 motion, siren)
 │   ├── konnected-56a4fa.yaml Secondary panel firmware (piezo RTTTL annunciator)
 │   └── secrets.yaml.example  ESPHome secrets template
 ├── .github/workflows/
-│   ├── ha-config-check.yml   HA check_config CI gate (Card 1)
-│   ├── ha-version-sync.yml   Auto-bump .ha-version on HAOS startup (Card 2)
+│   ├── ha-config-check.yml   HA check_config CI gate
+│   ├── ha-version-sync.yml   Auto-bump .ha-version on HAOS startup
 │   ├── lint.yml              YAML lint gate
-│   ├── claude.yml            Claude Code issue/PR automation
-│   └── claude-code-review.yml Automated PR review (bash safety, security, idempotency)
+│   └── claude.yml            Claude Code PR automation
 ├── CLAUDE.md                 Project context for AI-assisted development
 └── .gitignore                Excludes runtime state, secrets, build artifacts, blueprints
 ```
 
 ## HACS Dependencies
 
+Cards are auto-loaded by HACS — do **not** add them to `frontend.extra_module_url` (only `kiosk-mode.js` and `card-mod.js` are loaded explicitly there; double-registering throws "already been used with this registry").
+
 | Card | Purpose |
 |------|---------|
 | [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Light/entity/alarm cards and sensor chips |
 | [clock-weather-card](https://github.com/pkissling/clock-weather-card) | Animated weather with clock and forecast |
 | [mini-media-player](https://github.com/kalkih/mini-media-player) | Compact Sonos display with album art |
-| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid layout engine — used as the home dashboard view type |
-| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling + `custom:mod-card` cell wrapper |
-| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, TV row in home view |
-| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial in home view |
-| [apexcharts-card](https://github.com/RomRider/apexcharts-card) | Advanced graphs and radial gauges (lab/home) |
-| [mini-graph-card](https://github.com/kalkih/mini-graph-card) | Lightweight inline sparklines for at-a-glance trends |
+| [layout-card](https://github.com/thomasloven/lovelace-layout-card) | CSS Grid layout engine |
+| [card-mod](https://github.com/thomasloven/lovelace-card-mod) | Theme-level CSS styling |
+| [button-card](https://github.com/custom-cards/button-card) | Sensor tiles, alarm hero, TV row |
+| [better-thermostat-ui-card](https://github.com/KartoffelToby/better-thermostat-ui-card) | Circular thermostat dial |
+| [apexcharts-card](https://github.com/RomRider/apexcharts-card) | Graphs and radial gauges |
+| [mini-graph-card](https://github.com/kalkih/mini-graph-card) | Lightweight inline sparklines |
 | [Bubble Card](https://github.com/Clooos/Bubble-Card) | Minimalist cards with slide-up pop-ups |
 | [auto-entities](https://github.com/thomasloven/lovelace-auto-entities) | Auto-populates card entity lists by filter/area |
-| [decluttering-card](https://github.com/custom-cards/decluttering-card) | Reusable card templates (DRY repeated tiles) |
-| [HTML Jinja2 Template card](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-Jinja2-Template-card) | Renders a Jinja2 template as HTML card content |
-| [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Hides sidebar/header for wall display |
+| [decluttering-card](https://github.com/custom-cards/decluttering-card) | Reusable card templates |
+| [HTML Jinja2 Template card](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-Jinja2-Template-card) | Renders Jinja2 as HTML card content |
+| [kiosk-mode](https://github.com/NemesisRE/kiosk-mode) | Hides sidebar/header for kiosk display |
 | [Noctis](https://github.com/aFFekopp/nern) | Base dark theme (extended by Noctis Home) |
 
-These cards are auto-loaded by HACS — do **not** add them to
-`frontend.extra_module_url` (only `kiosk-mode.js` and `card-mod.js` are
-loaded explicitly there; double-registering throws "already been used with
-this registry").
-
 ### Integrations (HACS)
-
-Custom integrations installed via HACS. All are UI-configured (config flow)
-or self-registering — none take a `configuration.yaml` block.
 
 | Integration | Purpose |
 |------|---------|
@@ -316,3 +341,10 @@ This repository is one piece of a broader infrastructure portfolio at [github.co
 ## License
 
 MIT
+
+---
+
+🌱 **Lentago Labs** is a team learning lab — real systems, non-critical stakes, modern
+operations patterns demonstrated in the open. Start at the
+[org profile](https://github.com/lentago), and read this repo on
+[DeepWiki](https://deepwiki.com/lentago/homeassistant-config).
