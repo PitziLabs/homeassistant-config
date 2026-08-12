@@ -10,7 +10,7 @@
 
 **Authorship:** The YAML configuration, ESPHome firmware, automations, dashboards, scripts, and documentation in this repo are co-written with [Claude](https://claude.ai) (Anthropic). I direct the work and review the output; Claude writes the code. I'm an infrastructure operator, not a software engineer — please don't read this repo as a portfolio of coding ability.
 
-Git-controlled Home Assistant deployment running on Proxmox. 146 controllable entities managed as declarative YAML — no admin console edits, no issue queue for change dispatch. The merged PR is the change record; a GitOps poller applies it to the running HAOS VM within 5 minutes.
+Git-controlled Home Assistant deployment running on Proxmox. 146 controllable entities managed as declarative YAML — git-tracked config is never edited in the admin console (one deliberate exception: root `automations.yaml` is UI-authored — see the [Config Governance table](#config-governance)), and there is no issue queue for change dispatch. The merged PR is the change record; a GitOps poller applies it to the running HAOS VM within 5 minutes.
 
 ## 📚 Ask this codebase (DeepWiki)
 
