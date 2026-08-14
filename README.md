@@ -238,6 +238,8 @@ A `time_pattern` automation (`GitOps: Poll and deploy`) triggers `shell_command.
 
 **Why Sonos group coordinator detection?** When Sonos speakers are grouped, every speaker reports as "playing." Template sensors check whether each speaker is the first member of its own group — only the coordinator gets a card, preventing duplicate media rows.
 
+**Architecture decisions:** [`docs/adr/`](docs/adr/) — reconstructed 2026-08-13 from repo history — records the fuller context, alternatives, and trade-offs behind the governance and pipeline decisions above (no-issue PR dispatch, the three-layer state model, GitOps deploy, dashboard layout).
+
 ## Lentago Lab Status Dashboard
 
 Portfolio-grade infrastructure status page surfacing NAS health, Proxmox VM metrics, smart home coordinator status, and device telemetry in a single scrollable view. Seven sections:
