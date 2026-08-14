@@ -9,7 +9,7 @@ Home Assistant has two legitimate ways to create an automation: the Settings
 this repo — Chris edited some automations through the HA UI for convenience,
 while others were authored as reviewable git YAML. Both write paths target
 files HA merges at startup, and the GitOps deploy script
-(`scripts/gitops-sync.sh`, added the same week in PRs #9ec63a7/#8c84f7e)
+(`scripts/gitops-sync.sh`, added the same week in commits `9ec63a7`/`8c84f7e` — PRs #46/#52)
 deploys by running `git reset --hard origin/main` against the live config
 directory.
 
@@ -48,7 +48,7 @@ automated sync in either direction.
 
 - **Recorded at the time:** the pre-#63 status quo — every automation,
   including UI-editable ones, coexisting in files the GitOps pipeline could
-  overwrite. PR #63's own body flagged this risk directly and used it as the
+  overwrite. Issue #62 (which PR #63 closes) flagged this risk directly and used it as the
   reason for the split; it wasn't a hypothetical, it was the bug being fixed.
 - **Retrospective — not considered at the time:** go fully UI-managed for all
   automations, with periodic export of `automations.yaml` into git as a
