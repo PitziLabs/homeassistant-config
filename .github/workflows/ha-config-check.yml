@@ -13,7 +13,7 @@ jobs:
   check-config:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Read HA version
         id: version
@@ -23,7 +23,7 @@ jobs:
         run: cp secrets.fake.yaml secrets.yaml
 
       - name: Validate HA config
-        uses: frenck/action-home-assistant@v1
+        uses: frenck/action-home-assistant@941d5d917f4c1c7a7e7d4087526daf90d53f4437 # v1
         with:
           path: "./"
           version: ${{ steps.version.outputs.version }}
