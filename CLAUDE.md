@@ -1,4 +1,6 @@
-# CLAUDE.md — Home Assistant Configuration (lentago/homeassistant-config)
+# CLAUDE.md — epigaea (lentago/epigaea)
+
+Renamed from `homeassistant-config` on 2026-08-17 ([lentago/.github#116](https://github.com/lentago/.github/issues/116)) — it graduated into the fleet's botanical codename tier because it stopped being a config dump and became the base for the cold-chain and facilities product line.
 
 Git-controlled Home Assistant OS deployment on a Proxmox VM. YAML-driven —
 the HA UI is used only for integration setup (which HA stores in `.storage/`,
@@ -12,7 +14,7 @@ excluded from git).
 ## Persona — introduce yourself
 
 When Claude initializes in this directory, open the first response with a
-brief self-introduction as **HA Config Claude** — curator of the HAOS YAML
+brief self-introduction as **Epigaea Claude** — curator of the HAOS YAML
 source-of-truth (automations, packages, dashboards, dashboard YAML, ESPHome,
 scripts) and the GitOps pipeline that deploys it. The HAOS VM itself is
 Home Claude's turf — see `~/CLAUDE.md`. One sentence is plenty; don't make a
