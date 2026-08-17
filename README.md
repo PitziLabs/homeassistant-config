@@ -21,6 +21,59 @@ being a config dump and became a product line.
 
 Git-controlled Home Assistant deployment running on Proxmox. 146 controllable entities managed as declarative YAML — git-tracked config is never edited in the admin console (one deliberate exception: root `automations.yaml` is UI-authored — see the [Config Governance table](#config-governance)), and there is no issue queue for change dispatch. The merged PR is the change record; a GitOps poller applies it to the running HAOS VM within 5 minutes.
 
+## 🔁 The GitOps loop
+
+This repo's most distinctive pattern isn't the deploy half of the loop — most
+GitOps setups pull config onto a runtime. It's that the runtime **reports its
+own version back**, closing the loop from the other direction so drift is
+caught whichever way it happens:
+
+```mermaid
+flowchart LR
+    subgraph gh["GitHub — lentago/epigaea"]
+        direction TB
+        pr["PR opened<br/>(YAML / ESPHome change)"]
+        ci["ha-config-check<br/>validates config against pinned .ha-version<br/>+ esphome-check builds firmware"]
+        merge["Squash-merge to main<br/>(Ruleset-enforced)"]
+        bump["ha-version-sync.yml<br/>opens a version-bump PR<br/>via HA_SYNC_PAT"]
+        pr --> ci --> merge
+        bump -.->|re-enters as a normal PR| pr
+    end
+
+    subgraph vm["HAOS VM — Proxmox"]
+        direction TB
+        poll["gitops-sync.sh<br/>polls origin/main every 5 min"]
+        check["POST /core/check<br/>(Supervisor API)"]
+        reload["smart-reload router<br/>lovelace / automation / script / scene / full restart"]
+        rollback["roll back to pre-sync SHA<br/>(on check failure)"]
+        report["homeassistant_started →<br/>rest_command posts running .HA_VERSION"]
+        poll --> check
+        check -->|pass| reload
+        check -->|fail| rollback
+        reload --> report
+    end
+
+    merge -->|fetched within 5 min| poll
+    report ==>|"version drift detected"| bump
+
+    style bump fill:#1b4b2e,color:#fff
+    style report fill:#1b4b2e,color:#fff
+```
+
+**Left (GitHub):** a PR lands, `ha-config-check` validates it against the
+exact HA version pinned in [`.ha-version`](.ha-version) and `esphome-check`
+builds the two panels' firmware, then it squash-merges. **Right (the HAOS
+VM):** `scripts/gitops-sync.sh` polls every 5 minutes, pulls the merged
+commits, validates via the Supervisor API, and
+routes to the lightest reload the change actually needs — never a blind
+`core.restart`. **The closing leg (heavy arrow):** on every startup the VM
+posts its own `.HA_VERSION` back to GitHub; if it disagrees with the pin, the
+[`ha-version-sync.yml`](.github/workflows/ha-version-sync.yml) workflow opens
+a version-bump PR that re-enters Card 1 like any other change. Drift is
+caught from both directions — a bad config PR is rejected before it reaches
+the VM, and a VM that drifts from the pin (a manual HA update, a reflash)
+corrects the git record instead of silently diverging from it.
+
 ## 📚 Ask this codebase (DeepWiki)
 
 <a href="https://deepwiki.com/lentago/epigaea"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" height="32"></a>
@@ -199,7 +252,7 @@ homeassistant_started event
 
 The same PAT lives in HAOS `secrets.yaml` as `github_pat` (for the dispatch POST) and in repo Actions secrets as `HA_SYNC_PAT` (for checkout + PR creation).
 
-> **PAT rotation reminder:** Rotate `HA_SYNC_PAT` and `github_pat` annually. The PAT needs `Contents: Write` on this repo only.
+> **PAT rotation reminder:** Rotate `HA_SYNC_PAT` and `github_pat` annually — see [SECURITY.md](SECURITY.md) for the exact scope, storage locations, blast radius, and rotation steps.
 
 ## Config Governance
 
